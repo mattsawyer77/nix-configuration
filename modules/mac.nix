@@ -1,4 +1,11 @@
-{ config, pkgs, lib, emacs-src, emacs-vterm-src, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  emacs-src,
+  emacs-vterm-src,
+  neovim-nightly-overlay,
+  ... }:
 
 with lib;
 
@@ -91,7 +98,7 @@ with lib;
     most
     msgpack
     ncurses
-    # neovim # customized in ./neovim.nix overlay
+    neovim # customized in ./neovim.nix overlay
     netcat
     netperf
     nim
@@ -162,7 +169,7 @@ with lib;
     overlays = [
       # nur.overlay
       # spacebar.overlay
-      # neovim-overlay.overlay
+      (import ./neovim.nix)
       (final: prev: {
         # sf-mono-liga-bin = pkgs.callPackage ./pkgs/sf-mono-liga-bin { };
         # nyxt = pkgs.callPackage ./pkgs/nyxt { };

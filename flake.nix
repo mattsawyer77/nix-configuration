@@ -10,6 +10,10 @@
       url = "github:nix-community/emacs-overlay";
       inputs.nixpkgs.follows = "unstable";
     };
+    neovim-nightly-overlay = {
+      url = "github:nix-community/neovim-nightly-overlay"; 
+      inputs.nixpkgs.follows = "unstable";
+    };
     # doom-emacs = {
     #   url = "github:hlissner/doom-emacs/master";
     #   flake = false;
