@@ -2,6 +2,7 @@
 
 with lib;
 {
+  # programs.tmux.enable = true;
   programs.tmux.extraConfig = ''
     # remap prefix to Control + space
     unbind C-b
@@ -67,7 +68,7 @@ with lib;
     set -g status-right-length 60
     # set -g status-right "#[bg=#444455]#[fg=#bbbbcc] %H:%M "
     set -g status-right ""
-  '' + (if stdenv.isDarwin then ''
+  '' + (if pkgs.stdenv.isDarwin then ''
     set -g default-terminal "xterm-24bit"
     set -g default-command "reattach-to-user-namespace -l zsh"
     set -g status-left "#[bg=#e63634]#[fg=brightwhite]#{?client_prefix,#[bg=green],} #S "

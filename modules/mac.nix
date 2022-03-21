@@ -5,7 +5,8 @@
   emacs-src,
   emacs-vterm-src,
   neovim-nightly-overlay,
-  ... }:
+  ...
+}:
 
 with lib;
 
@@ -155,6 +156,13 @@ with lib;
     zsh-z
     zstd
   ];
+  programs.zsh.enable = true;  # default shell on catalina+
+  programs.zsh.enableFzfCompletion = true;
+  programs.zsh.enableFzfGit = true;
+  programs.zsh.enableFzfHistory = true;
+  programs.zsh.enableCompletion = true; # broken, see https://github.com/LnL7/nix-darwin/issues/373
+  programs.zsh.enableBashCompletion = true;
+  programs.zsh.enableSyntaxHighlighting = true;
   nix = {
     package = pkgs.nixFlakes;
     extraOptions = ''

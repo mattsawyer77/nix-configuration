@@ -1,13 +1,6 @@
 { config, lib, pkgs, ... }:
 
 {
-  programs.zsh.enable = true;  # default shell on catalina+
-  programs.zsh.enableCompletion = false; # broken, see https://github.com/LnL7/nix-darwin/issues/373
-  programs.zsh.enableBashCompletion = true;
-  programs.zsh.enableFzfCompletion = true;
-  programs.zsh.enableFzfGit = true;
-  programs.zsh.enableFzfHistory = true;
-  programs.zsh.enableSyntaxHighlighting = true;
   environment.shellAliases = {
     ssh = "TERM=xterm-256color ssh";
     socks4proxy = "ssh -D 8888 -f -C -q -N";
@@ -20,9 +13,9 @@
     em = "em.zsh";
     doom = "~/.emacs.d/bin/doom";
   };
-   # programs.zsh.promptInit = ''
-   #   eval $(starship init zsh)
-   # '';
+   programs.zsh.promptInit = ''
+     eval $(starship init zsh)
+   '';
    # TODO: investigate syntax highlighting and autosuggestions, which aren't loading right now
    programs.zsh.interactiveShellInit = ''
      bindkey -v
@@ -103,6 +96,5 @@
      }
      export PATH=~/.local/bin:~/.cargo/bin:$PATH
      export PATH=$PATH:${pkgs.nodejs}/bin
-     eval $(starship init zsh)
    '';
 }

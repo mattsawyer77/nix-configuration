@@ -1,10 +1,15 @@
-{ config, pkgs, lib, emacs-src, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  emacs-overlay,
+  neovim-nightly-overlay,
+  ...
+}:
 
 with lib;
 
 {
-  users.nix.configureBuildUsers = true;
-  services.nix-daemon.enable = true;
   environment.systemPackages = with pkgs; [
     automake
     aws-iam-authenticator
@@ -17,7 +22,7 @@ with lib;
     boost
     cachix
     cairo
-    cask
+    # cask
     ccls
     cmake
     coreutils
@@ -132,7 +137,6 @@ with lib;
     zoxide
     zsh
     zsh-autosuggestions
-    zsh-fzf-tab
     zsh-syntax-highlighting
     zsh-z
     zstd
@@ -148,7 +152,7 @@ with lib;
     config.allowUnfree = true;
     overlays = [
       emacs-overlay.overlay
-      (./import neovim.nix)
+      (import ./neovim.nix)
     ]; # overlays
   }; # nixpkgs
 }
