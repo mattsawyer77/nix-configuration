@@ -39,18 +39,51 @@
     };
   };
   outputs = { self, nixpkgs, darwin, ... }@inputs: {
+    # mac
     darwinConfigurations = {
+      SEA-ML-00059144 = darwin.lib.darwinSystem {
+        system = "x86_64-darwin";
+        specialArgs = inputs;
+        modules = [
+          ({ config, pkgs, lib, ... }: {
+            nix = {
+              package = pkgs.nixFlakes;
+              extraOptions = ''
+                system = x86_64-darwin
+                experimental-features = nix-command flakes
+                build-users-group = nixbld
+              '';
+            };
+          })
+          ./modules/mac.nix
+          ./modules/tmux.nix
+          ./modules/zsh.nix
+        ];
+      };
+
       mmbpm1 = darwin.lib.darwinSystem {
         system = "aarch64-darwin";
         specialArgs = inputs;
         modules = [
+          ({ config, pkgs, lib, ... }: {
+            nix = {
+              package = pkgs.nixFlakes;
+              extraOptions = ''
+                system = aarch64-darwin
+                extra-platforms = aarch64-darwin x86_64-darwin
+                experimental-features = nix-command flakes
+                build-users-group = nixbld
+              '';
+            };
+          })
           ./modules/mac.nix
           ./modules/tmux.nix
           ./modules/zsh.nix
-        ]; # modules
+        ];
       }; # mmbpm1
     }; # darwin.lib.darwinSystem
 
+    # linux
     nixosConfigurations = {
       "sawyer-dev" = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";

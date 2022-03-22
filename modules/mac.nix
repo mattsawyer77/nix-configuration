@@ -1,12 +1,4 @@
-{
-  config,
-  pkgs,
-  lib,
-  emacs-src,
-  emacs-vterm-src,
-  neovim-nightly-overlay,
-  ...
-}:
+{ config, pkgs, lib, emacs-src, emacs-vterm-src, neovim-nightly-overlay, ... }:
 
 with lib;
 
@@ -38,12 +30,15 @@ with lib;
   services.nix-daemon.enable = true;
   # security.pam.enableSudoTouchIdAuth = true;
   environment.systemPackages = with pkgs; [
-    awscli
     alacritty
     automake
+    aws-iam-authenticator
+    awscli
+    azure-cli
     bash_5
     bat
     bat-extras.batman
+    boost
     cachix
     cairo
     cask
@@ -52,18 +47,19 @@ with lib;
     coreutils
     curlFull
     delta
+    delve
     diff-so-fancy
     direnv
     dos2unix
-    # emacsGit
     emacs-mac
+    etcd
     eternal-terminal
     exa
     fd
-    fx
     flamegraph
     fontconfig
     freetype
+    fx
     fzf
     gdb
     gdbm
@@ -74,31 +70,39 @@ with lib;
     gnupg
     go
     golangci-lint
-    gopls
     google-cloud-sdk
+    gopls
     graphviz
     grpcurl
+    gvproxy
     harfbuzzFull
     helix
+    html-tidy
     htop
     httrack
     jansson
     jq
     kubectl
-    luajit
     less
-    libiconv
+    libcxx
     libgccjit
+    libiconv
     libsndfile
     libssh2
     libtool
     libvterm-neovim
     libxml2
-    llvmPackages_12.lldb
-    llvm_12
+    lima
+    # llvm
+    # llvmPackages_12.lldb
+    # llvm_12
+    luajit
     most
     msgpack
+    multitail
+    mutagen
     ncurses
+    neovim
     neovim # customized in ./neovim.nix overlay
     netcat
     netperf
@@ -106,11 +110,14 @@ with lib;
     nimlsp
     ninja
     nix-direnv
+    nix-linter
     nix-prefetch
-    # nixUnstable
+    nix-prefetch-git
+    nixfmt
     nmap
     nodejs
     oniguruma
+    openapi-generator-cli
     openldap
     openssl
     pandoc
@@ -120,8 +127,11 @@ with lib;
     pkgconfig
     podman
     protobuf
+    prototool
+    python3
     python39
-    # racket
+    qemu
+    qmk
     readline
     reattach-to-user-namespace
     redis
@@ -129,25 +139,34 @@ with lib;
     rnix-lsp
     rust-analyzer
     rustup
+    scons
     sd
     shared-mime-info
+    shellcheck
+    skhd
+    skopeo
     sqlite
-    # starship
+    # ssm-session-manager-plugin # broken (again!) as of 2022-03-21
+    starship
     taglib
+    terraform
     terraform-ls
     tflint
     tmux
+    tokei
     tree
-    # tree-sitter # too new for emacs right now?
+    trivy
     unixtools.watch
-    # wasm-pack
+    upx
     wget
+    wireshark
     xsv
-    # yabai
+    yabai
     yaml-language-server
+    yarn
     youtube-dl
     yq-go
-    # zls # broken as of 2022-02-06
+    zenith
     zlib
     zoxide
     zsh
@@ -156,22 +175,14 @@ with lib;
     zsh-z
     zstd
   ];
-  programs.zsh.enable = true;  # default shell on catalina+
+  programs.zsh.enable = true; # default shell on catalina+
   programs.zsh.enableFzfCompletion = true;
   programs.zsh.enableFzfGit = true;
   programs.zsh.enableFzfHistory = true;
-  programs.zsh.enableCompletion = true; # broken, see https://github.com/LnL7/nix-darwin/issues/373
+  programs.zsh.enableCompletion =
+    true; # broken, see https://github.com/LnL7/nix-darwin/issues/373
   programs.zsh.enableBashCompletion = true;
   programs.zsh.enableSyntaxHighlighting = true;
-  nix = {
-    package = pkgs.nixFlakes;
-    extraOptions = ''
-      system = aarch64-darwin
-      extra-platforms = aarch64-darwin x86_64-darwin
-      experimental-features = nix-command flakes
-      build-users-group = nixbld
-    '';
-  };
   nixpkgs = {
     config.allowUnfree = true;
     overlays = [
@@ -179,8 +190,6 @@ with lib;
       # spacebar.overlay
       (import ./neovim.nix)
       (final: prev: {
-        # sf-mono-liga-bin = pkgs.callPackage ./pkgs/sf-mono-liga-bin { };
-        # nyxt = pkgs.callPackage ./pkgs/nyxt { };
         # # yabai is broken on macOS 12, so lets make a smol overlay to use the master version
         # yabai = let
         #   version = "4.0.0-dev";
@@ -208,32 +217,24 @@ with lib;
 
           src = emacs-vterm-src;
 
-          nativeBuildInputs = [
-            prev.cmake
-            prev.libtool
-            prev.glib.dev
-          ];
+          nativeBuildInputs = [ prev.cmake prev.libtool prev.glib.dev ];
 
-          buildInputs = [
-            prev.glib.out
-            prev.libvterm-neovim
-            prev.ncurses
-          ];
+          buildInputs = [ prev.glib.out prev.libvterm-neovim prev.ncurses ];
 
           cmakeFlags = [ "-DUSE_SYSTEM_LIBVTERM=yes" ];
 
           preConfigure = ''
-                    echo "include_directories(\"${prev.glib.out}/lib/glib-2.0/include\")" >> CMakeLists.txt
-                    echo "include_directories(\"${prev.glib.dev}/include/glib-2.0\")" >> CMakeLists.txt
-                    echo "include_directories(\"${prev.ncurses.dev}/include\")" >> CMakeLists.txt
-                    echo "include_directories(\"${prev.libvterm-neovim}/include\")" >> CMakeLists.txt
-                  '';
+            echo "include_directories(\"${prev.glib.out}/lib/glib-2.0/include\")" >> CMakeLists.txt
+            echo "include_directories(\"${prev.glib.dev}/include/glib-2.0\")" >> CMakeLists.txt
+            echo "include_directories(\"${prev.ncurses.dev}/include\")" >> CMakeLists.txt
+            echo "include_directories(\"${prev.libvterm-neovim}/include\")" >> CMakeLists.txt
+          '';
 
           installPhase = ''
-                    mkdir -p $out
-                    cp ../vterm-module.so $out
-                    cp ../vterm.el $out
-                  '';
+            mkdir -p $out
+            cp ../vterm-module.so $out
+            cp ../vterm.el $out
+          '';
 
         };
         emacs-mac = (prev.emacs.override {
@@ -245,9 +246,8 @@ with lib;
           version = "29.0.50";
           src = emacs-src;
 
-          buildInputs = o.buildInputs ++ [
-            prev.darwin.apple_sdk.frameworks.WebKit
-          ];
+          buildInputs = o.buildInputs
+            ++ [ prev.darwin.apple_sdk.frameworks.WebKit ];
 
           configureFlags = o.configureFlags ++ [
             "--without-gpm"
@@ -257,20 +257,21 @@ with lib;
             "--without-pop"
           ];
 
-          patches = [
-            ../patches/fix-window-role.patch
-            ../patches/system-appearance.patch
-          ];
+          patches = [ ../patches/fix-window-role.patch ]
+            ++ (if pkgs.stdenv.isAarch64 then
+              [ ../patches/system-appearance.patch ]
+            else
+              [ ]);
 
           postPatch = o.postPatch + ''
-                    substituteInPlace lisp/loadup.el \
-                    --replace '(emacs-repository-get-branch)' '"master"'
-                  '';
+            substituteInPlace lisp/loadup.el \
+            --replace '(emacs-repository-get-branch)' '"master"'
+          '';
 
           postInstall = o.postInstall + ''
-                    cp ${final.emacs-vterm}/vterm.el $out/share/emacs/site-lisp/vterm.el
-                    cp ${final.emacs-vterm}/vterm-module.so $out/share/emacs/site-lisp/vterm-module.so
-                  '';
+            cp ${final.emacs-vterm}/vterm.el $out/share/emacs/site-lisp/vterm.el
+            cp ${final.emacs-vterm}/vterm-module.so $out/share/emacs/site-lisp/vterm-module.so
+          '';
 
           CFLAGS =
             "-DMAC_OS_X_VERSION_MAX_ALLOWED=110203 -g -O3 -mtune=native -march=native -fomit-frame-pointer";
