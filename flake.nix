@@ -39,18 +39,51 @@
     };
   };
   outputs = { self, nixpkgs, darwin, ... }@inputs: {
+    # mac
     darwinConfigurations = {
+      SEA-ML-00059144 = darwin.lib.darwinSystem {
+        system = "x86_64-darwin";
+        specialArgs = inputs;
+        modules = [
+          ({ config, pkgs, lib, ... }: {
+            nix = {
+              package = pkgs.nixFlakes;
+              extraOptions = ''
+                system = x86_64-darwin
+                experimental-features = nix-command flakes
+                build-users-group = nixbld
+              '';
+            };
+          })
+          ./modules/mac.nix 
+          ./modules/tmux.nix 
+          ./modules/zsh.nix 
+        ];
+      };
+
       mmbpm1 = darwin.lib.darwinSystem {
         system = "aarch64-darwin";
         specialArgs = inputs;
-        modules = [
-          ./modules/mac.nix
-          ./modules/tmux.nix
-          ./modules/zsh.nix
-        ]; # modules
+        modules = [ 
+          ({ config, pkgs, lib, ... }: {
+            nix = {
+              package = pkgs.nixFlakes;
+              extraOptions = ''
+              system = aarch64-darwin
+              extra-platforms = aarch64-darwin x86_64-darwin
+              experimental-features = nix-command flakes
+              build-users-group = nixbld
+              '';
+            };
+          })
+          ./modules/mac.nix 
+          ./modules/tmux.nix 
+          ./modules/zsh.nix 
+        ];
       }; # mmbpm1
     }; # darwin.lib.darwinSystem
 
+    # linux
     nixosConfigurations = {
       "sawyer-dev" = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
@@ -60,7 +93,7 @@
           ./modules/nixos.nix
           ./modules/tmux.nix
           ./modules/zsh.nix
-          ({pkgs, ...}: {
+          ({ pkgs, ... }: {
             networking.hostName = "sawyer-dev";
             networking.firewall.enable = true;
             networking.firewall.allowPing = true;
@@ -68,13 +101,13 @@
             services.openssh.enable = true;
             time.timeZone = "America/Los_Angeles";
             environment.variables = rec {
-              AWS_SDK_LOAD_CONFIG="1";
-              LANG="en_US.UTF-8";
-              LANGUAGE="en_US.UTF-8";
-              LC_ALL="en_US.UTF-8";
-              LESS="-F -i -M -R -X ";
-              LESSCHARSET="utf-8";
-              TERM="xterm-24bit";
+              AWS_SDK_LOAD_CONFIG = "1";
+              LANG = "en_US.UTF-8";
+              LANGUAGE = "en_US.UTF-8";
+              LC_ALL = "en_US.UTF-8";
+              LESS = "-F -i -M -R -X ";
+              LESSCHARSET = "utf-8";
+              TERM = "xterm-24bit";
             };
             services.eternal-terminal.enable = true;
             users.users.sawyer = {
