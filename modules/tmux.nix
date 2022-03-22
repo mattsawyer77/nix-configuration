@@ -1,8 +1,6 @@
 { config, lib, pkgs, ... }:
 
-with lib;
-{
-  # programs.tmux.enable = true;
+with lib; {
   programs.tmux.extraConfig = ''
     # remap prefix to Control + space
     unbind C-b
@@ -31,10 +29,10 @@ with lib;
     bind -n M-Up select-pane -U
     bind -n M-Down select-pane -D
 
-    # set -g default-terminal "xterm-24bit"
-    # set -ga terminal-overrides ",xterm-24bit:Tc"
-    set -g default-terminal "xterm-256color"
-    set -ga terminal-overrides ",alacritty:Tc"
+    set -g default-terminal "xterm-24bit"
+    set -ga terminal-overrides ",xterm-24bit:Tc"
+    # set -g default-terminal "xterm-256color"
+    # set -ga terminal-overrides ",alacritty:Tc"
     set -g automatic-rename off
     set -g focus-events on
     set -g -q mode-mouse on
@@ -74,5 +72,6 @@ with lib;
     set -g status-left "#[bg=#e63634]#[fg=brightwhite]#{?client_prefix,#[bg=green],} #S "
     set -g status-right "#[bg=#444444]#[fg=#888888] #(rainbarf --width 20 --rgb --no-battery --order fciaws)"
     bind-key y run "tmux save-buffer - | reattach-to-user-namespace pbcopy"
-  '' else "");
+  '' else
+    "");
 }

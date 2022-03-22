@@ -60,7 +60,10 @@
           ./modules/nixos.nix
           ./modules/tmux.nix
           ./modules/zsh.nix
-          ({pkgs, ...}: {
+          ({ pkgs, ... }: {
+            programs.tmux.enable = true;
+            programs.neovim.enable = true;
+            programs.zsh.enable = true;
             networking.hostName = "sawyer-dev";
             networking.firewall.enable = true;
             networking.firewall.allowPing = true;
@@ -68,13 +71,13 @@
             services.openssh.enable = true;
             time.timeZone = "America/Los_Angeles";
             environment.variables = rec {
-              AWS_SDK_LOAD_CONFIG="1";
-              LANG="en_US.UTF-8";
-              LANGUAGE="en_US.UTF-8";
-              LC_ALL="en_US.UTF-8";
-              LESS="-F -i -M -R -X ";
-              LESSCHARSET="utf-8";
-              TERM="xterm-24bit";
+              AWS_SDK_LOAD_CONFIG = "1";
+              LANG = "en_US.UTF-8";
+              LANGUAGE = "en_US.UTF-8";
+              LC_ALL = "en_US.UTF-8";
+              LESS = "-F -i -M -R -X ";
+              LESSCHARSET = "utf-8";
+              TERM = "xterm-24bit";
             };
             services.eternal-terminal.enable = true;
             users.users.sawyer = {
