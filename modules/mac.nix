@@ -98,6 +98,7 @@ let
     nix-linter
     nix-prefetch
     nix-prefetch-git
+    nix-zsh-completions
     nixfmt
     nmap
     nodejs
