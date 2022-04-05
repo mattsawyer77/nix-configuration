@@ -45,6 +45,9 @@
         system = "x86_64-darwin";
         specialArgs = inputs;
         modules = [
+          ./modules/mac.nix
+          ./modules/tmux.nix
+          ./modules/zsh.nix
           ({ config, pkgs, lib, ... }: {
             nix = {
               package = pkgs.nixFlakes;
@@ -55,30 +58,27 @@
               '';
             };
           })
-          ./modules/mac.nix 
-          ./modules/tmux.nix 
-          ./modules/zsh.nix 
         ];
       };
 
       mmbpm1 = darwin.lib.darwinSystem {
         system = "aarch64-darwin";
         specialArgs = inputs;
-        modules = [ 
+        modules = [
           ({ config, pkgs, lib, ... }: {
             nix = {
               package = pkgs.nixFlakes;
               extraOptions = ''
-              system = aarch64-darwin
-              extra-platforms = aarch64-darwin x86_64-darwin
-              experimental-features = nix-command flakes
-              build-users-group = nixbld
+                system = aarch64-darwin
+                extra-platforms = aarch64-darwin x86_64-darwin
+                experimental-features = nix-command flakes
+                build-users-group = nixbld
               '';
             };
           })
-          ./modules/mac.nix 
-          ./modules/tmux.nix 
-          ./modules/zsh.nix 
+          ./modules/mac.nix
+          ./modules/tmux.nix
+          ./modules/zsh.nix
         ];
       }; # mmbpm1
     }; # darwin.lib.darwinSystem

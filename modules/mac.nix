@@ -28,6 +28,8 @@ with lib;
 {
   users.nix.configureBuildUsers = true;
   services.nix-daemon.enable = true;
+  services.yabai.enable = true;
+  services.yabai.package = pkgs.yabai;
   # security.pam.enableSudoTouchIdAuth = true;
   environment.systemPackages = with pkgs; [
     alacritty
@@ -118,6 +120,7 @@ with lib;
     nodejs
     oniguruma
     openapi-generator-cli
+    openfortivpn
     openldap
     openssl
     pandoc
@@ -146,7 +149,7 @@ with lib;
     skhd
     skopeo
     sqlite
-    # ssm-session-manager-plugin # broken (again!) as of 2022-03-21
+    # ssm-session-manager-plugin # broken
     starship
     taglib
     terraform
@@ -159,7 +162,7 @@ with lib;
     unixtools.watch
     upx
     wget
-    wireshark
+    # wireshark # broken
     xsv
     yabai
     yaml-language-server
@@ -179,8 +182,7 @@ with lib;
   programs.zsh.enableFzfCompletion = true;
   programs.zsh.enableFzfGit = true;
   programs.zsh.enableFzfHistory = true;
-  programs.zsh.enableCompletion =
-    true; # broken, see https://github.com/LnL7/nix-darwin/issues/373
+  programs.zsh.enableCompletion = true;
   programs.zsh.enableBashCompletion = true;
   programs.zsh.enableSyntaxHighlighting = true;
   nixpkgs = {
