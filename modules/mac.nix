@@ -2,28 +2,11 @@
 
 with lib;
 
-# let
-#   cfg = config.security.pam;
-#   mkSudoTouchIdAuthScript = isEnabled:
-#     let
-#       file = "/etc/pam.d/sudo";
-#       option = "security.pam.enableSudoTouchIdAuth";
-#     in ''
-#       ${if isEnabled then ''
-#         # Enable sudo Touch ID authentication, if not already enabled
-#         if ! grep 'pam_tid.so' ${file} > /dev/null; then
-#           sed -i "" '2i\
-#         auth       sufficient     pam_tid.so # nix-darwin: ${option}
-#           ' ${file}
-#         fi
-#       '' else ''
-#         # Disable sudo Touch ID authentication, if added by nix-darwin
-#         if grep '${option}' ${file} > /dev/null; then
-#           sed -i "" '/${option}/d' ${file}
-#         fi
-#       ''}
-#     '';
+let
+  # packages specific to arm64
+  arm64-packages = with pkgs; [ ];
 
+<<<<<<< HEAD
 # in
 {
   users.nix.configureBuildUsers = true;
@@ -32,11 +15,29 @@ with lib;
   services.yabai.package = pkgs.yabai;
   # security.pam.enableSudoTouchIdAuth = true;
   environment.systemPackages = with pkgs; [
+||||||| b30589c
+# in
+{
+  users.nix.configureBuildUsers = true;
+  services.nix-daemon.enable = true;
+  # security.pam.enableSudoTouchIdAuth = true;
+  environment.systemPackages = with pkgs; [
+=======
+  # packages specific to x86-64
+  x86-64-packages = with pkgs; [
+    azure-cli
+    ssm-session-manager-plugin
+    starship
+    qmk
+    wireshark
+    zenith
+  ];
+  common-packages = with pkgs; [
+>>>>>>> 022735cc01971dfebd2525edce9099c28b4dfa37
     alacritty
     automake
     aws-iam-authenticator
     awscli
-    azure-cli
     bash_5
     bat
     bat-extras.batman
@@ -115,6 +116,7 @@ with lib;
     nix-linter
     nix-prefetch
     nix-prefetch-git
+    nix-zsh-completions
     nixfmt
     nmap
     nodejs
@@ -134,7 +136,6 @@ with lib;
     python3
     python39
     qemu
-    qmk
     readline
     reattach-to-user-namespace
     redis
@@ -149,8 +150,14 @@ with lib;
     skhd
     skopeo
     sqlite
+<<<<<<< HEAD
     # ssm-session-manager-plugin # broken
     starship
+||||||| b30589c
+    # ssm-session-manager-plugin # broken (again!) as of 2022-03-21
+    starship
+=======
+>>>>>>> 022735cc01971dfebd2525edce9099c28b4dfa37
     taglib
     terraform
     terraform-ls
@@ -162,14 +169,18 @@ with lib;
     unixtools.watch
     upx
     wget
+<<<<<<< HEAD
     # wireshark # broken
+||||||| b30589c
+    wireshark
+=======
+>>>>>>> 022735cc01971dfebd2525edce9099c28b4dfa37
     xsv
     yabai
     yaml-language-server
     yarn
     youtube-dl
     yq-go
-    zenith
     zlib
     zoxide
     zsh
@@ -178,7 +189,13 @@ with lib;
     zsh-z
     zstd
   ];
-  programs.zsh.enable = true; # default shell on catalina+
+in {
+  users.nix.configureBuildUsers = true;
+  services.nix-daemon.enable = true;
+  environment.systemPackages = with pkgs;
+    (common-packages ++ (if stdenv.isAarch64 then arm64-packages else [ ])
+      ++ (if stdenv.isx86_64 then x86-64-packages else [ ]));
+  programs.zsh.enable = true;
   programs.zsh.enableFzfCompletion = true;
   programs.zsh.enableFzfGit = true;
   programs.zsh.enableFzfHistory = true;

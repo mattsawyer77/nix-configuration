@@ -55,6 +55,9 @@
                 system = x86_64-darwin
                 experimental-features = nix-command flakes
                 build-users-group = nixbld
+                trusted-users = root sawyer
+                keep-outputs = true
+                keep-derivations = true
               '';
             };
           })
@@ -73,6 +76,12 @@
                 extra-platforms = aarch64-darwin x86_64-darwin
                 experimental-features = nix-command flakes
                 build-users-group = nixbld
+                trusted-users = root matt
+                keep-outputs = true
+                keep-derivations = true
+                trusted-users = root matt
+                keep-outputs = true
+                keep-derivations = true
               '';
             };
           })
@@ -94,6 +103,9 @@
           ./modules/tmux.nix
           ./modules/zsh.nix
           ({ pkgs, ... }: {
+            programs.tmux.enable = true;
+            programs.neovim.enable = true;
+            programs.zsh.enable = true;
             networking.hostName = "sawyer-dev";
             networking.firewall.enable = true;
             networking.firewall.allowPing = true;

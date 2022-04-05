@@ -1,11 +1,4 @@
-{
-  config,
-  pkgs,
-  lib,
-  emacs-overlay,
-  neovim-nightly-overlay,
-  ...
-}:
+{ config, pkgs, lib, emacs-overlay, neovim-nightly-overlay, ... }:
 
 with lib;
 
@@ -83,6 +76,7 @@ with lib;
     nix-linter
     nix-prefetch
     nix-prefetch-git
+    nix-zsh-completions
     nixfmt
     nmap
     nodejs
@@ -146,13 +140,16 @@ with lib;
     extraOptions = ''
       experimental-features = nix-command flakes
       build-users-group = nixbld
+      trusted-users = root sawyer
+      keep-outputs = true
+      keep-derivations = true
     '';
   };
   nixpkgs = {
     config.allowUnfree = true;
-    overlays = [
-      emacs-overlay.overlay
-      (import ./neovim.nix)
-    ]; # overlays
+    overlays = [ emacs-overlay.overlay (import ./neovim.nix) ]; # overlays
   }; # nixpkgs
+  programs.direnv.enable = true;
+  programs.direnv.nix-direnv.enable = true;
+  programs.direnv.nix-direnv.enableFlakes = true;
 }
