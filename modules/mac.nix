@@ -6,34 +6,16 @@ let
   # packages specific to arm64
   arm64-packages = with pkgs; [ ];
 
-<<<<<<< HEAD
-# in
-{
-  users.nix.configureBuildUsers = true;
-  services.nix-daemon.enable = true;
-  services.yabai.enable = true;
-  services.yabai.package = pkgs.yabai;
-  # security.pam.enableSudoTouchIdAuth = true;
-  environment.systemPackages = with pkgs; [
-||||||| b30589c
-# in
-{
-  users.nix.configureBuildUsers = true;
-  services.nix-daemon.enable = true;
-  # security.pam.enableSudoTouchIdAuth = true;
-  environment.systemPackages = with pkgs; [
-=======
   # packages specific to x86-64
   x86-64-packages = with pkgs; [
     azure-cli
-    ssm-session-manager-plugin
+    # ssm-session-manager-plugin # broken as of 2022-04-08
     starship
     qmk
     wireshark
     zenith
   ];
   common-packages = with pkgs; [
->>>>>>> 022735cc01971dfebd2525edce9099c28b4dfa37
     alacritty
     automake
     aws-iam-authenticator
@@ -150,14 +132,6 @@ let
     skhd
     skopeo
     sqlite
-<<<<<<< HEAD
-    # ssm-session-manager-plugin # broken
-    starship
-||||||| b30589c
-    # ssm-session-manager-plugin # broken (again!) as of 2022-03-21
-    starship
-=======
->>>>>>> 022735cc01971dfebd2525edce9099c28b4dfa37
     taglib
     terraform
     terraform-ls
@@ -169,12 +143,6 @@ let
     unixtools.watch
     upx
     wget
-<<<<<<< HEAD
-    # wireshark # broken
-||||||| b30589c
-    wireshark
-=======
->>>>>>> 022735cc01971dfebd2525edce9099c28b4dfa37
     xsv
     yabai
     yaml-language-server
@@ -189,6 +157,7 @@ let
     zsh-z
     zstd
   ];
+
 in {
   users.nix.configureBuildUsers = true;
   services.nix-daemon.enable = true;
