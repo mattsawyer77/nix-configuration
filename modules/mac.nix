@@ -110,6 +110,7 @@ let
     pandoc
     pcre
     pcre2
+    pdfminer
     pkg-config
     pkgconfig
     podman
