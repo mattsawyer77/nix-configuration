@@ -6,6 +6,14 @@
       url = "github:LnL7/nix-darwin";
       inputs.nixpkgs.follows = "unstable";
     };
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "unstable";
+    };
+    flake-utils = {
+      url = "github:numtide/flake-utils";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     emacs-overlay = {
       url = "github:nix-community/emacs-overlay";
       inputs.nixpkgs.follows = "unstable";
@@ -14,20 +22,6 @@
       url = "github:nix-community/neovim-nightly-overlay";
       inputs.nixpkgs.follows = "unstable";
     };
-    # doom-emacs = {
-    #   url = "github:hlissner/doom-emacs/master";
-    #   flake = false;
-    # };
-    # nix-straight = {
-    #   url = "github:nix-community/nix-straight.el";
-    #   flake = false;
-    # };
-    # nix-doom-emacs = {
-    #   url = "github:nix-community/nix-doom-emacs";
-    #   inputs.nixpkgs.follows = "unstable";
-    #   inputs.doom-emacs.follows = "doom-emacs";
-    #   inputs.nix-straight.follows = "nix-straight";
-    # };
     emacs-src = {
       url = "github:emacs-mirror/emacs";
       flake = false;
@@ -38,7 +32,7 @@
       flake = false;
     };
   };
-  outputs = { self, nixpkgs, darwin, ... }@inputs: {
+  outputs = { self, nixpkgs, darwin, flake-utils, home-manager, ... }@inputs: {
     # mac
     darwinConfigurations = {
       SEA-ML-00059144 = darwin.lib.darwinSystem {
@@ -69,6 +63,10 @@
         specialArgs = inputs;
         modules = [
           ({ config, pkgs, lib, ... }: {
+            users.users.matt = {
+              name = "matt";
+              home = "/Users/matt";
+            };
             nix = {
               package = pkgs.nixFlakes;
               extraOptions = ''
@@ -82,6 +80,12 @@
               '';
             };
           })
+          home-manager.darwinModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.users.matt = import ./home/mmbpm1.nix;
+          }
           ./modules/mac.nix
           ./modules/tmux.nix
           ./modules/zsh.nix
@@ -103,6 +107,8 @@
             programs.tmux.enable = true;
             programs.neovim.enable = true;
             programs.zsh.enable = true;
+            programs.ssh.startAgent = true;
+            programs.ssh.agentTimeout = "1h";
             networking.hostName = "sawyer-dev";
             networking.firewall.enable = true;
             networking.firewall.allowPing = true;
