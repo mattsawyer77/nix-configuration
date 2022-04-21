@@ -12,7 +12,7 @@ let
     # ssm-session-manager-plugin # broken as of 2022-04-08
     starship
     qmk
-    wireshark
+    # wireshark # broken as of 2022-04-18
     zenith
   ];
   common-packages = with pkgs; [
@@ -87,7 +87,6 @@ let
     multitail
     mutagen
     ncurses
-    neovim
     neovim # customized in ./neovim.nix overlay
     netcat
     netperf
@@ -161,10 +160,12 @@ let
 
 in {
   users.nix.configureBuildUsers = true;
-  services.nix-daemon.enable = true;
   environment.systemPackages = with pkgs;
     (common-packages ++ (if stdenv.isAarch64 then arm64-packages else [ ])
       ++ (if stdenv.isx86_64 then x86-64-packages else [ ]));
+  services.nix-daemon.enable = true;
+  services.yabai.package = pkgs.yabai;
+  services.yabai.enable = true;
   programs.zsh.enable = true;
   programs.zsh.enableFzfCompletion = true;
   programs.zsh.enableFzfGit = true;
