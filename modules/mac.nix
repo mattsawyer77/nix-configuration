@@ -54,7 +54,7 @@ let
     gnumake
     gnupg
     go
-    golangci-lint
+    golangci-lint # customized in golangci-lint.nix overlay since it's broken in nixpkgs right now
     google-cloud-sdk
     gopls
     graphviz
@@ -390,6 +390,7 @@ in {
     config.allowUnfree = true;
     overlays = [
       (import ./neovim.nix)
+      (import ./golangci-lint.nix)
       (final: prev: {
         emacs-vterm = prev.stdenv.mkDerivation rec {
           pname = "emacs-vterm";
