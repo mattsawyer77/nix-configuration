@@ -71,14 +71,14 @@
     export BAT_THEME="1337"
     export LESS="-F -i -M -R -X --incsearch"
 
-    if [ -n "$${commands[fzf-share]}" ]; then
+    if [ -n "$''${commands[fzf-share]}" ]; then
       source "$(fzf-share)/key-bindings.zsh"
       source "$(fzf-share)/completion.zsh"
     fi
 
     eval "$(zoxide init zsh)"
 
-    eval $(direnv hook zsh)
+    eval "$(direnv hook zsh)"
     export PATH=~/.local/bin:~/.cargo/bin:$PATH
     export PATH=$PATH:${pkgs.nodejs}/bin
   '';
