@@ -14,18 +14,12 @@
       url = "github:numtide/flake-utils";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    emacs-overlay = {
-      url = "github:nix-community/emacs-overlay";
-      inputs.nixpkgs.follows = "unstable";
-    };
+    emacs-overlay = { url = "github:nix-community/emacs-overlay"; };
     neovim-nightly-overlay = {
       url = "github:nix-community/neovim-nightly-overlay";
       inputs.nixpkgs.follows = "unstable";
     };
-    emacs-src = {
-      url = "github:emacs-mirror/emacs";
-      flake = false;
-    };
+    emacs-src = { url = "github:emacs-mirror/emacs"; };
     # Use latest libverm to build macOS emacs build
     emacs-vterm-src = {
       url = "github:akermu/emacs-libvterm";
