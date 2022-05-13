@@ -72,6 +72,8 @@ with lib; {
     set -g status-left "#[bg=#e63634]#[fg=brightwhite]#{?client_prefix,#[bg=green],} #S "
     set -g status-right "#[bg=#444444]#[fg=#888888] #(rainbarf --width 20 --rgb --no-battery --order fciaws)"
     bind-key y run "tmux save-buffer - | reattach-to-user-namespace pbcopy"
-  '' else
-    "");
+  '' else ''
+    # slightly different colors for linux
+    set -g window-style 'fg=#a6d0e2,bg=#242f3b'
+  '');
 }
