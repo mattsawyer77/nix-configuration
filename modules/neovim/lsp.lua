@@ -1,4 +1,4 @@
-local nvim_lsp = require('lspconfig')
+lcal nvim_lsp = require('lspconfig')
 
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
@@ -13,7 +13,9 @@ local on_attach = function(client, bufnr)
   local opts = { noremap=true, silent=true }
 
   -- See `:help vim.lsp.*` for documentation on any of the below functions
-  buf_set_keymap('n', 'gD', '<Cmd>lua vim.lsp.buf.declaration()<CR>', opts)
+  buf_set_keymap('n', 'gD', '<Cmd>lua vim.lsp.buf.references()<CR>', opts)
+  buf_set_keymap('n', 'cy', '<Cmd>lua vim.lsp.buf.incoming_calls()<CR>', opts)
+  buf_set_keymap('n', 'cY', '<Cmd>lua vim.lsp.buf.outgoing_calls()<CR>', opts)
   buf_set_keymap('n', 'gd', '<Cmd>lua vim.lsp.buf.definition()<CR>', opts)
   buf_set_keymap('n', 'K', '<Cmd>lua vim.lsp.buf.hover()<CR>', opts)
   buf_set_keymap('n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)

@@ -6,10 +6,7 @@
       url = "github:LnL7/nix-darwin";
       inputs.nixpkgs.follows = "unstable";
     };
-    emacs-overlay = {
-      url =
-        "github:nix-community/emacs-overlay/58036d5e198e8595e3d9637e0e918aa31ac7dfdf";
-    };
+    emacs-overlay = { url = "github:nix-community/emacs-overlay"; };
     neovim-nightly-overlay = {
       url = "github:nix-community/neovim-nightly-overlay";
       inputs.nixpkgs.follows = "unstable";

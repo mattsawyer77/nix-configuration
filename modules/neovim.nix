@@ -34,10 +34,12 @@
           onehalf
           plenary-nvim
           popup-nvim
+          project-nvim
           rust-tools-nvim
           sonokai
           tcomment_vim
           telescope-nvim
+          telescope-project-nvim
           tender-vim
           vim-go
           vim-nix
@@ -58,6 +60,16 @@
         ${(builtins.readFile ./neovim/rust-tools.lua)}
         ${(builtins.readFile ./neovim/telescope.lua)}
         ${(builtins.readFile ./neovim/tree-sitter.lua)}
+        require'nvim-tree'.setup()
+        vim.g.nvim_tree_respect_buf_cwd = 1
+        require("nvim-tree").setup({
+          update_cwd = true,
+          update_focused_file = {
+            enable = true,
+            update_cwd = true
+          },
+        })
+        require("project_nvim").setup()
 EOF
       '';
     };

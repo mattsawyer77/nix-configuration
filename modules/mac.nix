@@ -36,7 +36,7 @@ let
     diff-so-fancy
     direnv
     dos2unix
-    emacsGit # from emacs-overlay
+    emacsNativeComp # from emacs-overlay
     etcd
     eternal-terminal
     exa
@@ -311,22 +311,22 @@ in {
     ctrl + cmd - 3  : yabai -m window --display 3; yabai -m display --focus 3
 
     # move window
-    shift + ctrl - a : yabai -m window --move rel:-50:0
-    shift + ctrl - s : yabai -m window --move rel:0:50
-    shift + ctrl - w : yabai -m window --move rel:0:-50
-    shift + ctrl - d : yabai -m window --move rel:50:0
+    # shift + ctrl - a : yabai -m window --move rel:-50:0
+    # shift + ctrl - s : yabai -m window --move rel:0:50
+    # shift + ctrl - w : yabai -m window --move rel:0:-50
+    # shift + ctrl - d : yabai -m window --move rel:50:0
 
     # increase window size
-    shift + alt - a : yabai -m window --resize left:-50:0
-    shift + alt - s : yabai -m window --resize bottom:0:50
-    shift + alt - w : yabai -m window --resize top:0:-50
-    shift + alt - d : yabai -m window --resize right:50:0
+    # shift + alt - a : yabai -m window --resize left:-50:0
+    # shift + alt - s : yabai -m window --resize bottom:0:50
+    # shift + alt - w : yabai -m window --resize top:0:-50
+    # shift + alt - d : yabai -m window --resize right:50:0
 
     # decrease window size
-    shift + cmd - a : yabai -m window --resize left:50:0
-    shift + cmd - s : yabai -m window --resize bottom:0:-50
-    shift + cmd - w : yabai -m window --resize top:0:50
-    shift + cmd - d : yabai -m window --resize right:-50:0
+    # shift + cmd - a : yabai -m window --resize left:50:0
+    # shift + cmd - s : yabai -m window --resize bottom:0:-50
+    # shift + cmd - w : yabai -m window --resize top:0:50
+    # shift + cmd - d : yabai -m window --resize right:-50:0
 
     # set insertion point in focused container
     ctrl + alt - h : yabai -m window --insert west
@@ -386,6 +386,19 @@ in {
   programs.zsh.enableCompletion = true;
   programs.zsh.enableBashCompletion = true;
   programs.zsh.enableSyntaxHighlighting = true;
+  nix.gc = {
+    # automatically collect garbage
+    # Minute <integer> # The minute on which this job will be run.
+    # Hour <integer> # The hour on which this job will be run.
+    # Day <integer> # The day on which this job will be run.
+    # Weekday <integer> # The weekday on which this job will be run (0 and 7 are Sunday).
+    # Month <integer> # The month on which this job will be run.
+    automatic = true;
+    interval = {
+      Hour = 2;
+      Minute = 0;
+    };
+  };
   nixpkgs = {
     config.allowUnfree = true;
     overlays = [
