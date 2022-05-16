@@ -74,6 +74,6 @@ with lib; {
     bind-key y run "tmux save-buffer - | reattach-to-user-namespace pbcopy"
   '' else ''
     # slightly different colors for linux
-    set -g window-style fg="#aabbee" bg="#223355"
+    set -g window-style 'fg=#a6d0e2,bg=#242f3b'
   '');
 }
