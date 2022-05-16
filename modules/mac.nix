@@ -85,7 +85,7 @@ let
     most
     msgpack
     multitail
-    mutagen
+    # mutagen # broken as of 2022-05-13
     ncurses
     neovim # customized in ./neovim.nix overlay
     netcat
@@ -112,7 +112,7 @@ let
     pdfminer
     pkg-config
     pkgconfig
-    podman
+    # podman # broken as of 2022-05-12
     protobuf
     prototool
     python3
