@@ -48,6 +48,7 @@
     alias tl='tmux list-sessions'
     alias em='em.zsh'
     alias doom='~/.emacs.d/bin/doom'
+    alias kv="kubectl -n ves-system"
     if command -v exa >/dev/null; then
       alias l='exa -alF'
     else
@@ -70,6 +71,9 @@
     export GO111MODULE="on"
     export BAT_THEME="1337"
     export LESS="-F -i -M -R -X --incsearch"
+    export FZF_DEFAULT_OPTS="--info=inline --layout=default --tac --no-sort"
+    export FZF_CTRL_R_OPTS="--sort"
+    export SAML2AWS_USER_AGENT="Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.00) Gecko/20100101 Firefox/82.0"
 
     if [ -n "$''${commands[fzf-share]}" ]; then
       source "$(fzf-share)/key-bindings.zsh"
@@ -77,9 +81,11 @@
     fi
 
     eval "$(zoxide init zsh)"
-
     eval "$(direnv hook zsh)"
+    source <(kubectl completion zsh)
     export PATH=~/.local/bin:~/.cargo/bin:$PATH
     export PATH=$PATH:${pkgs.nodejs}/bin
+
+    printf '\e]2;$(hostname)\a'
   '';
 }

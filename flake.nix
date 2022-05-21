@@ -19,7 +19,10 @@
       url = "github:nix-community/neovim-nightly-overlay";
       inputs.nixpkgs.follows = "unstable";
     };
-    emacs-src = { url = "github:emacs-mirror/emacs"; };
+    emacs-src = {
+      url = "github:emacs-mirror/emacs";
+      flake = false;
+    };
     # Use latest libverm to build macOS emacs build
     emacs-vterm-src = {
       url = "github:akermu/emacs-libvterm";
@@ -33,6 +36,9 @@
         system = "x86_64-darwin";
         specialArgs = inputs;
         modules = [
+          ./modules/mac.nix
+          ./modules/tmux.nix
+          ./modules/zsh.nix
           ({ config, pkgs, lib, ... }: {
             nix = {
               package = pkgs.nixFlakes;
@@ -46,9 +52,6 @@
               '';
             };
           })
-          ./modules/mac.nix
-          ./modules/tmux.nix
-          ./modules/zsh.nix
         ];
       };
 
@@ -68,6 +71,9 @@
                 extra-platforms = aarch64-darwin x86_64-darwin
                 experimental-features = nix-command flakes
                 build-users-group = nixbld
+                trusted-users = root matt
+                keep-outputs = true
+                keep-derivations = true
                 trusted-users = root matt
                 keep-outputs = true
                 keep-derivations = true

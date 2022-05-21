@@ -149,7 +149,7 @@ with lib;
     config.allowUnfree = true;
     overlays = [ emacs-overlay.overlay (import ./neovim.nix) ]; # overlays
   }; # nixpkgs
-  programs.direnv.enable = true;
-  programs.direnv.nix-direnv.enable = true;
-  programs.direnv.nix-direnv.enableFlakes = true;
+  # programs.direnv.enable = true;
+  # programs.direnv.nix-direnv.enable = true;
+  # programs.direnv.nix-direnv.enableFlakes = true;
 }
