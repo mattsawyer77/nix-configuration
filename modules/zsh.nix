@@ -86,6 +86,6 @@
     export PATH=~/.local/bin:~/.cargo/bin:$PATH
     export PATH=$PATH:${pkgs.nodejs}/bin
 
-    printf '\e]2;$(hostname)\a'
+    printf '\e]2;'$(hostname)'\a'
   '';
 }
