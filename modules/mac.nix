@@ -139,7 +139,8 @@ let
     tmux
     tokei
     tree
-    trivy
+    # trivy # broken as of 2022-05-24
+    ttfautohint
     unixtools.watch
     upx
     wget
