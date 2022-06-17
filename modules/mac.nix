@@ -403,6 +403,7 @@ in {
   };
   nixpkgs = {
     config.allowUnfree = true;
+    config.allowBroken = true;
     overlays = [
       (import ./neovim.nix)
       (import ./golangci-lint.nix)

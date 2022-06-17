@@ -780,6 +780,7 @@
     export FZF_DEFAULT_OPTS="--info=inline --layout=default --tac --no-sort"
     export FZF_CTRL_R_OPTS="--sort"
     export SAML2AWS_USER_AGENT="Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.00) Gecko/20100101 Firefox/82.0"
+    export LSP_USE_PLISTS=true
 
     if [ -n "$''${commands[fzf-share]}" ]; then
       source "$(fzf-share)/key-bindings.zsh"
