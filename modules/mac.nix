@@ -102,6 +102,7 @@ let
     nmap
     nodejs
     oniguruma
+    opam
     openapi-generator-cli
     openfortivpn
     openldap
