@@ -36,7 +36,8 @@ let
     diff-so-fancy
     direnv
     dos2unix
-    emacsNativeComp # from emacs-overlay
+    # emacsNativeComp # from emacs-overlay
+    emacsGitNativeComp # from emacs-overlay
     etcd
     eternal-terminal
     exa
@@ -140,7 +141,8 @@ let
     tmux
     tokei
     tree
-    trivy
+    # trivy # broken as of 2022-05-24
+    ttfautohint
     unixtools.watch
     upx
     wget
@@ -402,6 +404,7 @@ in {
   };
   nixpkgs = {
     config.allowUnfree = true;
+    config.allowBroken = true;
     overlays = [
       (import ./neovim.nix)
       (import ./golangci-lint.nix)

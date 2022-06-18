@@ -14,7 +14,10 @@
       url = "github:numtide/flake-utils";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    emacs-overlay = { url = "github:nix-community/emacs-overlay"; };
+    emacs-overlay = {
+      url =
+        "github:nix-community/emacs-overlay/0756dbd32d75990468b170339bb68aab5f595da7";
+    };
     neovim-nightly-overlay = {
       url = "github:nix-community/neovim-nightly-overlay";
       inputs.nixpkgs.follows = "unstable";
