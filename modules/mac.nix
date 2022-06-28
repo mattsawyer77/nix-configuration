@@ -36,7 +36,8 @@ let
     diff-so-fancy
     direnv
     dos2unix
-    emacsNativeComp # from emacs-overlay
+    # emacsNativeComp # from emacs-overlay
+    emacsGitNativeComp # from emacs-overlay
     etcd
     eternal-terminal
     exa

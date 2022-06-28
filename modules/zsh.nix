@@ -791,6 +791,7 @@
     source <(kubectl completion zsh)
     export PATH=~/.local/bin:~/.cargo/bin:$PATH
     export PATH=$PATH:${pkgs.nodejs}/bin
+    export PATH=$PATH:''${GOPATH}/bin
 
     printf '\e]2;'$(hostname)'\a'
   '';
