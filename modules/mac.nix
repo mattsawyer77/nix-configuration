@@ -9,9 +9,18 @@ let
   # packages specific to x86-64
   x86-64-packages = with pkgs; [
     azure-cli
+    cairo
+    etcd
+    flamegraph
+    fontconfig
+    freetype
+    fx
+    lima
     # ssm-session-manager-plugin # broken as of 2022-04-08
     starship
+    qemu
     qmk
+    ttfautohint
     # wireshark # broken as of 2022-04-18
     zenith
   ];
@@ -25,7 +34,6 @@ let
     bat-extras.batman
     boost
     cachix
-    cairo
     cask
     cloc
     cmake
@@ -38,14 +46,9 @@ let
     dos2unix
     # emacsNativeComp # from emacs-overlay
     emacsGitNativeComp # from emacs-overlay
-    etcd
     eternal-terminal
     exa
     fd
-    flamegraph
-    fontconfig
-    freetype
-    fx
     fzf
     gdb
     gdbm
@@ -78,14 +81,13 @@ let
     libtool
     libvterm-neovim
     libxml2
-    lima
     # llvm
     # llvmPackages_12.lldb
     # llvm_12
     luajit
-    most
+    # most
     msgpack
-    multitail
+    # multitail
     # mutagen # broken as of 2022-05-13
     ncurses
     neovim # customized in ./neovim.nix overlay
@@ -111,15 +113,13 @@ let
     pandoc
     pcre
     pcre2
-    pdfminer
+    # pdfminer
     pkg-config
     pkgconfig
     # podman # broken as of 2022-05-12
     protobuf
     prototool
     python3
-    python39
-    qemu
     readline
     reattach-to-user-namespace
     redis
@@ -127,7 +127,7 @@ let
     rnix-lsp
     rust-analyzer
     rustup
-    scons
+    # scons
     sd
     shared-mime-info
     shellcheck
@@ -142,7 +142,6 @@ let
     tokei
     tree
     # trivy # broken as of 2022-05-24
-    ttfautohint
     unixtools.watch
     upx
     wget
