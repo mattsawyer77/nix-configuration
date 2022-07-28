@@ -15,6 +15,16 @@ let
     # wireshark # broken as of 2022-04-18
     zenith
   ];
+  haskell-packages = with pkgs; [
+    cabal-install
+    ghc
+    ghcid
+    haskell-language-server
+    # hls-wrapper-nix
+    # implicit-hie
+    stack
+    # stack2nix
+  ];
   common-packages = with pkgs; [
     alacritty
     automake
@@ -116,7 +126,7 @@ let
     # podman # broken as of 2022-05-12
     protobuf
     prototool
-    python3
+    # python3
     python39
     qemu
     readline
@@ -144,6 +154,7 @@ let
     ttfautohint
     unixtools.watch
     upx
+    vmtouch
     wget
     xsv
     yabai
@@ -158,7 +169,7 @@ let
     zsh-syntax-highlighting
     zsh-z
     zstd
-  ];
+  ]; # ++ haskell-packages;
 
 in {
   users.nix.configureBuildUsers = true;

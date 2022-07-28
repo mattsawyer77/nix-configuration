@@ -75,5 +75,8 @@ with lib; {
   '' else ''
     # slightly different colors for linux
     set -g window-style 'fg=#a6d0e2,bg=#242f3b'
+
+    # XXX: auto-rename terminal window to tmux session name
+    # set-hook -g client-attached 'run-shell "printf \'\e]2;\'$(tmux list-sessions | grep attached | cut -d: -f1)\'\a\'"'
   '');
 }
