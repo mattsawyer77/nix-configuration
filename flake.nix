@@ -89,6 +89,7 @@
             home-manager.useUserPackages = true;
             home-manager.users.matt = import ./home/mmbpm1.nix;
           }
+          # ./modules/haskell.nix
           ./modules/mac.nix
           ./modules/tmux.nix
           ./modules/zsh.nix
