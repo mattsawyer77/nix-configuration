@@ -108,6 +108,7 @@
           ./modules/tmux.nix
           ./modules/zsh.nix
           ({ pkgs, ... }: {
+            system.stateVersion = "22.11";
             programs.tmux.enable = true;
             programs.neovim.enable = true;
             programs.zsh.enable = true;
