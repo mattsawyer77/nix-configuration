@@ -149,7 +149,7 @@ let
     tokei
     tree
     # trivy # broken as of 2022-05-24
-    ttfautohint
+    # ttfautohint
     unixtools.watch
     upx
     # vmtouch
@@ -170,7 +170,6 @@ let
   ]; # ++ haskell-packages;
 
 in {
-  users.nix.configureBuildUsers = true;
   environment.systemPackages = with pkgs;
     (common-packages ++ (if stdenv.isAarch64 then arm64-packages else [ ])
       ++ (if stdenv.isx86_64 then x86-64-packages else [ ]));
@@ -397,6 +396,7 @@ in {
   programs.zsh.enableCompletion = true;
   programs.zsh.enableBashCompletion = true;
   programs.zsh.enableSyntaxHighlighting = true;
+  nix.configureBuildUsers = true;
   nix.gc = {
     # automatically collect garbage
     # Minute <integer> # The minute on which this job will be run.
