@@ -9,6 +9,7 @@ let
   # packages specific to x86-64
   x86-64-packages = with pkgs; [
     azure-cli
+    boost
     # ssm-session-manager-plugin # broken as of 2022-04-08
     starship
     qmk
@@ -33,38 +34,37 @@ let
     bash_5
     bat
     bat-extras.batman
-    boost
     cachix
     cairo
     cask
-    cloc
+    ccls
     cmake
     coreutils
     curlFull
     delta
     delve
-    diff-so-fancy
+    # diff-so-fancy
     direnv
     dos2unix
     # emacsNativeComp # from emacs-overlay
     emacsGitNativeComp # from emacs-overlay
-    etcd
+    # etcd
     eternal-terminal
     exa
     fd
-    flamegraph
+    # flamegraph
     fontconfig
     freetype
-    fx
     fzf
     gdb
     gdbm
     ghostscript
     glib
-    gmp6
+    # gmp6
     gnumake
     gnupg
-    go
+    go # go is now 1.18+
+    # go_1_17
     golangci-lint # customized in golangci-lint.nix overlay since it's broken in nixpkgs right now
     google-cloud-sdk
     gopls
@@ -75,7 +75,7 @@ let
     helix
     html-tidy
     htop
-    httrack
+    # httrack
     jansson
     jq
     kubectl
@@ -88,21 +88,19 @@ let
     libtool
     libvterm-neovim
     libxml2
-    lima
+    # lima
     # llvm
     # llvmPackages_12.lldb
     # llvm_12
     luajit
-    most
     msgpack
-    multitail
     # mutagen # broken as of 2022-05-13
     ncurses
     neovim # customized in ./neovim.nix overlay
     netcat
     netperf
-    nim
-    nimlsp
+    # nim
+    # nimlsp
     ninja
     nix-direnv
     nix-linter
@@ -120,7 +118,7 @@ let
     pandoc
     pcre
     pcre2
-    pdfminer
+    # pdfminer
     pkg-config
     pkgconfig
     # podman # broken as of 2022-05-12
@@ -131,12 +129,12 @@ let
     qemu
     readline
     reattach-to-user-namespace
-    redis
+    # redis
     ripgrep
     rnix-lsp
     rust-analyzer
     rustup
-    scons
+    # scons
     sd
     shared-mime-info
     shellcheck
@@ -154,7 +152,7 @@ let
     ttfautohint
     unixtools.watch
     upx
-    vmtouch
+    # vmtouch
     wget
     xsv
     yabai

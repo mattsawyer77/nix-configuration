@@ -7,8 +7,11 @@
       inputs.nixpkgs.follows = "unstable";
     };
     emacs-overlay = {
+      # from 2022-08-02:
       url =
-        "github:nix-community/emacs-overlay/0756dbd32d75990468b170339bb68aab5f595da7";
+        "github:nix-community/emacs-overlay/7125a934f0e1cd8a22ee5bb604c9010965fb27df";
+      # from 2022-06-08:
+      # url = "github:nix-community/emacs-overlay/0756dbd32d75990468b170339bb68aab5f595da7";
     };
     neovim-nightly-overlay = {
       url = "github:nix-community/neovim-nightly-overlay";

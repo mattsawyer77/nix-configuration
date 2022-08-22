@@ -1,3 +1,5 @@
+#!/usr/bin/env zsh
+
 launchctl-restart() {
   if [[ -v 1 ]]; then
     pattern="$1"
