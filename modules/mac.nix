@@ -1,5 +1,12 @@
-{ config, pkgs, lib, emacs-overlay, emacs-src, emacs-vterm-src
-, neovim-nightly-overlay, ... }:
+{ config
+, pkgs
+, lib
+, emacs-overlay
+, emacs-src
+, emacs-vterm-src
+, neovim-nightly-overlay
+, ...
+}:
 
 with lib;
 
@@ -72,6 +79,7 @@ let
     html-tidy
     htop
     httrack
+    isync
     jansson
     jq
     kubectl
@@ -90,6 +98,7 @@ let
     luajit
     # most
     msgpack
+    mu
     # multitail
     # mutagen # broken as of 2022-05-13
     ncurses
@@ -135,6 +144,7 @@ let
     shared-mime-info
     shellcheck
     skhd
+    skim
     skopeo
     sqlite
     taglib
@@ -163,7 +173,8 @@ let
     zstd
   ];
 
-in {
+in
+{
   users.nix.configureBuildUsers = true;
   environment.systemPackages = with pkgs;
     (common-packages ++ (if stdenv.isAarch64 then arm64-packages else [ ])

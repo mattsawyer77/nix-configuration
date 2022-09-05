@@ -91,8 +91,6 @@
           }
           # ./modules/haskell.nix
           ./modules/mac.nix
-          ./modules/tmux.nix
-          ./modules/zsh.nix
         ];
       }; # mmbpm1
     }; # darwin.lib.darwinSystem
