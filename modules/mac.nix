@@ -143,6 +143,7 @@ let
     sd
     shared-mime-info
     shellcheck
+    shfmt
     skhd
     skim
     skopeo
