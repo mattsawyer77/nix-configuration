@@ -148,6 +148,7 @@ let
     skopeo
     sqlite
     taglib
+    taplo
     terraform
     terraform-ls
     tflint
