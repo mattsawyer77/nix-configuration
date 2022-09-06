@@ -1,18 +1,28 @@
-{ config, pkgs, lib, emacs-overlay, neovim-nightly-overlay, ... }:
+{ config, pkgs, lib, emacs-overlay, emacs-src, emacs-vterm-src
+, neovim-nightly-overlay, ... }:
 
 with lib;
 
 let
+  # emacs-mac-overlays = (import ./emacs-mac.nix);
   # packages specific to arm64
   arm64-packages = with pkgs; [ ];
 
   # packages specific to x86-64
   x86-64-packages = with pkgs; [
     azure-cli
-    boost
+    cairo
+    etcd
+    flamegraph
+    fontconfig
+    freetype
+    fx
+    lima
     # ssm-session-manager-plugin # broken as of 2022-04-08
     starship
+    qemu
     qmk
+    ttfautohint
     # wireshark # broken as of 2022-04-18
     zenith
   ];
@@ -35,7 +45,6 @@ let
     bat
     bat-extras.batman
     cachix
-    cairo
     cask
     ccls
     cmake
@@ -46,15 +55,11 @@ let
     # diff-so-fancy
     direnv
     dos2unix
-    # emacsNativeComp # from emacs-overlay
-    emacsGitNativeComp # from emacs-overlay
-    # etcd
+    emacs-mac
+    emacs-vterm
     eternal-terminal
     exa
     fd
-    # flamegraph
-    fontconfig
-    freetype
     fzf
     gdb
     gdbm
@@ -63,8 +68,8 @@ let
     # gmp6
     gnumake
     gnupg
-    go # go is now 1.18+
-    # go_1_17
+    gnuplot
+    go
     golangci-lint # customized in golangci-lint.nix overlay since it's broken in nixpkgs right now
     google-cloud-sdk
     gopls
@@ -75,7 +80,8 @@ let
     helix
     html-tidy
     htop
-    # httrack
+    httrack
+    isync
     jansson
     jq
     kubectl
@@ -93,7 +99,10 @@ let
     # llvmPackages_12.lldb
     # llvm_12
     luajit
+    # most
     msgpack
+    mu
+    # multitail
     # mutagen # broken as of 2022-05-13
     ncurses
     neovim # customized in ./neovim.nix overlay
@@ -111,6 +120,7 @@ let
     nmap
     nodejs
     oniguruma
+    opam
     openapi-generator-cli
     openfortivpn
     openldap
@@ -124,9 +134,7 @@ let
     # podman # broken as of 2022-05-12
     protobuf
     prototool
-    # python3
-    python39
-    qemu
+    python3
     readline
     reattach-to-user-namespace
     # redis
@@ -138,10 +146,13 @@ let
     sd
     shared-mime-info
     shellcheck
+    shfmt
     skhd
+    skim
     skopeo
     sqlite
     taglib
+    taplo
     terraform
     terraform-ls
     tflint
@@ -414,9 +425,64 @@ in {
     config.allowUnfree = true;
     config.allowBroken = true;
     overlays = [
+      emacs-overlay.overlay
       (import ./neovim.nix)
       (import ./golangci-lint.nix)
-      emacs-overlay.overlay
+      # TODO: figure out how to move the following to a separate file
+      (final: prev: {
+        emacs-vterm = prev.stdenv.mkDerivation rec {
+          pname = "emacs-vterm";
+          version = "master";
+          src = emacs-vterm-src;
+          nativeBuildInputs = [ prev.cmake prev.libtool prev.glib.dev ];
+          buildInputs = [ prev.glib.out prev.libvterm-neovim prev.ncurses ];
+          cmakeFlags = [ "-DUSE_SYSTEM_LIBVTERM=yes" ];
+          preConfigure = ''
+            echo "include_directories(\"${prev.glib.out}/lib/glib-2.0/include\")" >> CMakeLists.txt
+            echo "include_directories(\"${prev.glib.dev}/include/glib-2.0\")" >> CMakeLists.txt
+            echo "include_directories(\"${prev.ncurses.dev}/include\")" >> CMakeLists.txt
+            echo "include_directories(\"${prev.libvterm-neovim}/include\")" >> CMakeLists.txt
+          '';
+          installPhase = ''
+            mkdir -p $out
+            cp ../vterm-module.so $out
+            cp ../vterm.el $out
+          '';
+        };
+        emacs-mac = (prev.emacs.override {
+          srcRepo = true;
+          nativeComp = true;
+          withSQLite3 = true;
+          # withXwidgets = true;
+        }).overrideAttrs (o: rec {
+          version = "29.0.50";
+          src = emacs-src;
+          buildInputs = o.buildInputs
+            ++ [ prev.darwin.apple_sdk.frameworks.WebKit ];
+          configureFlags = o.configureFlags ++ [
+            "--without-gpm"
+            "--without-dbus"
+            "--without-mailutils"
+            "--with-toolkit-scroll-bars"
+            "--without-pop"
+          ];
+          patches = [
+            ../patches/fix-window-role.patch
+            # ./patches/system-appearance.patch
+          ];
+          postPatch = o.postPatch + ''
+            substituteInPlace lisp/loadup.el \
+            --replace '(emacs-repository-get-branch)' '"master"'
+          '';
+          postInstall = o.postInstall + ''
+            cp ${final.emacs-vterm}/vterm.el $out/share/emacs/site-lisp/vterm.el
+            cp ${final.emacs-vterm}/vterm-module.so $out/share/emacs/site-lisp/vterm-module.so
+          '';
+          CFLAGS =
+            # "-DMAC_OS_X_VERSION_MAX_ALLOWED=110203 -g -O3 -mtune=native -march=native -fomit-frame-pointer";
+            "-g -O3 -mtune=native -march=native -fomit-frame-pointer";
+        });
+      })
     ]; # overlays
   }; # nixpkgs
 }

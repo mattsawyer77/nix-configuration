@@ -6,29 +6,56 @@
       url = "github:LnL7/nix-darwin";
       inputs.nixpkgs.follows = "unstable";
     };
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "unstable";
+    };
+    flake-utils = {
+      url = "github:numtide/flake-utils";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     emacs-overlay = {
-      # from 2022-08-02:
+      # working as of 2022-09-04
+      # url =
+      #   "github:nix-community/emacs-overlay/0756dbd32d75990468b170339bb68aab5f595da7";
       url =
-        "github:nix-community/emacs-overlay/7125a934f0e1cd8a22ee5bb604c9010965fb27df";
-      # from 2022-06-08:
-      # url = "github:nix-community/emacs-overlay/0756dbd32d75990468b170339bb68aab5f595da7";
+        "github:nix-community/emacs-overlay/8707d84ec67b39d5655929fc974055bcb9a160fb";
     };
     neovim-nightly-overlay = {
       url = "github:nix-community/neovim-nightly-overlay";
       inputs.nixpkgs.follows = "unstable";
     };
+    emacs-src = {
+      url = "github:emacs-mirror/emacs";
+      flake = false;
+    };
+    # Use latest libvterm to build macOS emacs build
+    emacs-vterm-src = {
+      url = "github:akermu/emacs-libvterm";
+      flake = false;
+    };
   };
-  outputs = { self, nixpkgs, darwin, ... }@inputs: {
+  outputs = { self, nixpkgs, darwin, flake-utils, home-manager, ... }@inputs: {
     # mac
     darwinConfigurations = {
       SEA-ML-00059144 = darwin.lib.darwinSystem {
         system = "x86_64-darwin";
         specialArgs = inputs;
         modules = [
+          home-manager.darwinModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.users.sawyer = import ./home/SEA-ML-00059144.nix;
+          }
           ./modules/mac.nix
           ./modules/tmux.nix
           ./modules/zsh.nix
           ({ config, pkgs, lib, ... }: {
+            users.users.sawyer = {
+              name = "sawyer";
+              home = "/Users/sawyer";
+            };
             nix = {
               package = pkgs.nixFlakes;
               extraOptions = ''
@@ -49,6 +76,10 @@
         specialArgs = inputs;
         modules = [
           ({ config, pkgs, lib, ... }: {
+            users.users.matt = {
+              name = "matt";
+              home = "/Users/matt";
+            };
             nix = {
               package = pkgs.nixFlakes;
               extraOptions = ''
@@ -65,9 +96,14 @@
               '';
             };
           })
+          home-manager.darwinModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.users.matt = import ./home/mmbpm1.nix;
+          }
+          # ./modules/haskell.nix
           ./modules/mac.nix
-          ./modules/tmux.nix
-          ./modules/zsh.nix
         ];
       }; # mmbpm1
     }; # darwin.lib.darwinSystem
@@ -87,6 +123,8 @@
             programs.tmux.enable = true;
             programs.neovim.enable = true;
             programs.zsh.enable = true;
+            programs.ssh.startAgent = true;
+            programs.ssh.agentTimeout = "1h";
             networking.hostName = "sawyer-dev";
             networking.firewall.enable = true;
             networking.firewall.allowPing = true;

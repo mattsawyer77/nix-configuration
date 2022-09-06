@@ -86,6 +86,7 @@
 
     eval "$(zoxide init zsh)"
     eval "$(direnv hook zsh)"
+    command -v opam >/dev/null && eval $(opam env)
     source <(kubectl completion zsh)
     export PATH=~/.local/bin:~/.cargo/bin:$PATH
     export PATH=$PATH:${pkgs.nodejs}/bin
