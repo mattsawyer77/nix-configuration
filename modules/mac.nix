@@ -12,7 +12,7 @@ let
   x86-64-packages = with pkgs; [
     azure-cli
     cairo
-    etcd
+    # etcd # broken as of 2022-09-06
     flamegraph
     fontconfig
     freetype
@@ -22,7 +22,7 @@ let
     starship
     qemu
     qmk
-    ttfautohint
+    # ttfautohint # broken as of 2022-09-06
     # wireshark # broken as of 2022-04-18
     zenith
   ];

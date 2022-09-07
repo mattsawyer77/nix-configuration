@@ -1,10 +1,34 @@
 { config, pkgs, ... }:
 
-{
-  home.homeDirectory = "/Users/sawyer";
-  home.packages = [ ];
-  home.stateVersion = "22.11";
-  home.username = "sawyer";
+let
+  username = "sawyer";
+  homeDirectory = "/Users/" + username;
+  goPathSuffix = "gocode";
+
+in {
+  home = {
+    homeDirectory = homeDirectory;
+    packages = [ ];
+    stateVersion = "22.11";
+    username = username;
+    # append these extra dirs to the nix-generated path
+    sessionPath = [
+      (homeDirectory + "/.local/bin")
+      (homeDirectory + "/.cargo/bin")
+      (homeDirectory + "/" + goPathSuffix + "/bin")
+    ];
+    sessionVariables = {
+      GOPATH = (homeDirectory + "/" + goPathSuffix);
+      LC_ALL = "en_US.UTF-8";
+      LANG = "en_US.UTF-8";
+      LANGUAGE = "en_US.UTF-8";
+      GO111MODULE = "on";
+      BAT_THEME = "1337";
+      LESS = "-F -i -M -R -X --incsearch";
+      SAML2AWS_USER_AGENT =
+        "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.00) Gecko/20100101 Firefox/82.0";
+    };
+  };
   programs.home-manager.enable = true;
   programs.alacritty = {
     enable = true;
@@ -404,7 +428,7 @@
     };
     envExtra = builtins.readFile ./.zshenv-SEA-ML-00059144;
     initExtra = ''
-      export PATH="''${HOME}/.local/bin:''${PATH}:''${HOME}/.cargo/bin"
+      source <(kubectl completion zsh)
       printf '\e]2;'$(hostname)'\a'
     '';
   };

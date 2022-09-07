@@ -10,10 +10,7 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "unstable";
     };
-    flake-utils = {
-      url = "github:numtide/flake-utils";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    flake-utils.url = "github:numtide/flake-utils";
     emacs-overlay = {
       # working as of 2022-09-04
       # url =
@@ -50,7 +47,6 @@
           }
           ./modules/mac.nix
           ./modules/tmux.nix
-          ./modules/zsh.nix
           ({ config, pkgs, lib, ... }: {
             users.users.sawyer = {
               name = "sawyer";
