@@ -27,6 +27,7 @@ with lib;
     docker
     dos2unix
     emacsGit-nox
+    envsubst
     etcd
     eternal-terminal
     exa
@@ -122,6 +123,7 @@ with lib;
     valgrind
     wget
     wireshark
+    xsel
     xsv
     yaml-language-server
     youtube-dl
