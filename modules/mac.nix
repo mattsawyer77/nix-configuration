@@ -1,19 +1,40 @@
-{ config, pkgs, lib, emacs-overlay, neovim-nightly-overlay, ... }:
+{ config, pkgs, lib, emacs-overlay, emacs-src, emacs-vterm-src
+, neovim-nightly-overlay, ... }:
 
 with lib;
 
 let
+  # emacs-mac-overlays = (import ./emacs-mac.nix);
   # packages specific to arm64
   arm64-packages = with pkgs; [ ];
 
   # packages specific to x86-64
   x86-64-packages = with pkgs; [
     azure-cli
+    cairo
+    # etcd # broken as of 2022-09-06
+    flamegraph
+    fontconfig
+    freetype
+    fx
+    lima
     # ssm-session-manager-plugin # broken as of 2022-04-08
     starship
+    qemu
     qmk
+    # ttfautohint # broken as of 2022-09-06
     # wireshark # broken as of 2022-04-18
     zenith
+  ];
+  haskell-packages = with pkgs; [
+    cabal-install
+    ghc
+    ghcid
+    haskell-language-server
+    # hls-wrapper-nix
+    # implicit-hie
+    stack
+    # stack2nix
   ];
   common-packages = with pkgs; [
     alacritty
@@ -23,37 +44,31 @@ let
     bash_5
     bat
     bat-extras.batman
-    boost
     cachix
-    cairo
     cask
-    cloc
+    ccls
     cmake
     coreutils
     curlFull
     delta
     delve
-    diff-so-fancy
+    # diff-so-fancy
     direnv
     dos2unix
-    # emacsNativeComp # from emacs-overlay
-    emacsGitNativeComp # from emacs-overlay
-    etcd
+    emacs-mac
+    emacs-vterm
     eternal-terminal
     exa
     fd
-    flamegraph
-    fontconfig
-    freetype
-    fx
     fzf
     gdb
     gdbm
     ghostscript
     glib
-    gmp6
+    # gmp6
     gnumake
     gnupg
+    gnuplot
     go
     golangci-lint # customized in golangci-lint.nix overlay since it's broken in nixpkgs right now
     google-cloud-sdk
@@ -66,6 +81,7 @@ let
     html-tidy
     htop
     httrack
+    isync
     jansson
     jq
     kubectl
@@ -78,21 +94,22 @@ let
     libtool
     libvterm-neovim
     libxml2
-    lima
+    # lima
     # llvm
     # llvmPackages_12.lldb
     # llvm_12
     luajit
-    most
+    # most
     msgpack
-    multitail
+    mu
+    # multitail
     # mutagen # broken as of 2022-05-13
     ncurses
     neovim # customized in ./neovim.nix overlay
     netcat
     netperf
-    nim
-    nimlsp
+    # nim
+    # nimlsp
     ninja
     nix-direnv
     nix-linter
@@ -103,6 +120,7 @@ let
     nmap
     nodejs
     oniguruma
+    opam
     openapi-generator-cli
     openfortivpn
     openldap
@@ -110,30 +128,31 @@ let
     pandoc
     pcre
     pcre2
-    pdfminer
+    # pdfminer
     pkg-config
     pkgconfig
     # podman # broken as of 2022-05-12
     protobuf
     prototool
     python3
-    python39
-    qemu
     readline
     reattach-to-user-namespace
-    redis
+    # redis
     ripgrep
     rnix-lsp
     rust-analyzer
     rustup
-    scons
+    # scons
     sd
     shared-mime-info
     shellcheck
+    shfmt
     skhd
+    skim
     skopeo
     sqlite
     taglib
+    taplo
     terraform
     terraform-ls
     tflint
@@ -141,9 +160,10 @@ let
     tokei
     tree
     # trivy # broken as of 2022-05-24
-    ttfautohint
+    # ttfautohint
     unixtools.watch
     upx
+    # vmtouch
     wget
     xsv
     yabai
@@ -158,10 +178,9 @@ let
     zsh-syntax-highlighting
     zsh-z
     zstd
-  ];
+  ]; # ++ haskell-packages;
 
 in {
-  users.nix.configureBuildUsers = true;
   environment.systemPackages = with pkgs;
     (common-packages ++ (if stdenv.isAarch64 then arm64-packages else [ ])
       ++ (if stdenv.isx86_64 then x86-64-packages else [ ]));
@@ -388,6 +407,7 @@ in {
   programs.zsh.enableCompletion = true;
   programs.zsh.enableBashCompletion = true;
   programs.zsh.enableSyntaxHighlighting = true;
+  nix.configureBuildUsers = true;
   nix.gc = {
     # automatically collect garbage
     # Minute <integer> # The minute on which this job will be run.
@@ -403,10 +423,66 @@ in {
   };
   nixpkgs = {
     config.allowUnfree = true;
+    config.allowBroken = true;
     overlays = [
+      emacs-overlay.overlay
       (import ./neovim.nix)
       (import ./golangci-lint.nix)
-      emacs-overlay.overlay
+      # TODO: figure out how to move the following to a separate file
+      (final: prev: {
+        emacs-vterm = prev.stdenv.mkDerivation rec {
+          pname = "emacs-vterm";
+          version = "master";
+          src = emacs-vterm-src;
+          nativeBuildInputs = [ prev.cmake prev.libtool prev.glib.dev ];
+          buildInputs = [ prev.glib.out prev.libvterm-neovim prev.ncurses ];
+          cmakeFlags = [ "-DUSE_SYSTEM_LIBVTERM=yes" ];
+          preConfigure = ''
+            echo "include_directories(\"${prev.glib.out}/lib/glib-2.0/include\")" >> CMakeLists.txt
+            echo "include_directories(\"${prev.glib.dev}/include/glib-2.0\")" >> CMakeLists.txt
+            echo "include_directories(\"${prev.ncurses.dev}/include\")" >> CMakeLists.txt
+            echo "include_directories(\"${prev.libvterm-neovim}/include\")" >> CMakeLists.txt
+          '';
+          installPhase = ''
+            mkdir -p $out
+            cp ../vterm-module.so $out
+            cp ../vterm.el $out
+          '';
+        };
+        emacs-mac = (prev.emacs.override {
+          srcRepo = true;
+          nativeComp = true;
+          withSQLite3 = true;
+          # withXwidgets = true;
+        }).overrideAttrs (o: rec {
+          version = "29.0.50";
+          src = emacs-src;
+          buildInputs = o.buildInputs
+            ++ [ prev.darwin.apple_sdk.frameworks.WebKit ];
+          configureFlags = o.configureFlags ++ [
+            "--without-gpm"
+            "--without-dbus"
+            "--without-mailutils"
+            "--with-toolkit-scroll-bars"
+            "--without-pop"
+          ];
+          patches = [
+            ../patches/fix-window-role.patch
+            # ./patches/system-appearance.patch
+          ];
+          postPatch = o.postPatch + ''
+            substituteInPlace lisp/loadup.el \
+            --replace '(emacs-repository-get-branch)' '"master"'
+          '';
+          postInstall = o.postInstall + ''
+            cp ${final.emacs-vterm}/vterm.el $out/share/emacs/site-lisp/vterm.el
+            cp ${final.emacs-vterm}/vterm-module.so $out/share/emacs/site-lisp/vterm-module.so
+          '';
+          CFLAGS =
+            # "-DMAC_OS_X_VERSION_MAX_ALLOWED=110203 -g -O3 -mtune=native -march=native -fomit-frame-pointer";
+            "-g -O3 -mtune=native -march=native -fomit-frame-pointer";
+        });
+      })
     ]; # overlays
   }; # nixpkgs
 }
