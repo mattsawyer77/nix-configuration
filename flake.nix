@@ -46,7 +46,6 @@
             home-manager.users.sawyer = import ./home/SEA-ML-00059144.nix;
           }
           ./modules/mac.nix
-          ./modules/tmux.nix
           ({ config, pkgs, lib, ... }: {
             users.users.sawyer = {
               name = "sawyer";

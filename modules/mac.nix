@@ -55,7 +55,8 @@ let
     # diff-so-fancy
     direnv
     dos2unix
-    emacs-mac
+    # emacs-mac # maybe a bad build?
+    emacsGitNativeComp # temporarily switch back to main overlay
     emacs-vterm
     eternal-terminal
     exa
@@ -101,7 +102,7 @@ let
     luajit
     # most
     msgpack
-    mu
+    # mu
     # multitail
     # mutagen # broken as of 2022-05-13
     ncurses
@@ -169,6 +170,7 @@ let
     yabai
     yaml-language-server
     yarn
+    yj
     youtube-dl
     yq-go
     zlib

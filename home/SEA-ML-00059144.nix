@@ -18,6 +18,8 @@ in {
       (homeDirectory + "/" + goPathSuffix + "/bin")
     ];
     sessionVariables = {
+      EDITOR = "em";
+      VISUAL = "em";
       GOPATH = (homeDirectory + "/" + goPathSuffix);
       LC_ALL = "en_US.UTF-8";
       LANG = "en_US.UTF-8";
@@ -40,13 +42,13 @@ in {
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ayu-Dark.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ayu-Mirage.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Brewer.dark.json);
-      colors =
-        builtins.fromJSON (builtins.readFile ./alacritty-themes/Eqie6.json);
+      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Eqie6.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Hybrid.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Iceberg-Dark.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ocean.dark.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Palenight.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Tokyonight_Night.json);
+      colors = builtins.fromJSON
+        (builtins.readFile ./alacritty-themes/Tokyonight_Night.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Twilight.dark.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/github_dimmed.json);
       env = {
@@ -59,6 +61,14 @@ in {
         # and xterm-256color here supports 24-bit in some cases (but not terminal emacs)
         TERM = "xterm-256color";
       };
+      key_bindings = [
+        # map ctrl+space to ctrl+l since zellij doesn't support ctrl+space
+        {
+          key = "Space";
+          mods = "Control";
+          chars = "\\x0c";
+        }
+      ]; # key_bindings
       window = {
         opacity = 1.0;
         # Allow terminal applications to change Alacritty's window title.
@@ -86,7 +96,7 @@ in {
         # Values for `decorations` (macOS only):
         #     - transparent: Title bar, transparent background and title bar buttons
         #     - buttonless: Title bar, transparent background, but no title bar buttons
-        decorations = "buttonless";
+        decorations = "full";
         # Startup Mode (changes require restart)
         # Values for `startup_mode`:
         #   - Windowed
@@ -127,7 +137,7 @@ in {
           y = 4;
         };
         use_thin_strokes = false;
-      };
+      }; # font
       bell = {
         animation = "EaseOutExpo";
         duration = 0;
@@ -332,14 +342,15 @@ in {
   programs.tmux = {
     enable = true;
     extraConfig = ''
-      # remap prefix to Control + space
+      # remap prefix to control+l
       unbind C-b
+      set -g prefix C-l
+      # set -g prefix C-space
+      # bind l send-prefix
       set -g mode-keys vi
       bind-key -T copy-mode-vi 'v' send -X begin-selection
       bind-key -T copy-mode-vi 'y' send -X copy-selection-and-cancel
-      set -g prefix C-Space
       set -g base-index 1
-      bind Space send-prefix
       bind-key j command-prompt -p "join pane from:"  "join-pane -hs '%%'"
       bind-key s choose-tree
       bind-key b break-pane
@@ -397,6 +408,75 @@ in {
       set -g status-right "#[bg=#444444]#[fg=#888888] #(rainbarf --width 20 --rgb --no-battery --order fciaws)"
       bind-key y run "tmux save-buffer - | reattach-to-user-namespace pbcopy"
     '';
+  };
+  programs.zellij = {
+    enable = true;
+    settings = {
+      default_mode = "locked";
+      pane_frames = false;
+      scroll_buffer_size = 50000;
+      keybinds = let
+        ctrlQToLocked = {
+          key = [{ Ctrl = "l"; }];
+          action = [{ SwitchToMode = "locked"; }];
+        };
+        ctrlQToNormal = {
+          key = [{ Ctrl = "l"; }];
+          action = [{ SwitchToMode = "normal"; }];
+        };
+      in {
+        unbind = [{ Ctrl = "g"; }];
+        locked = [ ctrlQToNormal ];
+        normal = [ ctrlQToLocked ];
+        move = [ ctrlQToLocked ];
+        resize = [ ctrlQToLocked ];
+        pane = [ ctrlQToLocked ];
+        scroll = [ ctrlQToLocked ];
+        entersearch = [ ctrlQToLocked ];
+        search = [ ctrlQToLocked ];
+        renametab = [ ctrlQToLocked ];
+        renamepane = [ ctrlQToLocked ];
+        session = [ ctrlQToLocked ];
+        tab = [
+          ctrlQToLocked
+          {
+            key = [{ Char = "n"; }];
+            action = [ { NewTab = { }; } { SwitchToMode = "renametab"; } ];
+          }
+        ];
+        # tab = [
+        #   { unbind = { Char = "n"; }; }
+        #   ctrlQToLocked
+        #   {
+        #     key = [{ Char = "n"; }];
+        #     action = [ { NewTab = { }; } { SwitchToMode = "renametab"; } ];
+        #   }
+        # ];
+      };
+      theme = "tokyo-night";
+      themes.dracula =
+        builtins.fromJSON (builtins.readFile ./zellij/themes/dracula.json);
+      themes.gruvbox-dark =
+        builtins.fromJSON (builtins.readFile ./zellij/themes/gruvbox-dark.json);
+      themes.gruvbox-light = builtins.fromJSON
+        (builtins.readFile ./zellij/themes/gruvbox-light.json);
+      themes.molokai-dark =
+        builtins.fromJSON (builtins.readFile ./zellij/themes/molokai-dark.json);
+      themes.nord =
+        builtins.fromJSON (builtins.readFile ./zellij/themes/nord.json);
+      themes.one-half-dark = builtins.fromJSON
+        (builtins.readFile ./zellij/themes/one-half-dark.json);
+      themes.solarized-dark = builtins.fromJSON
+        (builtins.readFile ./zellij/themes/solarized-dark.json);
+      themes.solarized-light = builtins.fromJSON
+        (builtins.readFile ./zellij/themes/solarized-light.json);
+      themes.tokyo-night-light = builtins.fromJSON
+        (builtins.readFile ./zellij/themes/tokyo-night-light.json);
+      themes.tokyo-night-storm = builtins.fromJSON
+        (builtins.readFile ./zellij/themes/tokyo-night-storm.json);
+      themes.tokyo-night =
+        builtins.fromJSON (builtins.readFile ./zellij/themes/tokyo-night.json);
+    };
   };
   programs.zoxide = { enable = true; };
   programs.zsh = {
