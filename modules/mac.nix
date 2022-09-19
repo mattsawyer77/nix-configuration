@@ -1,17 +1,27 @@
-{ config, pkgs, lib, emacs-overlay, emacs-src, emacs-vterm-src
-, neovim-nightly-overlay, ... }:
+{ config
+, pkgs
+, lib
+, emacs-overlay
+, emacs-src
+, emacs-vterm-src
+, neovim-nightly-overlay
+, ...
+}:
 
 with lib;
 
 let
   # emacs-mac-overlays = (import ./emacs-mac.nix);
   # packages specific to arm64
-  arm64-packages = with pkgs; [ ];
+  arm64-packages = with pkgs; [
+    emacs-mac
+  ];
 
   # packages specific to x86-64
   x86-64-packages = with pkgs; [
     azure-cli
     cairo
+    emacsGitNativeComp # temporarily switch back to main overlay
     # etcd # broken as of 2022-09-06
     flamegraph
     fontconfig
@@ -56,7 +66,6 @@ let
     direnv
     dos2unix
     # emacs-mac # maybe a bad build?
-    emacsGitNativeComp # temporarily switch back to main overlay
     emacs-vterm
     eternal-terminal
     exa
@@ -182,7 +191,8 @@ let
     zstd
   ]; # ++ haskell-packages;
 
-in {
+in
+{
   environment.systemPackages = with pkgs;
     (common-packages ++ (if stdenv.isAarch64 then arm64-packages else [ ])
       ++ (if stdenv.isx86_64 then x86-64-packages else [ ]));
