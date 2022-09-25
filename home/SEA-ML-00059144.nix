@@ -5,7 +5,8 @@ let
   homeDirectory = "/Users/" + username;
   goPathSuffix = "gocode";
 
-in {
+in
+{
   home = {
     homeDirectory = homeDirectory;
     packages = [ ];
@@ -156,6 +157,11 @@ in {
     enable = true;
     settings = {
       theme = "mogster";
+      # theme = "edge";
+      # theme = "everforest";
+      # theme = "gruvbox";
+      # theme = "mogster";
+      # theme = "sonokai";
       keys.normal = {
         "#" = "toggle_comments";
         "$" = "goto_line_end";
@@ -227,135 +233,11 @@ in {
       };
     }]; # languages
     themes = {
-      mogster = {
-        "attribute" = {
-          fg = "#dc7759";
-          modifiers = [ "bold" ];
-        };
-        "keyword" = {
-          fg = "#dcb659";
-          modifiers = [ "bold" ];
-        };
-        "keyword.directive" = {
-          fg = "#dcb659";
-          modifiers = [ "bold" ];
-        };
-        "namespace" = {
-          fg = "#d32c5d";
-          modifiers = [ "bold" ];
-        };
-        "punctuation" = "#dc7759";
-        "punctuation.delimiter" = "#dc7759";
-        "operator" = {
-          fg = "#dc7759";
-          modifiers = [ "bold" ];
-        };
-        "special" = "#7fdc59";
-        "variable.other.member" = "#c6b8ad";
-        "variable" = "#c6b8ad";
-        "variable.parameter" = "#c6b8ad";
-        "type" = {
-          fg = "#dc597f";
-          modifiers = [ "bold" ];
-        };
-        "type.builtin" = {
-          fg = "#d32c5d";
-          modifiers = [ "bold" ];
-        };
-        "constructor" = {
-          fg = "#dc597f";
-          modifiers = [ "bold" ];
-        };
-        "function" = {
-          fg = "#59dcd8";
-          modifiers = [ "bold]" ];
-        };
-        "function.macro" = {
-          fg = "#dc7759";
-          modifiers = [ "bold" ];
-        };
-        "function.builtin" = {
-          fg = "#59dcd8";
-          modifiers = [ "bold" ];
-        };
-        "comment" = "#627d9d";
-        "variable.builtin" = "#c6b8ad";
-        "constant" = "#59dcb7";
-        "constant.builtin" = "#59dcb7";
-        "string" = "#59dcb7";
-        "constant.numeric" = "#59c0dc";
-        "constant.character.escape" = {
-          fg = "#7fdc59";
-          modifiers = [ "bold" ];
-        };
-        "label" = "#59c0dc";
-        "module" = "#d32c5d";
-        "markup.heading" = "blue";
-        "markup.list" = "red";
-        "markup.bold" = {
-          fg = "yellow";
-          modifiers = [ "bold" ];
-        };
-        "markup.italic" = {
-          fg = "magenta";
-          modifiers = [ "italic" ];
-        };
-        "markup.link.url" = {
-          fg = "yellow";
-          modifiers = [ "underlined" ];
-        };
-        "markup.link.text" = "red";
-        "markup.quote" = "cyan";
-        "markup.raw" = "green";
-        "diff.plus" = "#59dcb7";
-        "diff.delta" = "#dc7759";
-        "diff.minus" = "#dc597f";
-        "ui.background" = { bg = "#161c23"; };
-        "ui.linenr" = { fg = "#415367"; };
-        "ui.linenr.selected" = { fg = "#e5ded6"; };
-        "ui.statusline" = {
-          fg = "#e5ded6";
-          bg = "#232d38";
-        };
-        "ui.statusline.inactive" = {
-          fg = "#c6b8ad";
-          bg = "#232d38";
-        };
-        "ui.popup" = { bg = "#232d38"; };
-        "ui.window" = { bg = "#232d38"; };
-        "ui.help" = {
-          bg = "#232d38";
-          fg = "#e5ded6";
-        };
-        "ui.text" = { fg = "#e5ded6"; };
-        "ui.text.focus" = {
-          fg = "#e5ded6";
-          modifiers = [ "bold" ];
-        };
-        "ui.virtual" = "#627d9d";
-        "ui.selection" = { bg = "#313f4e"; };
-        "ui.cursor.match" = {
-          fg = "#313f4e";
-          bg = "#dc7759";
-        };
-        "ui.cursor" = {
-          fg = "#ABB2BF";
-          modifiers = [ "reversed" ];
-        };
-        "ui.menu" = {
-          fg = "#e5ded6bg";
-          bg = "#232d38";
-        };
-        "ui.menu.selected" = { bg = "#313f4e"; };
-        "warning" = "#dc7759";
-        "error" = "#dc597f";
-        "info" = "#59dcb7";
-        "hint" = "#59c0dc";
-        "diagnostic" = {
-          fg = "#fbfbfb";
-          bg = "#531526";
-        };
-      }; # mogster
+      edge = (builtins.fromJSON (builtins.readFile ./helix/themes/edge.json));
+      everforest = (builtins.fromJSON (builtins.readFile ./helix/themes/everforest.json));
+      gruvbox = (builtins.fromJSON (builtins.readFile ./helix/themes/gruvbox.json));
+      mogster = (builtins.fromJSON (builtins.readFile ./helix/themes/mogster.json));
+      sonokai = (builtins.fromJSON (builtins.readFile ./helix/themes/sonokai.json));
     }; # themes
   }; # helix
   programs.skim = {
@@ -439,44 +321,46 @@ in {
       default_mode = "locked";
       pane_frames = false;
       scroll_buffer_size = 50000;
-      keybinds = let
-        ctrlQToLocked = {
-          key = [{ Ctrl = "l"; }];
-          action = [{ SwitchToMode = "locked"; }];
+      keybinds =
+        let
+          ctrlQToLocked = {
+            key = [{ Ctrl = "l"; }];
+            action = [{ SwitchToMode = "locked"; }];
+          };
+          ctrlQToNormal = {
+            key = [{ Ctrl = "l"; }];
+            action = [{ SwitchToMode = "normal"; }];
+          };
+        in
+        {
+          unbind = [{ Ctrl = "g"; }];
+          locked = [ ctrlQToNormal ];
+          normal = [ ctrlQToLocked ];
+          move = [ ctrlQToLocked ];
+          resize = [ ctrlQToLocked ];
+          pane = [ ctrlQToLocked ];
+          scroll = [ ctrlQToLocked ];
+          entersearch = [ ctrlQToLocked ];
+          search = [ ctrlQToLocked ];
+          renametab = [ ctrlQToLocked ];
+          renamepane = [ ctrlQToLocked ];
+          session = [ ctrlQToLocked ];
+          tab = [
+            ctrlQToLocked
+            {
+              key = [{ Char = "n"; }];
+              action = [{ NewTab = { }; } { SwitchToMode = "renametab"; }];
+            }
+          ];
+          # tab = [
+          #   { unbind = { Char = "n"; }; }
+          #   ctrlQToLocked
+          #   {
+          #     key = [{ Char = "n"; }];
+          #     action = [ { NewTab = { }; } { SwitchToMode = "renametab"; } ];
+          #   }
+          # ];
         };
-        ctrlQToNormal = {
-          key = [{ Ctrl = "l"; }];
-          action = [{ SwitchToMode = "normal"; }];
-        };
-      in {
-        unbind = [{ Ctrl = "g"; }];
-        locked = [ ctrlQToNormal ];
-        normal = [ ctrlQToLocked ];
-        move = [ ctrlQToLocked ];
-        resize = [ ctrlQToLocked ];
-        pane = [ ctrlQToLocked ];
-        scroll = [ ctrlQToLocked ];
-        entersearch = [ ctrlQToLocked ];
-        search = [ ctrlQToLocked ];
-        renametab = [ ctrlQToLocked ];
-        renamepane = [ ctrlQToLocked ];
-        session = [ ctrlQToLocked ];
-        tab = [
-          ctrlQToLocked
-          {
-            key = [{ Char = "n"; }];
-            action = [ { NewTab = { }; } { SwitchToMode = "renametab"; } ];
-          }
-        ];
-        # tab = [
-        #   { unbind = { Char = "n"; }; }
-        #   ctrlQToLocked
-        #   {
-        #     key = [{ Char = "n"; }];
-        #     action = [ { NewTab = { }; } { SwitchToMode = "renametab"; } ];
-        #   }
-        # ];
-      };
       theme = "tokyo-night";
       themes.dracula =
         builtins.fromJSON (builtins.readFile ./zellij/themes/dracula.json);
