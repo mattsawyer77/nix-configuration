@@ -115,11 +115,11 @@ in {
       font = {
         # Normal (roman) font face
         normal = {
-          family = "PragmataPro Liga";
+          family = "JetBrains Mono";
           style = "Regular";
         };
         bold = {
-          family = "PragmataPro Liga";
+          family = "JetBrains Mono";
           style = "Bold";
         };
         size = 21.0;

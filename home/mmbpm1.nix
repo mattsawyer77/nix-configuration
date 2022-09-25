@@ -89,14 +89,14 @@
       font = {
         # Normal (roman) font face
         normal = {
-          family = "PragmataPro Liga";
-          style = "Regular";
+          family = "JetBrains Mono";
+          style = "ExtraLight";
         };
         bold = {
-          family = "PragmataPro Liga";
-          style = "Bold";
+          family = "JetBrains Mono";
+          style = "Medium";
         };
-        size = 21.0;
+        size = 19.0;
         # Offset is the extra space around each character. `offset.y` can be thought of
         # as modifying the line spacing, and `offset.x` as modifying the letter spacing.
         offset = {
@@ -155,7 +155,7 @@
         G = "goto_file_end";
         space = { ":" = "command_palette"; };
         tab = "match_brackets";
-        V = ["select_mode" "extend_to_line_bounds"];
+        V = [ "select_mode" "extend_to_line_bounds" ];
         w = [ "move_next_word_start" "move_char_right" "collapse_selection" ];
         x = "delete_selection";
       };
@@ -340,44 +340,46 @@
       default_mode = "locked";
       pane_frames = false;
       scroll_buffer_size = 50000;
-      keybinds = let
-        ctrlQToLocked = {
-          key = [{ Ctrl = "l"; }];
-          action = [{ SwitchToMode = "locked"; }];
+      keybinds =
+        let
+          ctrlQToLocked = {
+            key = [{ Ctrl = "l"; }];
+            action = [{ SwitchToMode = "locked"; }];
+          };
+          ctrlQToNormal = {
+            key = [{ Ctrl = "l"; }];
+            action = [{ SwitchToMode = "normal"; }];
+          };
+        in
+        {
+          unbind = [{ Ctrl = "g"; }];
+          locked = [ ctrlQToNormal ];
+          normal = [ ctrlQToLocked ];
+          move = [ ctrlQToLocked ];
+          resize = [ ctrlQToLocked ];
+          pane = [ ctrlQToLocked ];
+          scroll = [ ctrlQToLocked ];
+          entersearch = [ ctrlQToLocked ];
+          search = [ ctrlQToLocked ];
+          renametab = [ ctrlQToLocked ];
+          renamepane = [ ctrlQToLocked ];
+          session = [ ctrlQToLocked ];
+          tab = [
+            ctrlQToLocked
+            {
+              key = [{ Char = "n"; }];
+              action = [{ NewTab = { }; } { SwitchToMode = "renametab"; }];
+            }
+          ];
+          # tab = [
+          #   { unbind = { Char = "n"; }; }
+          #   ctrlQToLocked
+          #   {
+          #     key = [{ Char = "n"; }];
+          #     action = [ { NewTab = { }; } { SwitchToMode = "renametab"; } ];
+          #   }
+          # ];
         };
-        ctrlQToNormal = {
-          key = [{ Ctrl = "l"; }];
-          action = [{ SwitchToMode = "normal"; }];
-        };
-      in {
-        unbind = [{ Ctrl = "g"; }];
-        locked = [ ctrlQToNormal ];
-        normal = [ ctrlQToLocked ];
-        move = [ ctrlQToLocked ];
-        resize = [ ctrlQToLocked ];
-        pane = [ ctrlQToLocked ];
-        scroll = [ ctrlQToLocked ];
-        entersearch = [ ctrlQToLocked ];
-        search = [ ctrlQToLocked ];
-        renametab = [ ctrlQToLocked ];
-        renamepane = [ ctrlQToLocked ];
-        session = [ ctrlQToLocked ];
-        tab = [
-          ctrlQToLocked
-          {
-            key = [{ Char = "n"; }];
-            action = [ { NewTab = { }; } { SwitchToMode = "renametab"; } ];
-          }
-        ];
-        # tab = [
-        #   { unbind = { Char = "n"; }; }
-        #   ctrlQToLocked
-        #   {
-        #     key = [{ Char = "n"; }];
-        #     action = [ { NewTab = { }; } { SwitchToMode = "renametab"; } ];
-        #   }
-        # ];
-      };
       theme = "tokyo-night";
       themes.dracula =
         builtins.fromJSON (builtins.readFile ./zellij/themes/dracula.json);
@@ -402,7 +404,7 @@
       themes.tokyo-night =
         builtins.fromJSON (builtins.readFile ./zellij/themes/tokyo-night.json);
     };
-  };  
+  };
   programs.zoxide = {
     enable = true;
   };
