@@ -13,16 +13,16 @@
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Afterglow.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Argonaut.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Atelierlakeside.dark.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ayu-Dark.json);
+      colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ayu-Dark.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ayu-Mirage.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Brewer.dark.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Eqie6.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Hybrid.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Iceberg-Dark.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ocean.dark.json);
+      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ocean.light.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Palenight.json);
-      colors = builtins.fromJSON
-        (builtins.readFile ./alacritty-themes/Tokyonight_Night.json);
+      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Tokyonight_Night.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Twilight.dark.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/github_dimmed.json);
       env = {

@@ -24,7 +24,6 @@ let
     emacsGitNativeComp # temporarily switch back to main overlay
     # etcd # broken as of 2022-09-06
     flamegraph
-    fontconfig
     freetype
     fx
     lima
@@ -70,6 +69,7 @@ let
     eternal-terminal
     exa
     fd
+    fontconfig
     fzf
     gdb
     gdbm
