@@ -128,6 +128,7 @@ with lib;
     yaml-language-server
     youtube-dl
     yq-go
+    zellij
     zenith
     zlib
     zoxide
