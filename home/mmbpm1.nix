@@ -21,7 +21,8 @@
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Iceberg-Dark.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ocean.dark.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Palenight.json);
-      colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Tokyonight_Night.json);
+      colors = builtins.fromJSON
+        (builtins.readFile ./alacritty-themes/Tokyonight_Night.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Twilight.dark.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/github_dimmed.json);
       env = {
@@ -34,6 +35,14 @@
         # and xterm-256color here supports 24-bit in some cases (but not terminal emacs)
         TERM = "xterm-256color";
       };
+      key_bindings = [
+        # map ctrl+space to ctrl+l since zellij doesn't support ctrl+space
+        {
+          key = "Space";
+          mods = "Control";
+          chars = "\\x0c";
+        }
+      ]; # key_bindings
       window = {
         opacity = 1.0;
         # Allow terminal applications to change Alacritty's window title.
@@ -61,7 +70,7 @@
         # Values for `decorations` (macOS only):
         #     - transparent: Title bar, transparent background and title bar buttons
         #     - buttonless: Title bar, transparent background, but no title bar buttons
-        decorations = "buttonless";
+        decorations = "full";
         # Startup Mode (changes require restart)
         # Values for `startup_mode`:
         #   - Windowed
@@ -102,24 +111,18 @@
           y = 4;
         };
         use_thin_strokes = false;
-      };
+      }; # font
       bell = {
         animation = "EaseOutExpo";
         duration = 0;
         color = "0xffffff";
       };
-      selection = {
-        save_to_clipboard = true;
-      };
-      cursor = {
-        unfocused_hollow = true;
-      };
-      mouse_bindings = [
-        {
-          mouse = "Middle";
-          action = "PasteSelection";
-        }
-      ];
+      selection = { save_to_clipboard = true; };
+      cursor = { unfocused_hollow = true; };
+      mouse_bindings = [{
+        mouse = "Middle";
+        action = "PasteSelection";
+      }];
     }; # settings
   }; # alacritty
   programs.direnv.enable = true;
@@ -127,38 +130,49 @@
     enable = true;
     settings = {
       theme = "mogster";
-      # At most one section each of 'keys.normal', 'keys.insert' and 'keys.select'
       keys.normal = {
-        # map vim=like `C` to change from the cursor to the end of the line
-        C = [ "collapse_selection" "extend_to_line_end" "change_selection" ];
-        # Maps the Control-s to the typable command :w which is an alias for :write (save file)
-        "C-s" = ":w";
-        # Maps the Control-, to opening of the helix config file
-        "C-," = ":open ~/.config/helix/config.toml";
-        # Maps the Alt-., to opening of the helix config file
-        "A-." = ":open ~/.config/helix/config.toml";
-        # Maps the 'w' key move_line_up
-        "0" = "goto_line_start";
-        # Maps the 'w' key move_line_up
-        "$" = "goto_line_end";
-        "C-e" = "scroll_down";
-        "C-y" = "scroll_up";
-        "space" = {
-          ":" = "command_palette";
-        };
         "#" = "toggle_comments";
-        "D" = "kill_to_line_end";
-        # # Maps `ga` to show possible code actions
-        # g = { a = "code_action"; };
-        # # Maps the enter key to open_below then re-enter normal mode
-        # "ret" = ["open_below" "normal_mode"];
+        "$" = "goto_line_end";
+        "0" = "goto_line_start";
+        "{" = [ "goto_prev_paragraph" ];
+        "}" = [ "goto_next_paragraph" ];
+        b = [ "move_prev_word_start" "collapse_selection" ];
+        d = {
+          a = [ "select_textobject_around" ];
+          d = [ "extend_to_line_bounds" "delete_selection" ];
+          i = [ "select_textobject_inner" ];
+          s = [ "surround_delete" ];
+          t = [ "extend_till_char" ];
+        };
+        e = [ "move_next_word_end" "collapse_selection" ];
+        C = [ "collapse_selection" "extend_to_line_end" "change_selection" ];
+        C-e = "scroll_down";
+        C-h = "select_prev_sibling";
+        C-l = "select_next_sibling";
+        C-s = ":w";
+        C-y = "scroll_up";
+        D = "kill_to_line_end";
+        G = "goto_file_end";
+        space = { ":" = "command_palette"; };
+        tab = "match_brackets";
+        V = ["select_mode" "extend_to_line_bounds"];
+        w = [ "move_next_word_start" "move_char_right" "collapse_selection" ];
+        x = "delete_selection";
       };
-      # keys.insert = {
-      #   # Maps Alt-X to enter normal mode
-      #   "A-x" = "normal_mode";
-      #   # Maps `jk` to exit insert mode
-      #   j = { k = "normal_mode"; };
-      # };
+      keys.select = {
+        d = [ "yank_main_selection_to_clipboard" "delete_selection" ];
+        esc = [ "collapse_selection" "keep_primary_selection" "normal_mode" ];
+        j = [ "extend_line_down" "extend_to_line_bounds" ];
+        k = [ "extend_line_up" "extend_to_line_bounds" ];
+        p = "replace_selections_with_clipboard";
+        P = "paste_clipboard_before";
+        tab = "match_brackets";
+        v = "expand_selection";
+        V = "shrink_selection";
+        x = [ "yank_main_selection_to_clipboard" "delete_selection" ];
+        y = [ "yank_main_selection_to_clipboard" "normal_mode" "flip_selections" "collapse_selection" ];
+        Y = [ "extend_to_line_bounds" "yank_main_selection_to_clipboard" "goto_line_start" "collapse_selection" "normal_mode" ];
+      };
       editor = {
         file-picker = {
           hidden = false;
@@ -320,6 +334,75 @@
       bind-key y run "tmux save-buffer - | reattach-to-user-namespace pbcopy"
     '';
   };
+  programs.zellij = {
+    enable = true;
+    settings = {
+      default_mode = "locked";
+      pane_frames = false;
+      scroll_buffer_size = 50000;
+      keybinds = let
+        ctrlQToLocked = {
+          key = [{ Ctrl = "l"; }];
+          action = [{ SwitchToMode = "locked"; }];
+        };
+        ctrlQToNormal = {
+          key = [{ Ctrl = "l"; }];
+          action = [{ SwitchToMode = "normal"; }];
+        };
+      in {
+        unbind = [{ Ctrl = "g"; }];
+        locked = [ ctrlQToNormal ];
+        normal = [ ctrlQToLocked ];
+        move = [ ctrlQToLocked ];
+        resize = [ ctrlQToLocked ];
+        pane = [ ctrlQToLocked ];
+        scroll = [ ctrlQToLocked ];
+        entersearch = [ ctrlQToLocked ];
+        search = [ ctrlQToLocked ];
+        renametab = [ ctrlQToLocked ];
+        renamepane = [ ctrlQToLocked ];
+        session = [ ctrlQToLocked ];
+        tab = [
+          ctrlQToLocked
+          {
+            key = [{ Char = "n"; }];
+            action = [ { NewTab = { }; } { SwitchToMode = "renametab"; } ];
+          }
+        ];
+        # tab = [
+        #   { unbind = { Char = "n"; }; }
+        #   ctrlQToLocked
+        #   {
+        #     key = [{ Char = "n"; }];
+        #     action = [ { NewTab = { }; } { SwitchToMode = "renametab"; } ];
+        #   }
+        # ];
+      };
+      theme = "tokyo-night";
+      themes.dracula =
+        builtins.fromJSON (builtins.readFile ./zellij/themes/dracula.json);
+      themes.gruvbox-dark =
+        builtins.fromJSON (builtins.readFile ./zellij/themes/gruvbox-dark.json);
+      themes.gruvbox-light = builtins.fromJSON
+        (builtins.readFile ./zellij/themes/gruvbox-light.json);
+      themes.molokai-dark =
+        builtins.fromJSON (builtins.readFile ./zellij/themes/molokai-dark.json);
+      themes.nord =
+        builtins.fromJSON (builtins.readFile ./zellij/themes/nord.json);
+      themes.one-half-dark = builtins.fromJSON
+        (builtins.readFile ./zellij/themes/one-half-dark.json);
+      themes.solarized-dark = builtins.fromJSON
+        (builtins.readFile ./zellij/themes/solarized-dark.json);
+      themes.solarized-light = builtins.fromJSON
+        (builtins.readFile ./zellij/themes/solarized-light.json);
+      themes.tokyo-night-light = builtins.fromJSON
+        (builtins.readFile ./zellij/themes/tokyo-night-light.json);
+      themes.tokyo-night-storm = builtins.fromJSON
+        (builtins.readFile ./zellij/themes/tokyo-night-storm.json);
+      themes.tokyo-night =
+        builtins.fromJSON (builtins.readFile ./zellij/themes/tokyo-night.json);
+    };
+  };  
   programs.zoxide = {
     enable = true;
   };
@@ -349,6 +432,9 @@
       tl = "tmux list-sessions";
       em = "em.zsh";
       doom = "~/.emacs.d/bin/doom";
+      zs = "zellij --layout compact --session";
+      za = "zellij attach";
+      zl = "zellij list-sessions";
     };
     envExtra = builtins.readFile ./.zshenv-mmbpm1;
     initExtra = ''

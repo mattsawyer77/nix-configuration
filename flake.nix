@@ -12,9 +12,7 @@
     };
     flake-utils.url = "github:numtide/flake-utils";
     emacs-overlay = {
-      # working as of 2022-09-04
-      # url =
-      #   "github:nix-community/emacs-overlay/0756dbd32d75990468b170339bb68aab5f595da7";
+      # working as of 2022-09-18
       url =
         "github:nix-community/emacs-overlay/8707d84ec67b39d5655929fc974055bcb9a160fb";
     };
@@ -46,7 +44,6 @@
             home-manager.users.sawyer = import ./home/SEA-ML-00059144.nix;
           }
           ./modules/mac.nix
-          ./modules/tmux.nix
           ({ config, pkgs, lib, ... }: {
             users.users.sawyer = {
               name = "sawyer";

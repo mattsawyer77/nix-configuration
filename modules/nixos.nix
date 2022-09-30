@@ -8,7 +8,7 @@ with lib;
     aws-iam-authenticator
     awscli2
     azure-cli
-    bash_5
+    bash
     bat
     bat-extras.batman
     bind
@@ -91,7 +91,7 @@ with lib;
     pcre
     pcre2
     pinentry
-    pkgconfig
+    pkg-config
     podman
     protobuf
     protobuf3_11
@@ -139,7 +139,7 @@ with lib;
     zstd
   ];
   nix = {
-    package = pkgs.nixFlakes;
+    package = pkgs.nixVersions.stable;
     extraOptions = ''
       experimental-features = nix-command flakes
       build-users-group = nixbld

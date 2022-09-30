@@ -1,0 +1,190 @@
+{
+  "ui.cursorline.primary": {
+    "bg": "bg1"
+  },
+  "ui.cursor.insert": {
+    "fg": "black",
+    "bg": "grey"
+  },
+  "markup.heading.5": {
+    "fg": "blue",
+    "modifiers": [
+      "bold"
+    ]
+  },
+  "markup.link.url": {
+    "fg": "blue",
+    "modifiers": [
+      "underlined"
+    ]
+  },
+  "markup.heading.2": {
+    "fg": "orange",
+    "modifiers": [
+      "bold"
+    ]
+  },
+  "ui.cursor.select": {
+    "fg": "bg0",
+    "bg": "blue"
+  },
+  "markup.heading.1": {
+    "fg": "red",
+    "modifiers": [
+      "bold"
+    ]
+  },
+  "ui.virtual.indent-guide": {
+    "fg": "bg4"
+  },
+  "ui.statusline.inactive": {
+    "fg": "grey",
+    "bg": "bg1"
+  },
+  "ui.cursor.match": {
+    "fg": "orange",
+    "bg": "diff_yellow"
+  },
+  "ui.virtual.whitespace": {
+    "fg": "bg4"
+  },
+  "ui.statusline.select": {
+    "fg": "bg0",
+    "bg": "blue",
+    "modifiers": [
+      "bold"
+    ]
+  },
+  "ui.help": {
+    "fg": "fg",
+    "bg": "bg1"
+  },
+  "ui.virtual.ruler": {
+    "bg": "bg2"
+  },
+  "ui.menu": {
+    "fg": "fg",
+    "bg": "bg2"
+  },
+  "ui.window": {
+    "fg": "grey",
+    "bg": "bg0"
+  },
+  "markup.heading.4": {
+    "fg": "green",
+    "modifiers": [
+      "bold"
+    ]
+  },
+  "ui.statusline.insert": {
+    "fg": "bg0",
+    "bg": "yellow",
+    "modifiers": [
+      "bold"
+    ]
+  },
+  "markup.heading.3": {
+    "fg": "yellow",
+    "modifiers": [
+      "bold"
+    ]
+  },
+  "ui.statusline.normal": {
+    "fg": "bg0",
+    "bg": "fg",
+    "modifiers": [
+      "bold"
+    ]
+  },
+  "markup.bold": {
+    "modifiers": [
+      "bold"
+    ]
+  },
+  "ui.statusline": {
+    "fg": "fg",
+    "bg": "bg3"
+  },
+  "ui.popup": {
+    "fg": "grey",
+    "bg": "bg2"
+  },
+  "ui.selection": {
+    "bg": "bg4"
+  },
+  "ui.menu.selected": {
+    "fg": "bg0",
+    "bg": "green"
+  },
+  "markup.heading.6": {
+    "fg": "fg",
+    "modifiers": [
+      "bold"
+    ]
+  },
+  "markup.italic": {
+    "modifiers": [
+      "italic"
+    ]
+  },
+  "ui.cursor": {
+    "fg": "bg0",
+    "bg": "fg"
+  },
+  "ui.cursorline.secondary": {
+    "bg": "bg1"
+  },
+  "ui.background": {
+    "bg": "bg0"
+  },
+  "diagnostic": {
+    "modifiers": [
+      "underlined"
+    ]
+  },
+  "type": "blue",
+  "constant": "purple",
+  "constant.numeric": "purple",
+  "constant.character.escape": "orange",
+  "string": "yellow",
+  "string.regexp": "orange",
+  "comment": "grey",
+  "variable": "fg",
+  "variable.builtin": "orange",
+  "variable.parameter": "fg",
+  "variable.other.member": "fg",
+  "label": "orange",
+  "punctuation": "grey",
+  "punctuation.delimiter": "grey",
+  "punctuation.bracket": "fg",
+  "keyword": "red",
+  "keyword.directive": "purple",
+  "operator": "orange",
+  "function": "green",
+  "function.builtin": "blue",
+  "function.macro": "purple",
+  "tag": "yellow",
+  "namespace": "blue",
+  "attribute": "purple",
+  "constructor": "blue",
+  "module": "blue",
+  "special": "orange",
+  "markup.heading.marker": "grey",
+  "markup.list": "red",
+  "markup.link.text": "purple",
+  "markup.quote": "grey",
+  "markup.raw": "green",
+  "diff.plus": "green",
+  "diff.delta": "orange",
+  "diff.minus": "red",
+  "ui.background.separator": "grey",
+  "ui.linenr": "grey",
+  "ui.linenr.selected": "fg",
+  "ui.text": "fg",
+  "ui.text.focus": "green",
+  "hint": "blue",
+  "info": "green",
+  "warning": "yellow",
+  "error": "red",
+  "palette": {}
+}
