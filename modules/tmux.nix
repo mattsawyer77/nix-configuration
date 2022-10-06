@@ -28,11 +28,9 @@ with lib; {
     bind -n M-Right select-pane -R
     bind -n M-Up select-pane -U
     bind -n M-Down select-pane -D
-
-    set -g default-terminal "xterm-24bit"
-    set -ga terminal-overrides ",xterm-24bit:Tc"
-    # set -g default-terminal "xterm-256color"
-    # set -ga terminal-overrides ",alacritty:Tc"
+    set -g default-terminal "xterm-256color"
+    if 'infocmp -x alacritty > /dev/null 2>&1' 'set -g default-terminal "alacritty"'
+    set -ag terminal-overrides ",alacritty:RGB"
     set -g automatic-rename off
     set -g focus-events on
     set -g -q mode-mouse on

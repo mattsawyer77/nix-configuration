@@ -655,11 +655,15 @@ disable-docker-write-through() {
 }
 
 matrix-renew-certs() {
-  matrix certInfo 2>&1 \
-    | pcregrep -B4 'status:.*expired' \
-    | pcregrep -B2 '^\s*User Certificate' \
-    | pcregrep -o '^\w+' \
-    | xargs -I% sh -c "echo renewing cert for %...; matrix get-user-cert -b firefox -e %"
+  if ! matrix certInfo >/dev/null 2>&1; then
+    for env in demo1 crt staging prod; do matrix get-user-cert -b firefox -e "$env"; done
+  else
+    matrix certInfo 2>&1 \
+      | pcregrep -B4 'status:.*expired' \
+      | pcregrep -B2 '^\s*User Certificate' \
+      | pcregrep -o '^\w+' \
+      | xargs -I% sh -c "echo renewing cert for %...; matrix get-user-cert -b firefox -e %"
+  fi
 }
 
 gc-login() {

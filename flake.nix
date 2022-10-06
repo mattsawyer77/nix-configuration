@@ -12,9 +12,10 @@
     };
     flake-utils.url = "github:numtide/flake-utils";
     emacs-overlay = {
-      # working as of 2022-09-18
-      url =
-        "github:nix-community/emacs-overlay/8707d84ec67b39d5655929fc974055bcb9a160fb";
+      # unstable from 2022-10-02:
+      url = "github:nix-community/emacs-overlay/99f607199684071fef8e8a411d4e5d862cd5647a";
+      #  for non-master emacs native comp:
+      # url = "github:nix-community/emacs-overlay/350a3df35560f727046192cefd19e0d7e496a652";
     };
     neovim-nightly-overlay = {
       url = "github:nix-community/neovim-nightly-overlay";
@@ -28,6 +29,10 @@
     emacs-vterm-src = {
       url = "github:akermu/emacs-libvterm";
       flake = false;
+    };
+    nil = {
+      url = "github:oxalica/nil";
+      inputs.nixpkgs.follows = "unstable";
     };
   };
   outputs = { self, nixpkgs, darwin, flake-utils, home-manager, ... }@inputs: {
@@ -50,7 +55,7 @@
               home = "/Users/sawyer";
             };
             nix = {
-              package = pkgs.nixFlakes;
+              package = pkgs.nixVersions.stable;
               extraOptions = ''
                 system = x86_64-darwin
                 experimental-features = nix-command flakes
@@ -74,7 +79,7 @@
               home = "/Users/matt";
             };
             nix = {
-              package = pkgs.nixFlakes;
+              package = pkgs.nixVersions.stable;
               extraOptions = ''
                 system = aarch64-darwin
                 extra-platforms = aarch64-darwin x86_64-darwin
