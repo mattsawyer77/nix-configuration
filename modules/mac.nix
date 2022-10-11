@@ -27,7 +27,7 @@ let
     flamegraph
     freetype
     # lima
-    # ssm-session-manager-plugin # broken as of 2022-04-08
+    ssm-session-manager-plugin
     # qemu
     qmk
     # ttfautohint # broken as of 2022-09-06
