@@ -28,11 +28,8 @@ with lib; {
     bind -n M-Right select-pane -R
     bind -n M-Up select-pane -U
     bind -n M-Down select-pane -D
-
-    set -g default-terminal "xterm-24bit"
-    set -ga terminal-overrides ",xterm-24bit:Tc"
-    # set -g default-terminal "xterm-256color"
-    # set -ga terminal-overrides ",alacritty:Tc"
+    set -g default-terminal "alacritty"
+    set -ag terminal-overrides ",alacritty:RGB"
     set -g automatic-rename off
     set -g focus-events on
     set -g -q mode-mouse on
@@ -67,7 +64,6 @@ with lib; {
     # set -g status-right "#[bg=#444455]#[fg=#bbbbcc] %H:%M "
     set -g status-right ""
   '' + (if pkgs.stdenv.isDarwin then ''
-    set -g default-terminal "xterm-24bit"
     set -g default-command "reattach-to-user-namespace -l zsh"
     set -g status-left "#[bg=#e63634]#[fg=brightwhite]#{?client_prefix,#[bg=green],} #S "
     set -g status-right "#[bg=#444444]#[fg=#888888] #(rainbarf --width 20 --rgb --no-battery --order fciaws)"
