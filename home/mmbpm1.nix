@@ -170,64 +170,114 @@
         v = "expand_selection";
         V = "shrink_selection";
         x = [ "yank_main_selection_to_clipboard" "delete_selection" ];
-        y = [ "yank_main_selection_to_clipboard" "normal_mode" "flip_selections" "collapse_selection" ];
-        Y = [ "extend_to_line_bounds" "yank_main_selection_to_clipboard" "goto_line_start" "collapse_selection" "normal_mode" ];
+        y = [
+          "yank_main_selection_to_clipboard"
+          "normal_mode"
+          "flip_selections"
+          "collapse_selection"
+        ];
+        Y = [
+          "extend_to_line_bounds"
+          "yank_main_selection_to_clipboard"
+          "goto_line_start"
+          "collapse_selection"
+          "normal_mode"
+        ];
       };
       editor = {
-        file-picker = {
-          hidden = false;
-        };
-        lsp = {
-          display-messages = true;
-        };
+        file-picker = { hidden = false; };
+        lsp = { display-messages = true; };
         cursor-shape = {
           insert = "bar";
           normal = "block";
         };
       };
     }; # settings
-    languages = [
-      {
-        name = "go";
-        indent = {
-          tab-width = 2;
-          unit = "  ";
-        };
-      }
-    ]; # languages
+    languages = [{
+      name = "go";
+      indent = {
+        tab-width = 2;
+        unit = "  ";
+      };
+    }]; # languages
     themes = {
       mogster = {
-        "attribute" = { fg = "#dc7759"; modifiers = [ "bold" ]; };
-        "keyword" = { fg = "#dcb659"; modifiers = [ "bold" ]; };
-        "keyword.directive" = { fg = "#dcb659"; modifiers = [ "bold" ]; };
-        "namespace" = { fg = "#d32c5d"; modifiers = [ "bold" ]; };
+        "attribute" = {
+          fg = "#dc7759";
+          modifiers = [ "bold" ];
+        };
+        "keyword" = {
+          fg = "#dcb659";
+          modifiers = [ "bold" ];
+        };
+        "keyword.directive" = {
+          fg = "#dcb659";
+          modifiers = [ "bold" ];
+        };
+        "namespace" = {
+          fg = "#d32c5d";
+          modifiers = [ "bold" ];
+        };
         "punctuation" = "#dc7759";
         "punctuation.delimiter" = "#dc7759";
-        "operator" = { fg = "#dc7759"; modifiers = [ "bold" ]; };
+        "operator" = {
+          fg = "#dc7759";
+          modifiers = [ "bold" ];
+        };
         "special" = "#7fdc59";
         "variable.other.member" = "#c6b8ad";
         "variable" = "#c6b8ad";
         "variable.parameter" = "#c6b8ad";
-        "type" = { fg = "#dc597f"; modifiers = [ "bold" ]; };
-        "type.builtin" = { fg = "#d32c5d"; modifiers = [ "bold" ]; };
-        "constructor" = { fg = "#dc597f"; modifiers = [ "bold" ]; };
-        "function" = { fg = "#59dcd8"; modifiers = [ "bold]" ]; };
-        "function.macro" = { fg = "#dc7759"; modifiers = [ "bold" ]; };
-        "function.builtin" = { fg = "#59dcd8"; modifiers = [ "bold" ]; };
+        "type" = {
+          fg = "#dc597f";
+          modifiers = [ "bold" ];
+        };
+        "type.builtin" = {
+          fg = "#d32c5d";
+          modifiers = [ "bold" ];
+        };
+        "constructor" = {
+          fg = "#dc597f";
+          modifiers = [ "bold" ];
+        };
+        "function" = {
+          fg = "#59dcd8";
+          modifiers = [ "bold]" ];
+        };
+        "function.macro" = {
+          fg = "#dc7759";
+          modifiers = [ "bold" ];
+        };
+        "function.builtin" = {
+          fg = "#59dcd8";
+          modifiers = [ "bold" ];
+        };
         "comment" = "#627d9d";
         "variable.builtin" = "#c6b8ad";
         "constant" = "#59dcb7";
         "constant.builtin" = "#59dcb7";
         "string" = "#59dcb7";
         "constant.numeric" = "#59c0dc";
-        "constant.character.escape" = { fg = "#7fdc59"; modifiers = [ "bold" ]; };
+        "constant.character.escape" = {
+          fg = "#7fdc59";
+          modifiers = [ "bold" ];
+        };
         "label" = "#59c0dc";
         "module" = "#d32c5d";
         "markup.heading" = "blue";
         "markup.list" = "red";
-        "markup.bold" = { fg = "yellow"; modifiers = [ "bold" ]; };
-        "markup.italic" = { fg = "magenta"; modifiers = [ "italic" ]; };
-        "markup.link.url" = { fg = "yellow"; modifiers = [ "underlined" ]; };
+        "markup.bold" = {
+          fg = "yellow";
+          modifiers = [ "bold" ];
+        };
+        "markup.italic" = {
+          fg = "magenta";
+          modifiers = [ "italic" ];
+        };
+        "markup.link.url" = {
+          fg = "yellow";
+          modifiers = [ "underlined" ];
+        };
         "markup.link.text" = "red";
         "markup.quote" = "cyan";
         "markup.raw" = "green";
@@ -237,34 +287,56 @@
         "ui.background" = { bg = "#161c23"; };
         "ui.linenr" = { fg = "#415367"; };
         "ui.linenr.selected" = { fg = "#e5ded6"; };
-        "ui.statusline" = { fg = "#e5ded6"; bg = "#232d38"; };
-        "ui.statusline.inactive" = { fg = "#c6b8ad"; bg = "#232d38"; };
+        "ui.statusline" = {
+          fg = "#e5ded6";
+          bg = "#232d38";
+        };
+        "ui.statusline.inactive" = {
+          fg = "#c6b8ad";
+          bg = "#232d38";
+        };
         "ui.popup" = { bg = "#232d38"; };
         "ui.window" = { bg = "#232d38"; };
-        "ui.help" = { bg = "#232d38"; fg = "#e5ded6"; };
+        "ui.help" = {
+          bg = "#232d38";
+          fg = "#e5ded6";
+        };
         "ui.text" = { fg = "#e5ded6"; };
-        "ui.text.focus" = { fg = "#e5ded6"; modifiers = [ "bold" ]; };
+        "ui.text.focus" = {
+          fg = "#e5ded6";
+          modifiers = [ "bold" ];
+        };
         "ui.virtual" = "#627d9d";
         "ui.selection" = { bg = "#313f4e"; };
-        "ui.cursor.match" = { fg = "#313f4e"; bg = "#dc7759"; };
-        "ui.cursor" = { fg = "#ABB2BF"; modifiers = [ "reversed" ]; };
-        "ui.menu" = { fg = "#e5ded6bg"; bg = "#232d38"; };
+        "ui.cursor.match" = {
+          fg = "#313f4e";
+          bg = "#dc7759";
+        };
+        "ui.cursor" = {
+          fg = "#ABB2BF";
+          modifiers = [ "reversed" ];
+        };
+        "ui.menu" = {
+          fg = "#e5ded6bg";
+          bg = "#232d38";
+        };
         "ui.menu.selected" = { bg = "#313f4e"; };
         "warning" = "#dc7759";
         "error" = "#dc597f";
         "info" = "#59dcb7";
         "hint" = "#59c0dc";
-        "diagnostic" = { fg = "#fbfbfb"; bg = "#531526"; };
-      }; #mogster
+        "diagnostic" = {
+          fg = "#fbfbfb";
+          bg = "#531526";
+        };
+      }; # mogster
     }; # themes
   }; # helix
   programs.skim = {
     enable = true;
     enableZshIntegration = true;
   };
-  programs.starship = {
-    enable = true;
-  };
+  programs.starship = { enable = true; };
   programs.tmux = {
     enable = true;
     extraConfig = ''
@@ -405,9 +477,7 @@
         builtins.fromJSON (builtins.readFile ./zellij/themes/tokyo-night.json);
     };
   };
-  programs.zoxide = {
-    enable = true;
-  };
+  programs.zoxide = { enable = true; };
   programs.zsh = {
     enable = true;
     enableAutosuggestions = true;

@@ -29,6 +29,11 @@
       url = "github:akermu/emacs-libvterm";
       flake = false;
     };
+    # nil: a nix LSP server
+    nil = {
+      url = "github:oxalica/nil";
+      inputs.nixpkgs.follows = "unstable";
+    };
   };
   outputs = { self, nixpkgs, darwin, flake-utils, home-manager, ... }@inputs: {
     # mac

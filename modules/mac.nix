@@ -233,8 +233,8 @@ in
   # yabai customizations
   services.yabai.extraConfig = ''
     yabai -m rule --add app="^System Preferences$" manage=off
+    yabai -m rule --add app="Steam" manage=off
     yabai -m rule --add app="^BIG-IP Edge Client$" manage=off
-    yabai -m rule --add app="Pikka" manage=off
     yabai -m rule --add app="Lightroom" manage=off
     yabai -m rule --add app="Microsoft.*Remote.*Desktop" manage=off
     yabai -m rule --add app="Music" title!="Music" manage=off
