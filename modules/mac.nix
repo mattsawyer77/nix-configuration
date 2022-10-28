@@ -1,6 +1,7 @@
 { config
 , pkgs
 , lib
+, nil
 , emacs-overlay
 , emacs-src
 , emacs-vterm-src
@@ -21,19 +22,17 @@ let
   x86-64-packages = with pkgs; [
     azure-cli
     cairo
-    emacsGitNativeComp # temporarily switch back to main overlay
+    emacs-mac
     # etcd # broken as of 2022-09-06
     flamegraph
     freetype
-    fx
-    lima
-    # ssm-session-manager-plugin # broken as of 2022-04-08
-    starship
-    qemu
+    # lima
+    ssm-session-manager-plugin
+    # qemu
     qmk
     # ttfautohint # broken as of 2022-09-06
     # wireshark # broken as of 2022-04-18
-    zenith
+    # zenith
   ];
   haskell-packages = with pkgs; [
     cabal-install
@@ -50,7 +49,7 @@ let
     automake
     aws-iam-authenticator
     awscli
-    bash_5
+    bash
     bat
     bat-extras.batman
     cachix
@@ -58,7 +57,7 @@ let
     ccls
     cmake
     coreutils
-    curlFull
+    # curlFull # nixpkgs curl builds with openssl 3 which breaks legacy PKCS12 cert auth
     delta
     delve
     # diff-so-fancy
@@ -99,6 +98,7 @@ let
     libcxx
     libgccjit
     libiconv
+    libressl
     libsndfile
     libssh2
     libtool
@@ -120,6 +120,7 @@ let
     netperf
     # nim
     # nimlsp
+    nil
     ninja
     nix-direnv
     nix-linter
@@ -134,13 +135,12 @@ let
     openapi-generator-cli
     openfortivpn
     openldap
-    openssl
+    # openssl
     pandoc
     pcre
     pcre2
     # pdfminer
     pkg-config
-    pkgconfig
     # podman # broken as of 2022-05-12
     protobuf
     prototool
@@ -160,6 +160,7 @@ let
     skhd
     skim
     skopeo
+    starship
     sqlite
     taglib
     taplo
@@ -176,7 +177,7 @@ let
     # vmtouch
     wget
     xsv
-    yabai
+    # yabai
     yaml-language-server
     yarn
     yj
@@ -198,7 +199,7 @@ in
       ++ (if stdenv.isx86_64 then x86-64-packages else [ ]));
   services.nix-daemon.enable = true;
   services.yabai.package = pkgs.yabai;
-  services.yabai.enable = true;
+  services.yabai.enable = false;
   services.yabai.config = {
     mouse_follows_focus = "off";
     focus_follows_mouse = "off";
@@ -252,7 +253,7 @@ in
     # yabai -m rule --add app="Calendar" space=5
     # yabai -m rule --add app="Messages" space=5
   '';
-  services.skhd.enable = true;
+  services.skhd.enable = false;
   services.skhd.package = pkgs.skhd;
   services.skhd.skhdConfig = ''
     # open terminal
@@ -434,11 +435,21 @@ in
     };
   };
   nixpkgs = {
-    config.allowUnfree = true;
-    config.allowBroken = true;
+    config = {
+      allowUnfree = true;
+      allowBroken = true;
+      # # use libressl instead of openssl
+      # packageOverrides = super:
+      #   let self = {
+      #     libressl = super.libressl.override { fetchurl = super.fetchurlBoot; };
+      #     openssl = self.libressl;
+      #   };
+      #   in self;
+    };
     overlays = [
       emacs-overlay.overlay
       (import ./neovim.nix)
+      nil.overlays.nil
       (import ./golangci-lint.nix)
       # TODO: figure out how to move the following to a separate file
       (final: prev: {
