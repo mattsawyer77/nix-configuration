@@ -12,6 +12,7 @@
 with lib;
 
 let
+  # emacsclient = import ./emacsclient.nix;
   # emacs-mac-overlays = (import ./emacs-mac.nix);
   # packages specific to arm64
   arm64-packages = with pkgs; [
@@ -63,6 +64,7 @@ let
     # diff-so-fancy
     direnv
     dos2unix
+    # emacsclient # from local package
     # emacs-mac # maybe a bad build?
     emacs-vterm
     eternal-terminal
@@ -80,7 +82,7 @@ let
     gnuplot
     go
     golangci-lint # customized in golangci-lint.nix overlay since it's broken in nixpkgs right now
-    google-cloud-sdk
+    (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
     gopls
     graphviz
     grpcurl

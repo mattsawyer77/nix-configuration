@@ -4,6 +4,7 @@ let
   username = "sawyer";
   homeDirectory = "/Users/" + username;
   goPathSuffix = "gocode";
+  localBinPath = ".local/bin";
 
 in
 {
@@ -14,7 +15,7 @@ in
     username = username;
     # append these extra dirs to the nix-generated path
     sessionPath = [
-      (homeDirectory + "/.local/bin")
+      (homeDirectory + "/" + localBinPath)
       (homeDirectory + "/.cargo/bin")
       (homeDirectory + "/" + goPathSuffix + "/bin")
     ];
@@ -31,6 +32,17 @@ in
       LESS = "-F -i -M -R -X --incsearch";
       SAML2AWS_USER_AGENT =
         "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.00) Gecko/20100101 Firefox/82.0";
+    };
+    # for git, $EDITOR/$VISUAL can't be set to reference a shell function, so deploy the script as follows
+    file."em.zsh" = {
+      executable = true;
+      source = ./scripts/em.zsh;
+      target = homeDirectory + "/" + localBinPath + "/em";
+    };
+    # install karabiner config (note: this may make the Karabiner Elements app unable to make config changes)
+    file."karabiner.json" = {
+      text = builtins.toJSON (import ./karabiner.nix);
+      target = homeDirectory + "/.config/karabiner/karabiner.json";
     };
   };
   programs.home-manager.enable = true;
@@ -112,26 +124,28 @@ in
         normal = {
           # family = "JetBrains Mono";
           # style = "Thin";
-          family = "PragmataPro Liga";
+          # family = "PragmataPro Liga";
+          family = "Input";
           style = "Regular";
         };
         bold = {
-          family = "PragmataPro Liga";
+          # family = "PragmataPro Liga";
+          family = "Input";
           style = "Bold";
         };
-        size = 22.0;
+        size = 20.0;
         # Offset is the extra space around each character. `offset.y` can be thought of
         # as modifying the line spacing, and `offset.x` as modifying the letter spacing.
         offset = {
           x = 0;
-          y = 8;
+          y = 4;
         };
         # Glyph offset determines the locations of the glyphs within their cells with
         # the default being at the bottom. Increasing `x` moves the glyph to the right,
         # increasing `y` moves the glyph upwards.
         glyph_offset = {
           x = 0;
-          y = 4;
+          y = 2;
         };
         AppleFontSmoothing = false;
       }; # font
@@ -417,7 +431,6 @@ in
       ts = "tmux new-session -n main -s";
       ta = "tmux attach -t";
       tl = "tmux list-sessions";
-      em = "em.zsh";
       doom = "~/.emacs.d/bin/doom";
       zs = "zellij --layout compact --session";
       za = "zellij attach";
