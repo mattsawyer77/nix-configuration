@@ -13,27 +13,21 @@
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Afterglow.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Argonaut.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Atelierlakeside.dark.json);
-      colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ayu-Dark.json);
+      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ayu-Dark.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ayu-Mirage.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Brewer.dark.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Eqie6.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Hybrid.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Iceberg-Dark.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ocean.dark.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ocean.light.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Palenight.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Tokyonight_Night.json);
+      colors = builtins.fromJSON
+        (builtins.readFile ./alacritty-themes/Tokyonight_Night.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Twilight.dark.json);
       # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/github_dimmed.json);
       env = {
-        # TERM variable
-        # This value is used to set the `$TERM` environment variable for
-        # each instance of Alacritty. If it is not present, alacritty will
-        # check the local terminfo database and use `alacritty` if it is
-        # available, otherwise `xterm-256color` is used.
-        # NOTE: xterm-24bit isn't working in the raw terminal, but is working in tmux
-        # and xterm-256color here supports 24-bit in some cases (but not terminal emacs)
-        TERM = "xterm-256color";
+        # TERM = "xterm-256color";
+        TERM = "alacritty";
       };
       key_bindings = [
         # map ctrl+space to ctrl+l since zellij doesn't support ctrl+space
@@ -89,14 +83,16 @@
       font = {
         # Normal (roman) font face
         normal = {
-          family = "JetBrains Mono";
-          style = "ExtraLight";
+          # family = "JetBrains Mono";
+          # style = "Thin";
+          family = "PragmataPro Liga";
+          style = "Regular";
         };
         bold = {
-          family = "JetBrains Mono";
-          style = "Medium";
+          family = "PragmataPro Liga";
+          style = "Bold";
         };
-        size = 19.0;
+        size = 22.0;
         # Offset is the extra space around each character. `offset.y` can be thought of
         # as modifying the line spacing, and `offset.x` as modifying the letter spacing.
         offset = {
@@ -110,7 +106,7 @@
           x = 0;
           y = 4;
         };
-        use_thin_strokes = false;
+        AppleFontSmoothing = false;
       }; # font
       bell = {
         animation = "EaseOutExpo";
@@ -340,14 +336,15 @@
   programs.tmux = {
     enable = true;
     extraConfig = ''
-      # remap prefix to Control + space
+      # remap prefix to control+l
       unbind C-b
+      set -g prefix C-l
+      # set -g prefix C-space
+      # bind l send-prefix
       set -g mode-keys vi
       bind-key -T copy-mode-vi 'v' send -X begin-selection
       bind-key -T copy-mode-vi 'y' send -X copy-selection-and-cancel
-      set -g prefix C-Space
       set -g base-index 1
-      bind Space send-prefix
       bind-key j command-prompt -p "join pane from:"  "join-pane -hs '%%'"
       bind-key s choose-tree
       bind-key b break-pane
@@ -366,10 +363,10 @@
       bind -n M-Right select-pane -R
       bind -n M-Up select-pane -U
       bind -n M-Down select-pane -D
-      set -g default-terminal "xterm-24bit"
-      set -ga terminal-overrides ",xterm-24bit:Tc"
       # set -g default-terminal "xterm-256color"
-      # set -ga terminal-overrides ",alacritty:Tc"
+      set -g default-terminal "alacritty"
+      # if 'infocmp -x alacritty > /dev/null 2>&1' 'set -g default-terminal "alacritty"'
+      set -ag terminal-overrides ",alacritty:RGB"
       set -g automatic-rename off
       set -g focus-events on
       set -g -q mode-mouse on
@@ -399,7 +396,6 @@
       set -g status-right-length 60
       # set -g status-right "#[bg=#444455]#[fg=#bbbbcc] %H:%M "
       set -g status-right ""
-      set -g default-terminal "xterm-24bit"
       set -g default-command "reattach-to-user-namespace -l zsh"
       set -g status-left "#[bg=#e63634]#[fg=brightwhite]#{?client_prefix,#[bg=green],} #S "
       set -g status-right "#[bg=#444444]#[fg=#888888] #(rainbarf --width 20 --rgb --no-battery --order fciaws)"
@@ -407,7 +403,7 @@
     '';
   };
   programs.zellij = {
-    enable = true;
+    enable = false;
     settings = {
       default_mode = "locked";
       pane_frames = false;
