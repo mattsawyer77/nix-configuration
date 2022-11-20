@@ -21,7 +21,6 @@ let
 
   # packages specific to x86-64
   x86-64-packages = with pkgs; [
-    azure-cli
     cairo
     emacs-mac
     # etcd # broken as of 2022-09-06
@@ -50,6 +49,7 @@ let
     automake
     aws-iam-authenticator
     awscli
+    azure-cli
     bash
     bat
     bat-extras.batman
@@ -67,6 +67,7 @@ let
     # emacsclient # from local package
     # emacs-mac # maybe a bad build?
     emacs-vterm
+    envsubst
     eternal-terminal
     exa
     fd
