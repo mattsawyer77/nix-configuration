@@ -16,7 +16,7 @@ let
   # emacs-mac-overlays = (import ./emacs-mac.nix);
   # packages specific to arm64
   arm64-packages = with pkgs; [
-    emacs-mac
+    emacsPgtkNativeComp
   ];
 
   # packages specific to x86-64
@@ -65,7 +65,7 @@ let
     direnv
     dos2unix
     # emacsclient # from local package
-    # emacs-mac # maybe a bad build?
+    # emacs-mac
     emacs-vterm
     envsubst
     eternal-terminal
@@ -486,6 +486,7 @@ in
           buildInputs = o.buildInputs
             ++ [ prev.darwin.apple_sdk.frameworks.WebKit ];
           configureFlags = o.configureFlags ++ [
+            "--with-modules"
             "--without-gpm"
             "--without-dbus"
             "--without-mailutils"

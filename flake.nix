@@ -13,9 +13,9 @@
     flake-utils.url = "github:numtide/flake-utils";
     emacs-overlay = {
       # unstable from 2022-10-02:
-      url = "github:nix-community/emacs-overlay/99f607199684071fef8e8a411d4e5d862cd5647a";
-      #  for non-master emacs native comp:
-      # url = "github:nix-community/emacs-overlay/350a3df35560f727046192cefd19e0d7e496a652";
+      # url = "github:nix-community/emacs-overlay/99f607199684071fef8e8a411d4e5d862cd5647a";
+      # emacs-overlay:stable:emacsGitNativeComp from 2022-11-19:
+      url = "github:nix-community/emacs-overlay/909b090c1181644ef3def6a37a18e9e3d08d1b07";
     };
     neovim-nightly-overlay = {
       url = "github:nix-community/neovim-nightly-overlay";
