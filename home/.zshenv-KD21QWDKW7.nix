@@ -624,15 +624,14 @@ kcontainers() {
 }
 
 introspect() {
-  host=$(echo "$@" | pcregrep -o 'compass-lma\.(\w+)\.volterra\.(us|io)')
+  host=$(echo "$@" | grep -oE 'compass-lma\.(\w+)\.volterra\.(us|io)')
   environment=$(echo "$host" | cut -d'.' -f2)
   if [[ "$environment" == "ves" ]]; then
     environment="prod"
   fi
-  headers="-H 'pragma: no-cache' -H 'accept-encoding: gzip, deflate, br' -H 'accept-language: en-US' -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_16_0) AppleWebKit/537.36 (KHTML, like Gecko) sia/1.23.13 Chrome/69.0.3497.128 Electron/4.1.1 Safari/537.36' -H 'access-control-allow-methods: *' -H 'content-type: application/json' -H 'access-control-allow-origin: *' -H 'accept: application/json' -H 'cache-control: no-cache' -H 'authority: ${host}'"
   user_cert="${HOME}/.ves-internal/${environment}/usercerts.p12"
   if [[ -f "$user_cert" ]]; then
-    curl --insecure --fail --no-progress-meter --cert-type P12 --cert "${user_cert}:volterra" $headers $@
+    curl --insecure --fail --no-progress-meter --cert-type P12 --cert "${user_cert}:volterra" "$@"
   else
     echo >&2 "unknown environment $environment"
     return 1
@@ -732,6 +731,93 @@ site-terraform-output() {
     echo >&2 "ERROR: could not get terraform output for site named '$site_name'"
     return 1
   fi
+}
+
+site-public-ips() {
+  local environment
+  local site
+  local api_gw_hostname
+  local compass_hostname
+  local usage="usage:\nsite-public-ips [environment] site-name"
+  if [ ! -v 1 ]; then
+    echo >&2 "must specify site"
+    echo >&2 "$usage"
+    return 1
+  fi
+  if [ $# -eq 2 ]; then
+    environment="$1"
+    shift
+  fi
+  case $environment in
+    demo1)
+      compass_hostname="compass-lma.demo1.volterra.us"
+      api_gw_hostname="gc01.int.ves.io"
+      ;;
+    crt)
+      compass_hostname="compass-lma.crt.volterra.us"
+      api_gw_hostname="gc01.int.ves.io"
+      ;;
+    staging)
+      compass_hostname="compass-lma.staging.volterra.us"
+      api_gw_hostname="gc1-iad-01.int.volterra.us"
+      ;;
+    *)
+      echo >&2 "unknown environment $environment"
+      return 1
+      ;;
+  esac
+  site="$1"
+  tf_params_objects=$(curl "https://${compass_hostname}/introspection/${api_gw_hostname}/vulpix/ves.io.stdlib/introspect/read/object/ves.io.vulpix.terraform_parameters.Object?response_format=1&page_start=0&page_limit=2000" \
+    -H 'content-type: application/json' \
+    -H 'accept: application/json' \
+    -H "authority: $compass_hostname" \
+    --compressed \
+    --insecure \
+    --silent \
+    --fail \
+    --cert-type P12 \
+    --cert ${HOME}/.ves-internal/staging/usercerts.p12:volterra)
+  if [[ $? -ne 0 ]]; then
+    return $?
+  fi
+  tf_params_id=$(printf '%s\n' "$tf_params_objects" \
+    | jq -r '.get_responses|to_entries[]|select(.value.object.system_metadata.owner_view.name == "'"$site"'")|.value.object.metadata.uid')
+  if [[ $? -ne 0 ]]; then
+    return $?
+  fi
+  if [[ -z "$tf_params_id" ]]; then
+    echo >&2 "could not find terraform parameters for site $site"
+    return 1
+  fi
+  tf_status=$(curl "https://${compass_hostname}/introspection/${api_gw_hostname}/streak/ves.io.streak/introspect/read/status-objects" \
+    -H 'content-type: application/json' \
+    -H 'accept: application/json' \
+    -H 'authority: compass-lma.staging.volterra.us' \
+    --data-binary '{"status_object_type":"ves.io.schema.views.terraform_parameters.StatusObject","config_object_uids":["'"$tf_params_id"'"]}' \
+    --compressed \
+    --insecure \
+    --insecure \
+    --fail \
+    --silent \
+    --cert-type P12 \
+    --cert ${HOME}/.ves-internal/staging/usercerts.p12:volterra)
+  if [[ -z "$tf_status" ]]; then
+    echo >&2 "could not find terraform status for site $site"
+    return 1
+  fi
+
+  master_ips=$(printf '%s\n' "$tf_status" \
+    | jq -r '.config_status_map|to_entries[].value.items[].status_object_bytes.apply_status.tf_output' | grep master_public_ip_address | pcregrep -o '([\d\.]+)$')
+  if [[ -z "$master_ips" ]]; then
+    # check for multi-node
+    master_ips=$(printf '%s\n' "$tf_status" | grep -A3 master_public_ip_address | pcregrep -o '\d+\.\d+\.\d+\.\d+')
+  fi
+  if [[ -z "$master_ips" ]]; then
+    echo >&2 "could not find public IPs for site $site, terraform apply status:"
+    printf '%s\n' "$tf_status" >&2
+    return 1
+  fi
+  printf '%s\n' "$master_ips"
 }
 
 streak-get-status-objects() {
