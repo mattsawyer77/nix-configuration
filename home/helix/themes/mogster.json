@@ -44,7 +44,7 @@
   "function": {
     "fg": "#59dcd8",
     "modifiers": [
-      "bold]"
+      "bold"
     ]
   },
   "constructor": {
@@ -124,7 +124,7 @@
     ]
   },
   "ui.menu": {
-    "fg": "#e5ded6bg",
+    "fg": "#e5ded6",
     "bg": "#232d38"
   },
   "markup.link.url": {
@@ -135,7 +135,10 @@
   },
   "ui.statusline": {
     "fg": "#e5ded6",
-    "bg": "#232d38"
+    "bg": "#232d38",
+    "modifiers": [
+      "bold"
+    ]
   },
   "keyword.directive": {
     "fg": "#dcb659",

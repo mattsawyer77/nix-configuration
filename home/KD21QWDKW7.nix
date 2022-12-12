@@ -1,7 +1,7 @@
 { config, pkgs, ... }:
 
 let
-  username = "sawyer";
+  username = "m.sawyer";
   homeDirectory = "/Users/" + username;
   goPathSuffix = "gocode";
   localBinPath = ".local/bin";
@@ -46,122 +46,125 @@ in
     };
   };
   programs.home-manager.enable = true;
-  programs.alacritty = {
-    enable = true;
-    settings = {
-      live_config_reload = true;
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Afterglow.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Argonaut.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Atelierlakeside.dark.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ayu-Dark.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ayu-Mirage.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Brewer.dark.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Eqie6.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Hybrid.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Iceberg-Dark.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ocean.dark.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Palenight.json);
-      colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Tokyonight_Night.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Twilight.dark.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/github_dimmed.json);
-      env = {
-        # TERM = "xterm-256color";
-        TERM = "alacritty";
-      };
-      key_bindings = [
-        # map ctrl+space to ctrl+l since zellij doesn't support ctrl+space
-        {
-          key = "Space";
-          mods = "Control";
-          chars = "\\x0c";
-        }
-      ]; # key_bindings
-      window = {
-        opacity = 1.0;
-        # Allow terminal applications to change Alacritty's window title.
-        dynamic_title = true;
-        # Window position (changes require restart)
-        # Specified in number of pixels.
-        # If the position is not set, the window manager will handle the placement.
-        # position = {
-        #   x = 0;
-        #   y = 0;
-        # };
-        # Window padding (changes require restart)
-        # Blank space added around the window in pixels. This padding is scaled
-        # by DPI and the specified value is always added at both opposing sides.
-        padding = {
-          x = 10;
-          y = 10;
+  programs.alacritty = let alacrittyThemes = {
+    afterglow = builtins.fromJSON (builtins.readFile ./alacritty-themes/Afterglow.json);
+    argonaut = builtins.fromJSON (builtins.readFile ./alacritty-themes/Argonaut.json);
+    atelierLakeside = builtins.fromJSON (builtins.readFile ./alacritty-themes/Atelierlakeside.dark.json);
+    ayuDark = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ayu-Dark.json);
+    ayuMirage = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ayu-Mirage.json);
+    brewer = builtins.fromJSON (builtins.readFile ./alacritty-themes/Brewer.dark.json);
+    eqie6 = builtins.fromJSON (builtins.readFile ./alacritty-themes/Eqie6.json);
+    hybrid = builtins.fromJSON (builtins.readFile ./alacritty-themes/Hybrid.json);
+    icebergDark = builtins.fromJSON (builtins.readFile ./alacritty-themes/Iceberg-Dark.json);
+    oceanDark = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ocean.dark.json);
+    paleNight = builtins.fromJSON (builtins.readFile ./alacritty-themes/Palenight.json);
+    tokyoNight = builtins.fromJSON (builtins.readFile ./alacritty-themes/Tokyonight_Night.json);
+    twilightDark = builtins.fromJSON (builtins.readFile ./alacritty-themes/Twilight.dark.json);
+    githubDimmed = builtins.fromJSON (builtins.readFile ./alacritty-themes/github_dimmed.json);
+  }; in
+    {
+      enable = true;
+      settings = {
+        live_config_reload = true;
+        colors = alacrittyThemes.eqie6;
+        env = {
+          # TERM = "xterm-256color";
+          TERM = "alacritty";
         };
-        # Spread additional padding evenly around the terminal content.
-        dynamic_padding = true;
-        # Window decorations
-        # Values for `decorations`:
-        #     - full: Borders and title bar
-        #     - none: Neither borders nor title bar
-        # Values for `decorations` (macOS only):
-        #     - transparent: Title bar, transparent background and title bar buttons
-        #     - buttonless: Title bar, transparent background, but no title bar buttons
-        decorations = "full";
-        # Startup Mode (changes require restart)
-        # Values for `startup_mode`:
-        #   - Windowed
-        #   - Maximized
-        #   - Fullscreen
-        # Values for `startup_mode` (macOS only):
-        #   - SimpleFullscreen
-        startup_mode = "Maximized";
-      }; # window
-      draw_bold_text_with_bright_colors = false;
-      scrolling = {
-        # Maximum number of lines in the scrollback buffer.
-        # Specifying '0' will disable scrolling.
-        history = 0;
-      };
-      font = {
-        # Normal (roman) font face
-        normal = {
-          # family = "JetBrains Mono";
-          # style = "Thin";
-          # family = "PragmataPro Liga";
-          family = "Input";
-          style = "Regular";
+        key_bindings = [
+          # map ctrl+space to ctrl+l since zellij doesn't support ctrl+space
+          # {
+          #   key = "Space";
+          #  mods = "Control";
+          #  chars = "\\x0c";
+          #}
+        ]; # key_bindings
+        window = {
+          opacity = 1.0;
+          # Allow terminal applications to change Alacritty's window title.
+          dynamic_title = true;
+          # Window position (changes require restart)
+          # Specified in number of pixels.
+          # If the position is not set, the window manager will handle the placement.
+          # position = {
+          #   x = 0;
+          #   y = 0;
+          # };
+          # Window padding (changes require restart)
+          # Blank space added around the window in pixels. This padding is scaled
+          # by DPI and the specified value is always added at both opposing sides.
+          padding = {
+            x = 10;
+            y = 10;
+          };
+          # Spread additional padding evenly around the terminal content.
+          dynamic_padding = true;
+          # Window decorations
+          # Values for `decorations`:
+          #     - full: Borders and title bar
+          #     - none: Neither borders nor title bar
+          # Values for `decorations` (macOS only):
+          #     - transparent: Title bar, transparent background and title bar buttons
+          #     - buttonless: Title bar, transparent background, but no title bar buttons
+          decorations = "full";
+          # Startup Mode (changes require restart)
+          # Values for `startup_mode`:
+          #   - Windowed
+          #   - Maximized
+          #   - Fullscreen
+          # Values for `startup_mode` (macOS only):
+          #   - SimpleFullscreen
+          startup_mode = "Maximized";
+        }; # window
+        draw_bold_text_with_bright_colors = false;
+        scrolling = {
+          # Maximum number of lines in the scrollback buffer.
+          # Specifying '0' will disable scrolling.
+          history = 0;
         };
-        bold = {
-          # family = "PragmataPro Liga";
-          family = "Input";
-          style = "Bold";
+        font = {
+          # Normal (roman) font face
+          normal = {
+            # family = "JetBrains Mono";
+            # style = "Thin";
+            # family = "Input";
+            family = "PragmataPro Liga";
+            style = "Regular";
+          };
+          bold = {
+            family = "PragmataPro Liga";
+            # family = "Input";
+            style = "Bold";
+          };
+          size = 20.0;
+          # Offset is the extra space around each character. `offset.y` can be thought of
+          # as modifying the line spacing, and `offset.x` as modifying the letter spacing.
+          offset = {
+            x = 0;
+            y = 6;
+          };
+          # Glyph offset determines the locations of the glyphs within their cells with
+          # the default being at the bottom. Increasing `x` moves the glyph to the right,
+          # increasing `y` moves the glyph upwards.
+          glyph_offset = {
+            x = 0;
+            y = 4;
+          };
+          AppleFontSmoothing = true;
+        }; # font
+        bell = {
+          animation = "EaseOutExpo";
+          duration = 0;
+          color = "0xffffff";
         };
-        size = 20.0;
-        # Offset is the extra space around each character. `offset.y` can be thought of
-        # as modifying the line spacing, and `offset.x` as modifying the letter spacing.
-        offset = {
-          x = 0;
-          y = 4;
-        };
-        # Glyph offset determines the locations of the glyphs within their cells with
-        # the default being at the bottom. Increasing `x` moves the glyph to the right,
-        # increasing `y` moves the glyph upwards.
-        glyph_offset = {
-          x = 0;
-          y = 2;
-        };
-        AppleFontSmoothing = false;
-      }; # font
-      bell = {
-        animation = "EaseOutExpo";
-        duration = 0;
-        color = "0xffffff";
-      };
-      selection = { save_to_clipboard = true; };
-      cursor = { unfocused_hollow = true; };
-      mouse_bindings = [{
-        mouse = "Middle";
-        action = "PasteSelection";
-      }];
-    }; # settings
-  }; # alacritty
+        selection = { save_to_clipboard = true; };
+        cursor = { unfocused_hollow = true; };
+        mouse_bindings = [{
+          mouse = "Middle";
+          action = "PasteSelection";
+        }];
+      }; # settings
+    }; # alacritty
   programs.direnv.enable = true;
   programs.helix = {
     enable = true;
@@ -196,6 +199,8 @@ in
         C-y = "scroll_up";
         D = "kill_to_line_end";
         G = "goto_file_end";
+        P = "paste_clipboard_before";
+        p = "paste_clipboard_after";
         space = { ":" = "command_palette"; };
         tab = "match_brackets";
         V = [ "select_mode" "extend_to_line_bounds" ];
@@ -269,10 +274,9 @@ in
   programs.tmux = {
     enable = true;
     extraConfig = ''
-      # remap prefix to control+l
       unbind C-b
-      set -g prefix C-l
-      # set -g prefix C-space
+      # set -g prefix C-l
+      set -g prefix C-space
       # bind l send-prefix
       set -g mode-keys vi
       bind-key -T copy-mode-vi 'v' send -X begin-selection
@@ -326,17 +330,17 @@ in
       set -g window-status-current-style fg="#ccccdd",bg="#4f4f58"
       set -g status-left-length 70
       set -g status-left "#[bg=#336688]#[fg=#eeeeee] #h #[bg=#113355]#[fg=brightwhite]#{?client_prefix,#[bg=green],} #S "
-      set -g status-right-length 60
+      # set -g status-right-length 60
       # set -g status-right "#[bg=#444455]#[fg=#bbbbcc] %H:%M "
       set -g status-right ""
       set -g default-command "reattach-to-user-namespace -l zsh"
       set -g status-left "#[bg=#e63634]#[fg=brightwhite]#{?client_prefix,#[bg=green],} #S "
-      set -g status-right "#[bg=#444444]#[fg=#888888] #(rainbarf --width 20 --rgb --no-battery --order fciaws)"
+      # set -g status-right "#[bg=#444444]#[fg=#888888] #(rainbarf --width 20 --rgb --no-battery --order fciaws)"
       bind-key y run "tmux save-buffer - | reattach-to-user-namespace pbcopy"
     '';
   };
   programs.zellij = {
-    enable = true;
+    enable = false;
     settings = {
       default_mode = "locked";
       pane_frames = false;
@@ -427,6 +431,7 @@ in
       randomizeMacAddress =
         "openssl rand -hex 6 | sed 's/(..)/1:/g; s/.$//' | xargs sudo ifconfig $(route -n get default | grep interface: | cut -d':' -f2 | awk '{print $1}') ether";
       k = "kubectl";
+      kv = "kubectl -n ves-system";
       l = "exa -alF";
       ts = "tmux new-session -n main -s";
       ta = "tmux attach -t";
@@ -436,7 +441,7 @@ in
       za = "zellij attach";
       zl = "zellij list-sessions";
     };
-    envExtra = builtins.readFile ./.zshenv-SEA-ML-00059144;
+    envExtra = builtins.readFile ./.zshenv-KD21QWDKW7.nix;
     initExtra = ''
       source <(kubectl completion zsh)
       printf '\e]2;'$(hostname)'\a'

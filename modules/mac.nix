@@ -1,40 +1,39 @@
 { config
 , pkgs
 , lib
+, nil
 , emacs-overlay
 , emacs-src
 , emacs-vterm-src
 , neovim-nightly-overlay
+, username
 , ...
 }:
 
 with lib;
 
 let
+  # emacsclient = import ./emacsclient.nix;
   # emacs-mac-overlays = (import ./emacs-mac.nix);
   # packages specific to arm64
   arm64-packages = with pkgs; [
-    emacs-mac
+    emacsPgtkNativeComp
   ];
 
   # packages specific to x86-64
   x86-64-packages = with pkgs; [
-    azure-cli
     cairo
-    emacsGitNativeComp # temporarily switch back to main overlay
+    emacs-mac
     # etcd # broken as of 2022-09-06
     flamegraph
-    fontconfig
     freetype
-    fx
-    lima
-    # ssm-session-manager-plugin # broken as of 2022-04-08
-    starship
-    qemu
+    # lima
+    ssm-session-manager-plugin
+    # qemu
     qmk
     # ttfautohint # broken as of 2022-09-06
     # wireshark # broken as of 2022-04-18
-    zenith
+    # zenith
   ];
   haskell-packages = with pkgs; [
     cabal-install
@@ -51,25 +50,31 @@ let
     automake
     aws-iam-authenticator
     awscli
-    bash_5
+    azure-cli
+    bash
     bat
     bat-extras.batman
+    bottom # binary is `btm`
     cachix
     cask
     ccls
     cmake
     coreutils
-    curlFull
+    # curlFull # nixpkgs curl builds with openssl 3 which breaks legacy PKCS12 cert auth
     delta
     delve
     # diff-so-fancy
     direnv
+    discord
     dos2unix
-    # emacs-mac # maybe a bad build?
+    # emacsclient # from local package
+    # emacs-mac
     emacs-vterm
+    envsubst
     eternal-terminal
     exa
     fd
+    fontconfig
     fzf
     gdb
     gdbm
@@ -79,9 +84,10 @@ let
     gnumake
     gnupg
     gnuplot
+    gnused
     go
     golangci-lint # customized in golangci-lint.nix overlay since it's broken in nixpkgs right now
-    google-cloud-sdk
+    (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
     gopls
     graphviz
     grpcurl
@@ -99,6 +105,7 @@ let
     libcxx
     libgccjit
     libiconv
+    libressl
     libsndfile
     libssh2
     libtool
@@ -120,6 +127,7 @@ let
     netperf
     # nim
     # nimlsp
+    nil
     ninja
     nix-direnv
     nix-linter
@@ -134,17 +142,17 @@ let
     openapi-generator-cli
     openfortivpn
     openldap
-    openssl
+    # openssl
     pandoc
     pcre
     pcre2
     # pdfminer
     pkg-config
-    pkgconfig
     # podman # broken as of 2022-05-12
-    protobuf
+    # protobuf
     prototool
     python3
+    pywal
     readline
     reattach-to-user-namespace
     # redis
@@ -160,6 +168,7 @@ let
     skhd
     skim
     skopeo
+    starship
     sqlite
     taglib
     taplo
@@ -176,7 +185,7 @@ let
     # vmtouch
     wget
     xsv
-    yabai
+    # yabai
     yaml-language-server
     yarn
     yj
@@ -198,7 +207,7 @@ in
       ++ (if stdenv.isx86_64 then x86-64-packages else [ ]));
   services.nix-daemon.enable = true;
   services.yabai.package = pkgs.yabai;
-  services.yabai.enable = true;
+  services.yabai.enable = false;
   services.yabai.config = {
     mouse_follows_focus = "off";
     focus_follows_mouse = "off";
@@ -252,7 +261,7 @@ in
     # yabai -m rule --add app="Calendar" space=5
     # yabai -m rule --add app="Messages" space=5
   '';
-  services.skhd.enable = true;
+  services.skhd.enable = false;
   services.skhd.package = pkgs.skhd;
   services.skhd.skhdConfig = ''
     # open terminal
@@ -434,11 +443,21 @@ in
     };
   };
   nixpkgs = {
-    config.allowUnfree = true;
-    config.allowBroken = true;
+    config = {
+      allowUnfree = true;
+      allowBroken = true;
+      # # use libressl instead of openssl
+      # packageOverrides = super:
+      #   let self = {
+      #     libressl = super.libressl.override { fetchurl = super.fetchurlBoot; };
+      #     openssl = self.libressl;
+      #   };
+      #   in self;
+    };
     overlays = [
       emacs-overlay.overlay
       (import ./neovim.nix)
+      nil.overlays.nil
       (import ./golangci-lint.nix)
       # TODO: figure out how to move the following to a separate file
       (final: prev: {
@@ -472,6 +491,7 @@ in
           buildInputs = o.buildInputs
             ++ [ prev.darwin.apple_sdk.frameworks.WebKit ];
           configureFlags = o.configureFlags ++ [
+            "--with-modules"
             "--without-gpm"
             "--without-dbus"
             "--without-mailutils"
@@ -497,4 +517,39 @@ in
       })
     ]; # overlays
   }; # nixpkgs
+
+  # Nix-darwin does not link installed applications to the user environment. This means apps will not show up
+  # in spotlight, and when launched through the dock they come with a terminal window. This is a workaround.
+  # Upstream issue: https://github.com/LnL7/nix-darwin/issues/214
+  system.activationScripts.applications.text = lib.mkForce ''
+    echo "setting up ~/Applications..." >&2
+    applications="$HOME/Applications"
+    nix_apps="$applications/Nix Apps"
+
+    # Needs to be writable by the user so that home-manager can symlink into it
+    if ! test -d "$applications"; then
+      mkdir -p "$applications"
+      chown ${username}: "$applications"
+      chmod u+w "$applications"
+    fi
+
+    # Delete the directory to remove old links
+    rm -rf "$nix_apps"
+    mkdir -p "$nix_apps"
+    find ${config.system.build.applications}/Applications -maxdepth 1 -type l -exec readlink '{}' + |
+      while read src; do
+        # Spotlight does not recognize symlinks, it will ignore directory we link to the applications folder.
+        # It does understand MacOS aliases though, a unique filesystem feature. Sadly they cannot be created
+        # from bash (as far as I know), so we use the oh-so-great Apple Script instead.
+        /usr/bin/osascript -e "
+          set fileToAlias to POSIX file \"$src\"
+          set applicationsFolder to POSIX file \"$nix_apps\"
+          tell application \"Finder\"
+            make alias file to fileToAlias at applicationsFolder
+            # This renames the alias; 'mpv.app alias' -> 'mpv.app'
+            set name of result to \"$(rev <<< "$src" | cut -d'/' -f1 | rev)\"
+          end tell
+        " 1>/dev/null
+    done
+  '';
 }
