@@ -134,14 +134,14 @@ in {
     escapeTime = 0;
     historyLimit = 50000;
     keyMode = "vi";
-    prefix = "C-l";
+    prefix = "C-space";
     sensibleOnTop = false;
     extraConfig = ''
       # unbind C-b
       # set -g mode-keys vi
       bind-key -T copy-mode-vi 'v' send -X begin-selection
       bind-key -T copy-mode-vi 'y' send -X copy-selection-and-cancel
-      set -g prefix C-l
+      set -g prefix C-space
       set -g base-index 1
       bind Space send-prefix
       bind-key j command-prompt -p "join pane from:"  "join-pane -hs '%%'"
