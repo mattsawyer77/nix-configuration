@@ -124,7 +124,7 @@
     ]
   },
   "ui.menu": {
-    "fg": "#e5ded6bg",
+    "fg": "#e5ded6",
     "bg": "#232d38"
   },
   "markup.link.url": {

@@ -1,3 +1,6 @@
+# map the following keys from ctrl to cmd
+let ctrlToCMDKeys = [ "c" "v" "x" "f" "g" "t" "n" "z" ];
+in
 {
   global = {
     check_for_updates_on_startup = true;
@@ -15,67 +18,28 @@
       };
       rules = [
         {
-          description =
-            "fix clipboard for stubborn apps (requires remapping to CMD variants in System Keyboard prefs)";
-          manipulators = [
-            {
+          description = "map cmd variants to ctrl";
+          manipulators = (map
+            (key: {
               conditions = [{
+                type = "frontmost_application_unless";
                 bundle_identifiers = [
-                  "^org\\.mozilla\\."
-                  "^com\\.apple\\.mail"
-                  "^com\\.electron\\.sia"
+                  "^org\\.alacritty"
+                  "^org\\.gnu\\.emacs"
+                  "^org\\.gnu\\.Emacs"
                 ];
-                type = "frontmost_application_if";
               }];
               from = {
-                key_code = "c";
-                modifiers = { mandatory = [ "left_control" ]; };
+                modifiers = { mandatory = [ "control" ]; };
+                key_code = key;
               };
-              to = [{
-                key_code = "c";
+              to = {
                 modifiers = [ "command" ];
-              }];
-              type = "basic";
-            }
-            {
-              conditions = [{
-                bundle_identifiers = [
-                  "^org\\.mozilla\\."
-                  "^com\\.apple\\.mail"
-                  "^com\\.electron\\.sia"
-                ];
-                type = "frontmost_application_if";
-              }];
-              from = {
-                key_code = "v";
-                modifiers = { mandatory = [ "left_control" ]; };
+                key_code = key;
               };
-              to = [{
-                key_code = "v";
-                modifiers = [ "command" ];
-              }];
               type = "basic";
-            }
-            {
-              conditions = [{
-                bundle_identifiers = [
-                  "^org\\.mozilla\\."
-                  "^com\\.apple\\.mail"
-                  "^com\\.electron\\.sia"
-                ];
-                type = "frontmost_application_if";
-              }];
-              from = {
-                key_code = "x";
-                modifiers = { mandatory = [ "left_control" ]; };
-              };
-              to = [{
-                key_code = "x";
-                modifiers = [ "command" ];
-              }];
-              type = "basic";
-            }
-          ];
+            })
+            ctrlToCMDKeys);
         }
         {
           description = "firefox customization";

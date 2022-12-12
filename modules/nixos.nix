@@ -92,8 +92,8 @@ with lib;
     pinentry
     pkgconfig
     podman
-    protobuf
-    protobuf3_11
+    # protobuf
+    # protobuf3_11
     prototool
     python3
     readline

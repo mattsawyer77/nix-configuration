@@ -6,6 +6,7 @@
 , emacs-src
 , emacs-vterm-src
 , neovim-nightly-overlay
+, username
 , ...
 }:
 
@@ -16,12 +17,11 @@ let
   # emacs-mac-overlays = (import ./emacs-mac.nix);
   # packages specific to arm64
   arm64-packages = with pkgs; [
-    emacs-mac
+    emacsPgtkNativeComp
   ];
 
   # packages specific to x86-64
   x86-64-packages = with pkgs; [
-    azure-cli
     cairo
     emacs-mac
     # etcd # broken as of 2022-09-06
@@ -50,9 +50,11 @@ let
     automake
     aws-iam-authenticator
     awscli
+    azure-cli
     bash
     bat
     bat-extras.batman
+    bottom # binary is `btm`
     cachix
     cask
     ccls
@@ -63,10 +65,12 @@ let
     delve
     # diff-so-fancy
     direnv
+    discord
     dos2unix
     # emacsclient # from local package
-    # emacs-mac # maybe a bad build?
+    # emacs-mac
     emacs-vterm
+    envsubst
     eternal-terminal
     exa
     fd
@@ -80,6 +84,7 @@ let
     gnumake
     gnupg
     gnuplot
+    gnused
     go
     golangci-lint # customized in golangci-lint.nix overlay since it's broken in nixpkgs right now
     (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
@@ -144,9 +149,10 @@ let
     # pdfminer
     pkg-config
     # podman # broken as of 2022-05-12
-    protobuf
+    # protobuf
     prototool
     python3
+    pywal
     readline
     reattach-to-user-namespace
     # redis
@@ -485,6 +491,7 @@ in
           buildInputs = o.buildInputs
             ++ [ prev.darwin.apple_sdk.frameworks.WebKit ];
           configureFlags = o.configureFlags ++ [
+            "--with-modules"
             "--without-gpm"
             "--without-dbus"
             "--without-mailutils"
@@ -510,4 +517,39 @@ in
       })
     ]; # overlays
   }; # nixpkgs
+
+  # Nix-darwin does not link installed applications to the user environment. This means apps will not show up
+  # in spotlight, and when launched through the dock they come with a terminal window. This is a workaround.
+  # Upstream issue: https://github.com/LnL7/nix-darwin/issues/214
+  system.activationScripts.applications.text = lib.mkForce ''
+    echo "setting up ~/Applications..." >&2
+    applications="$HOME/Applications"
+    nix_apps="$applications/Nix Apps"
+
+    # Needs to be writable by the user so that home-manager can symlink into it
+    if ! test -d "$applications"; then
+      mkdir -p "$applications"
+      chown ${username}: "$applications"
+      chmod u+w "$applications"
+    fi
+
+    # Delete the directory to remove old links
+    rm -rf "$nix_apps"
+    mkdir -p "$nix_apps"
+    find ${config.system.build.applications}/Applications -maxdepth 1 -type l -exec readlink '{}' + |
+      while read src; do
+        # Spotlight does not recognize symlinks, it will ignore directory we link to the applications folder.
+        # It does understand MacOS aliases though, a unique filesystem feature. Sadly they cannot be created
+        # from bash (as far as I know), so we use the oh-so-great Apple Script instead.
+        /usr/bin/osascript -e "
+          set fileToAlias to POSIX file \"$src\"
+          set applicationsFolder to POSIX file \"$nix_apps\"
+          tell application \"Finder\"
+            make alias file to fileToAlias at applicationsFolder
+            # This renames the alias; 'mpv.app alias' -> 'mpv.app'
+            set name of result to \"$(rev <<< "$src" | cut -d'/' -f1 | rev)\"
+          end tell
+        " 1>/dev/null
+    done
+  '';
 }
