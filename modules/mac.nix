@@ -17,7 +17,7 @@ let
   # emacs-mac-overlays = (import ./emacs-mac.nix);
   # packages specific to arm64
   arm64-packages = with pkgs; [
-    emacsPgtkNativeComp
+    emacsGit
   ];
 
   # packages specific to x86-64
