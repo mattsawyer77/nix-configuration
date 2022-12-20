@@ -638,6 +638,97 @@ introspect() {
   fi
 }
 
+# Service Introspection C(LI)
+# https://compass-lma.demo1.volterra.us/introspection/gc01.int.ves.io/maurice/ves.io.stdlib/introspect/read/object/ves.io.maurice.site.Object?response_format=1&tenant_filter=compass&page_start=0&page_limit=1000
+# https://compass-lma.demo1.volterra.us/introspection/gc01.int.ves.io/maurice/ves.io.stdlib/introspect/read/object/ves.io.maurice.site.Object/3395c300-35c3-4e31-b733-c10607ab780e
+# https://compass-lma.demo1.volterra.us/introspection/sawyer-osm-gcp-m.testcorp-hagrmdbk.tenant.int.ves.io/piku/ves.io.stdlib/introspect/read/object/ves.io.piku.oper.bgp_state.Object?response_format=1&page_start=0&page_limit=1000
+sic() {
+  local usage="sic <environment> <service> <object type> [<object UID>] [--tenant <tenantname>]\nwhere environment is one of demo1, crt, staging, or prod"
+  if ! command -v ijq >/dev/null; then
+    echo >&2 "error: this requires ijq to be installed"
+    return 1
+  fi
+  if [[ $# -lt 3 ]]; then
+    echo >&2 $usage
+    return 1
+  fi
+  local site
+  local compass_hostname
+  case $1 in
+    demo1)
+      compass_hostname="compass-lma.demo1.volterra.us"
+      site="gc01.int.ves.io"
+      ;;
+    crt)
+      compass_hostname="compass-lma.crt.volterra.us"
+      site="gc01.int.ves.io"
+      ;;
+    staging)
+      compass_hostname="compass-lma.staging.volterra.us"
+      site="gc1-iad-01.int.volterra.us"
+      ;;
+    *)
+      echo >&2 "unknown environment $environment"
+      return 1
+      ;;
+  esac
+  shift
+  local service=$1
+  shift
+  if echo "$service" | grep -E '.+/.+' >/dev/null; then
+    site="$(echo $service | cut -d'/' -f1)"
+    service="$(echo $service | cut -d'/' -f2)"
+  fi
+  local object_type=$1
+  shift
+  local uid=''
+  local tenant=''
+  if [[ -n "$1" ]] && [[ "$1" != "--tenant" ]]; then
+    uid="$1"
+    shift
+  fi
+  if [[ "$1" == "--tenant" ]] && [[ -n "$2" ]]; then
+    tenant="$2"
+  fi
+  local user_cert="${HOME}/.ves-internal/${environment}/usercerts.p12"
+  local url=''
+  local initial_jq_query='.'
+  if [[ -n "$uid" ]]; then
+    url="https://${compass_hostname}/introspection/${site}/${service}/ves.io.stdlib/introspect/read/object/${object_type}/${uid}"
+  else
+    url="https://${compass_hostname}/introspection/${site}/${service}/ves.io.stdlib/introspect/read/object/${object_type}?response_format=1&page_start=0&page_limit=1000"
+    if [[ -n "$tenant" ]]; then
+      url="${url}&tenant_filter=${tenant}"
+    fi
+    initial_jq_query='.get_responses'
+  fi
+  if [[ -f "$user_cert" ]]; then
+    response=$(curl --insecure --fail --no-progress-meter --cert-type P12 --cert "${user_cert}:volterra" "$url")
+    if [[ $? == 0 ]]; then
+      if [[ -z "$response" ]]; then
+        echo >&2 "no response returned by url: $url"
+        return 1
+      fi
+      err=$(printf '%s\n' "$response" | jq -r '.err.message')
+      if [[ -n "$err" ]] && [[ "$err" != "null" ]]; then
+        err_code=$(printf '%s\n' "$response" | jq -r '.err.code')
+        if [[ -n "$err_code" ]]; then
+          echo >&2 -n "${err_code}: "
+        fi
+        echo >&2 "$err"
+        return 1
+      fi
+      printf '%s\n' "$response" | jq "$initial_jq_query" | ijq
+    else
+      echo >&2 "failed to query url: $url"
+      return 1
+    fi
+  else
+    echo >&2 "unknown environment $environment"
+    return 1
+  fi
+}
+
 get-latest-ce-version() {
   local environment="${1:-demo1}"
   local api_gw_hostname
@@ -776,7 +867,7 @@ site-public-ips() {
     --silent \
     --fail \
     --cert-type P12 \
-    --cert ${HOME}/.ves-internal/staging/usercerts.p12:volterra)
+    --cert ${HOME}/.ves-internal/${environment}/usercerts.p12:volterra)
   if [[ $? -ne 0 ]]; then
     return $?
   fi
@@ -800,7 +891,7 @@ site-public-ips() {
     --fail \
     --silent \
     --cert-type P12 \
-    --cert ${HOME}/.ves-internal/staging/usercerts.p12:volterra)
+    --cert ${HOME}/.ves-internal/${environment}/usercerts.p12:volterra)
   if [[ -z "$tf_status" ]]; then
     echo >&2 "could not find terraform status for site $site"
     return 1

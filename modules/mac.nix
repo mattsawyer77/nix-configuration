@@ -97,6 +97,7 @@ let
     html-tidy
     htop
     httrack
+    ijq
     isync
     jansson
     jq
