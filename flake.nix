@@ -70,41 +70,42 @@
         #   ];
         # };
 
-        mmbpm1 = darwin.lib.darwinSystem {
-          system = "aarch64-darwin";
-          specialArgs = inputs;
-          modules = [
-            ({ config, pkgs, lib, ... }: {
-              users.users.matt = {
-                name = "matt";
-                home = "/Users/matt";
-              };
-              nix = {
-                package = pkgs.nixVersions.stable;
-                extraOptions = ''
-                  system = aarch64-darwin
-                  extra-platforms = aarch64-darwin x86_64-darwin
-                  experimental-features = nix-command flakes
-                  build-users-group = nixbld
-                  trusted-users = root matt
-                  keep-outputs = true
-                  keep-derivations = true
-                  trusted-users = root matt
-                  keep-outputs = true
-                  keep-derivations = true
-                '';
-              };
-            })
-            home-manager.darwinModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-              home-manager.users.matt = import ./home/mmbpm1.nix;
-            }
-            # ./modules/haskell.nix
-            ./modules/mac.nix
-          ];
-        }; # mmbpm1
+        mmbpm1 = let username = "matt"; in
+          darwin.lib.darwinSystem {
+            system = "aarch64-darwin";
+            specialArgs = inputs // { inherit username; };
+            modules = [
+              ({ config, pkgs, lib, ... }: {
+                users.users.matt = {
+                  name = username;
+                  home = "/Users/${username}";
+                };
+                nix = {
+                  package = pkgs.nixVersions.stable;
+                  extraOptions = ''
+                    system = aarch64-darwin
+                    extra-platforms = aarch64-darwin x86_64-darwin
+                    experimental-features = nix-command flakes
+                    build-users-group = nixbld
+                    trusted-users = root ${username}
+                    keep-outputs = true
+                    keep-derivations = true
+                    trusted-users = root ${username}
+                    keep-outputs = true
+                    keep-derivations = true
+                  '';
+                };
+              })
+              home-manager.darwinModules.home-manager
+              {
+                home-manager.useGlobalPkgs = true;
+                home-manager.useUserPackages = true;
+                home-manager.users.matt = import ./home/mmbpm1.nix;
+              }
+              # ./modules/haskell.nix
+              ./modules/mac.nix
+            ];
+          }; # mmbpm1
 
         KD21QWDKW7 = let username = "m.sawyer"; in
           darwin.lib.darwinSystem {
