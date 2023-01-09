@@ -13,7 +13,8 @@
     flake-utils.url = "github:numtide/flake-utils";
     emacs-overlay = {
       # emacs-overlay:stable from 2023-01-08:
-      url = "github:nix-community/emacs-overlay/a8d8372eb02914ebb42e727f3ffa3765b4de0f4f";
+      url =
+        "github:nix-community/emacs-overlay/a8d8372eb02914ebb42e727f3ffa3765b4de0f4f";
     };
     neovim-nightly-overlay = {
       url = "github:nix-community/neovim-nightly-overlay";
@@ -35,81 +36,80 @@
   };
   outputs = { self, nixpkgs, darwin, flake-utils, home-manager, ... }@inputs: {
     # mac
-    darwinConfigurations =
-      {
-        mmbpm1 = darwin.lib.darwinSystem {
-          system = "aarch64-darwin";
-          specialArgs = inputs;
-          modules = [
-            ({ config, pkgs, lib, ... }: {
-              users.users.matt = {
-                name = "matt";
-                home = "/Users/matt";
-              };
-              nix = {
-                package = pkgs.nixVersions.stable;
-                extraOptions = ''
-                  system = aarch64-darwin
-                  extra-platforms = aarch64-darwin x86_64-darwin
-                  experimental-features = nix-command flakes
-                  build-users-group = nixbld
-                  trusted-users = root matt
-                  keep-outputs = true
-                  keep-derivations = true
-                  trusted-users = root matt
-                  keep-outputs = true
-                  keep-derivations = true
-                '';
-              };
-            })
-            home-manager.darwinModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-              home-manager.users.matt = import ./home/mmbpm1.nix;
-            }
-            # ./modules/haskell.nix
-            ./modules/mac.nix
-          ];
-        }; # mmbpm1
+    darwinConfigurations = {
+      mmbpm1 = darwin.lib.darwinSystem {
+        system = "aarch64-darwin";
+        specialArgs = inputs;
+        modules = [
+          ({ config, pkgs, lib, ... }: {
+            users.users.matt = {
+              name = "matt";
+              home = "/Users/matt";
+            };
+            nix = {
+              package = pkgs.nixVersions.stable;
+              extraOptions = ''
+                system = aarch64-darwin
+                extra-platforms = aarch64-darwin x86_64-darwin
+                experimental-features = nix-command flakes
+                build-users-group = nixbld
+                trusted-users = root matt
+                keep-outputs = true
+                keep-derivations = true
+                trusted-users = root matt
+                keep-outputs = true
+                keep-derivations = true
+              '';
+            };
+          })
+          home-manager.darwinModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.users.matt = import ./home/mmbpm1.nix;
+          }
+          # ./modules/haskell.nix
+          ./modules/mac.nix
+        ];
+      }; # mmbpm1
 
-        KD21QWDKW7 = let username = "m.sawyer"; in
-          darwin.lib.darwinSystem {
-            system = "aarch64-darwin";
-            specialArgs = inputs // { inherit username; };
-            modules = [
-              ({ config, pkgs, lib, ... }: {
-                users. users."${ username}" = {
-                  name = username;
-                  home = "/Users/${username}";
-                };
-                nix = {
-                  package = pkgs.nixVersions.stable;
-                  extraOptions = ''
-                    system = aarch64-darwin
-                    extra-platforms = aarch64-darwin x86_64-darwin
-                    experimental-features = nix-command flakes
-                    build-users-group = nixbld
-                    trusted-users = root m.sawyer
-                    keep-outputs = true
-                    keep-derivations = true
-                    trusted-users = root m.sawyer
-                    keep-outputs = true
-                    keep-derivations = true
-                  '';
-                };
-              })
-              home-manager.darwinModules.home-manager
-              {
-                home-manager.useGlobalPkgs = true;
-                home-manager.useUserPackages = true;
-                home-manager.users."${username}" = import ./home/KD21QWDKW7.nix;
-              }
-              # ./modules/haskell.nix
-              ./modules/mac.nix
-            ];
-          }; # KD21QWDKW7
-      }; # darwin.lib.darwinSystem
+      KD21QWDKW7 = let username = "m.sawyer";
+      in darwin.lib.darwinSystem {
+        system = "aarch64-darwin";
+        specialArgs = inputs // { inherit username; };
+        modules = [
+          ({ config, pkgs, lib, ... }: {
+            users.users."${username}" = {
+              name = username;
+              home = "/Users/${username}";
+            };
+            nix = {
+              package = pkgs.nixVersions.stable;
+              extraOptions = ''
+                system = aarch64-darwin
+                extra-platforms = aarch64-darwin x86_64-darwin
+                experimental-features = nix-command flakes
+                build-users-group = nixbld
+                trusted-users = root m.sawyer
+                keep-outputs = true
+                keep-derivations = true
+                trusted-users = root m.sawyer
+                keep-outputs = true
+                keep-derivations = true
+              '';
+            };
+          })
+          home-manager.darwinModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.users."${username}" = import ./home/KD21QWDKW7.nix;
+          }
+          # ./modules/haskell.nix
+          ./modules/mac.nix
+        ];
+      }; # KD21QWDKW7
+    }; # darwin.lib.darwinSystem
 
     # linux
     nixosConfigurations = {
