@@ -13,17 +13,15 @@
 with lib;
 
 let
-  # emacsclient = import ./emacsclient.nix;
   # emacs-mac-overlays = (import ./emacs-mac.nix);
   # packages specific to arm64
   arm64-packages = with pkgs; [
-    emacsGit
+    # emacsGit
   ];
 
   # packages specific to x86-64
   x86-64-packages = with pkgs; [
     cairo
-    emacs-mac
     # etcd # broken as of 2022-09-06
     flamegraph
     freetype
@@ -67,8 +65,7 @@ let
     direnv
     discord
     dos2unix
-    # emacsclient # from local package
-    # emacs-mac
+    emacs-mac
     emacs-vterm
     envsubst
     eternal-terminal
@@ -131,7 +128,7 @@ let
     nil
     ninja
     nix-direnv
-    nix-linter
+    # nix-linter # broken as of 2023-01-04
     nix-prefetch
     nix-prefetch-git
     nix-zsh-completions
@@ -481,13 +478,13 @@ in
             cp ../vterm.el $out
           '';
         };
-        emacs-mac = (prev.emacs.override {
+        emacs-mac = (prev.emacsGit.override {
           srcRepo = true;
           nativeComp = true;
           withSQLite3 = true;
           # withXwidgets = true;
         }).overrideAttrs (o: rec {
-          version = "29.0.50";
+          version = "30.0.50";
           src = emacs-src;
           buildInputs = o.buildInputs
             ++ [ prev.darwin.apple_sdk.frameworks.WebKit ];

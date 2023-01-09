@@ -420,10 +420,10 @@ akarctl() {
   GRPC_TLS_PORT=${AKAR_GRPC_TLS_PORT:-$(kubectl -n ves-system get configmap akar-config -o json | jq -r '.data."config.yml"' | yq e '.GrpcTLSPort' -)}
   SERVER_CN=${AKAR_SERVER_CN:-$(kubectl -n ves-system get deployment akar -o json | jq -r '.spec.template.spec.containers[]|select(.name=="wingman")|.env|from_entries|.serviceNames' | cut -d',' -f1)}
   if [[ -n "$GRPC_TLS_PORT" ]]; then
-    akar_pod=$(kubectl -n ves-system get pods | grep akar | grep -v readonly | awk '{print $1}')
+    akar_pod=$(kubectl -n ves-system get pods -lname=akar | awk '{print $1}')
     if [[ -n "$akar_pod" ]]; then
       kubectl -n ves-system -c akar exec -it "$akar_pod" -c akar -- \
-        akarctl -u "localhost:${GRPC_TLS_PORT}" --server-cn "$SERVER_CN" \
+        akard client-ctl -u "localhost:${GRPC_TLS_PORT}" --server-cn "$SERVER_CN" \
         $@
     else
       echo "could not find a running akar pod" >&2
@@ -654,7 +654,8 @@ sic() {
   fi
   local site
   local compass_hostname
-  case $1 in
+  local environment=$1
+  case $environment in
     demo1)
       compass_hostname="compass-lma.demo1.volterra.us"
       site="gc01.int.ves.io"
@@ -666,6 +667,10 @@ sic() {
     staging)
       compass_hostname="compass-lma.staging.volterra.us"
       site="gc1-iad-01.int.volterra.us"
+      ;;
+    prod)
+      compass_hostname="compass-lma.ves.volterra.io"
+      site="gc01-cle.int.ves.io"
       ;;
     *)
       echo >&2 "unknown environment $environment"
@@ -718,7 +723,7 @@ sic() {
         echo >&2 "$err"
         return 1
       fi
-      printf '%s\n' "$response" | jq "$initial_jq_query" | ijq
+      printf '%s\n' "$response" | jq "$initial_jq_query" | ijq -r
     else
       echo >&2 "failed to query url: $url"
       return 1
@@ -1000,4 +1005,15 @@ get-service-certificate() {
   echo "downloading cert to $temp_cert_file"
   curl "$proxy_url" --no-progress-meter --fail -o "$temp_cert_file" \
     && openssl x509 -in "$temp_cert_file" -text -noout -subject
+}
+
+# find emacs-overlay's latest successful hydra job and get the emacs-overlay src commit for it to use as input for the flake
+hydra-emacs-overlay-revision() {
+ jobset_eval_id=$(curl -sf --location --header "Accept: application/json" 'https://hydra.nix-community.org/jobset/emacs-overlay/stable/latest-finished' | jq -r '.jobsetevals|first')
+ if [[ -z "$jobset_eval_id" ]]; then
+   echo >&2 "error: could not retrieve jobset info via 'https://hydra.nix-community.org/jobset/emacs-overlay/stable/latest-finished'"
+   return 1
+ else
+   curl -sf --location --header "Accept: application/json" 'https://hydra.nix-community.org/jobset/emacs-overlay/stable/evals' | jq -r ".evals[]|select(.id==${jobset_eval_id})|.jobsetevalinputs.src.revision"
+ fi
 }

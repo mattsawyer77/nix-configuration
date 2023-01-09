@@ -12,10 +12,8 @@
     };
     flake-utils.url = "github:numtide/flake-utils";
     emacs-overlay = {
-      # unstable from 2022-10-02:
-      # url = "github:nix-community/emacs-overlay/99f607199684071fef8e8a411d4e5d862cd5647a";
-      # emacs-overlay:stable:emacsGit from 2022-12-19:
-      url = "github:nix-community/emacs-overlay/d50df98aaf28405432814d3b1a15eaf0e133d04d";
+      # emacs-overlay:stable from 2023-01-08:
+      url = "github:nix-community/emacs-overlay/a8d8372eb02914ebb42e727f3ffa3765b4de0f4f";
     };
     neovim-nightly-overlay = {
       url = "github:nix-community/neovim-nightly-overlay";
@@ -39,37 +37,6 @@
     # mac
     darwinConfigurations =
       {
-        # SEA-ML-00059144 = darwin.lib.darwinSystem {
-        #   system = "x86_64-darwin";
-        #   specialArgs = inputs;
-        #   modules = [
-        #     home-manager.darwinModules.home-manager
-        #     {
-        #       home-manager.useGlobalPkgs = true;
-        #       home-manager.useUserPackages = true;
-        #       home-manager.users.sawyer = import ./home/SEA-ML-00059144.nix;
-        #     }
-        #     ./modules/mac.nix
-        #     ({ config, pkgs, lib, ... }: {
-        #       users.users.sawyer = {
-        #         name = "sawyer";
-        #         home = "/Users/sawyer";
-        #       };
-        #       nix = {
-        #         package = pkgs.nixVersions.stable;
-        #         extraOptions = ''
-        #           system = x86_64-darwin
-        #           experimental-features = nix-command flakes
-        #           build-users-group = nixbld
-        #           trusted-users = root sawyer
-        #           keep-outputs = true
-        #           keep-derivations = true
-        #         '';
-        #       };
-        #     })
-        #   ];
-        # };
-
         mmbpm1 = darwin.lib.darwinSystem {
           system = "aarch64-darwin";
           specialArgs = inputs;
@@ -143,7 +110,6 @@
             ];
           }; # KD21QWDKW7
       }; # darwin.lib.darwinSystem
-
 
     # linux
     nixosConfigurations = {
