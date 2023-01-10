@@ -25,6 +25,7 @@ in
                 type = "frontmost_application_unless";
                 bundle_identifiers = [
                   "^org\\.alacritty"
+                  "^io\\.alacritty"
                   "^org\\.gnu\\.emacs"
                   "^org\\.gnu\\.Emacs"
                 ];

@@ -24,6 +24,7 @@ in
       EDITOR = "em";
       VISUAL = "em";
       GOPATH = (homeDirectory + "/" + goPathSuffix);
+      USE_GKE_GCLOUD_AUTH_PLUGIN = "True";
       LC_ALL = "en_US.UTF-8";
       LANG = "en_US.UTF-8";
       LANGUAGE = "en_US.UTF-8";
