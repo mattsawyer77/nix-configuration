@@ -25,6 +25,7 @@ with lib;
     diff-so-fancy
     direnv
     docker
+    docker-compose
     dos2unix
     emacsGit-nox
     envsubst
@@ -93,7 +94,7 @@ with lib;
     pcre2
     pinentry
     pkg-config
-    podman
+    # podman
     # protobuf
     # protobuf3_11
     prototool
@@ -113,6 +114,7 @@ with lib;
     ssm-session-manager-plugin
     starship
     taglib
+    taplo
     terraform
     terraform-ls
     tflint

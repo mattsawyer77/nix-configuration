@@ -1,14 +1,22 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   username = "sawyer";
   homeDirectory = "/home/" + username;
   goPathSuffix = "gocode";
+  localBinPath = ".local/bin";
 
-in {
+in
+{
   home = {
     inherit homeDirectory;
     inherit username;
+    activation = {
+      terminal = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        echo 'setting up terminfo for xterm-24bit...'
+        tic -x -o ~/.terminfo "$HOME/.config/terminfo-24bit.src"
+      '';
+    };
     packages = [ ];
     stateVersion = "22.11";
     # append these extra dirs to the nix-generated path
@@ -19,6 +27,7 @@ in {
     ];
     sessionVariables = {
       AWS_SDK_LOAD_CONFIG = "1";
+      EDITOR = "em"; # see script file below and in scripts/em.zsh
       GOPATH = (homeDirectory + "/" + goPathSuffix);
       LC_ALL = "en_US.UTF-8";
       LANG = "en_US.UTF-8";
@@ -28,6 +37,19 @@ in {
       LESS = "-F -i -M -R -X --incsearch";
       SAML2AWS_USER_AGENT =
         "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.00) Gecko/20100101 Firefox/82.0";
+      TERM = "xterm-24bit";
+      VISUAL = "em"; # see script file below and in scripts/em.zsh
+    };
+    # for git, $EDITOR/$VISUAL can't be set to reference a shell function, so deploy the script as follows
+    file."em.zsh" = {
+      executable = true;
+      source = ./scripts/em.zsh;
+      target = homeDirectory + "/" + localBinPath + "/em";
+    };
+    file."terminfo-24bit.src" = {
+      executable = false;
+      source = ./terminal/terminfo-24bit.src;
+      target = homeDirectory + "/.config/terminfo-24bit.src";
     };
   };
   programs.home-manager.enable = true;
@@ -164,9 +186,9 @@ in {
       bind -n M-Down select-pane -D
       bind -n WheelUpPane if-shell -F -t = "#{mouse_any_flag}" "send-keys -M" "if -Ft= '#{pane_in_mode}' 'send-keys -M' 'copy-mode -e'"
       # set -g default-terminal "xterm-256color"
-      set -g default-terminal "alacritty"
+      set -g default-terminal "xterm-24bit"
       # if 'infocmp -x alacritty > /dev/null 2>&1' 'set -g default-terminal "alacritty"'
-      set -ag terminal-overrides ",alacritty:RGB"
+      set -ag terminal-overrides ",xterm-24bit:RGB"
       set -g automatic-rename off
       set -g focus-events on
       set -g -q mode-mouse on
@@ -218,11 +240,33 @@ in {
       ts = "tmux new-session -n main -s";
       ta = "tmux attach -t";
       tl = "tmux list-sessions";
-      em = "em.zsh";
       doom = "~/.emacs.d/bin/doom";
     };
     envExtra = builtins.readFile ./.zshenv-sawyer-dev;
     initExtra = ''
+      # TERM==xterm-24bit breaks rendering with skim
+      skim-history-widget () {
+        local OLDTERM=$TERM
+        if infocmp -x alacritty > /dev/null 2>&1; then
+          export TERM=alacritty
+        fi
+        local selected num
+        setopt localoptions noglobsubst noposixbuiltins pipefail no_aliases 2> /dev/null
+        selected=($(fc -rl 1 | perl -ne 'print if !$seen{(/^\s*[0-9]+\**\s+(.*)/, $1)}++' |
+                      SKIM_DEFAULT_OPTIONS="--height '$'{SKIM_TMUX_HEIGHT:-40%} $SKIM_DEFAULT_OPTIONS -n2..,.. --tiebreak=index --bind=ctrl-r:toggle-sort $SKIM_CTRL_R_OPTS --query=$'{(qqq)LBUFFER} --no-multi" $(__skimcmd)))
+        local ret=$?
+        if [ -n "$selected" ]
+        then
+          num=$selected[1]
+          if [ -n "$num" ]
+          then
+            zle vi-fetch-history -n $num
+          fi
+        fi
+        zle reset-prompt
+        export TERM=$OLDTERM
+        return $ret
+      }
       source <(kubectl completion zsh)
       printf '\e]2;'$(hostname)'\a'
     '';
