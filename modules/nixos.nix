@@ -73,7 +73,7 @@ with lib;
     netcat
     netperf
     nix-direnv
-    nix-linter
+    # nix-linter
     nix-prefetch
     nix-prefetch-git
     nix-zsh-completions

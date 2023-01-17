@@ -73,42 +73,44 @@
         ];
       }; # mmbpm1
 
-      KD21QWDKW7 = let username = "m.sawyer";
-      in darwin.lib.darwinSystem {
-        system = "aarch64-darwin";
-        specialArgs = inputs // { inherit username; };
-        modules = [
-          ({ config, pkgs, lib, ... }: {
-            users.users."${username}" = {
-              name = username;
-              home = "/Users/${username}";
-            };
-            nix = {
-              package = pkgs.nixVersions.stable;
-              extraOptions = ''
-                system = aarch64-darwin
-                extra-platforms = aarch64-darwin x86_64-darwin
-                experimental-features = nix-command flakes
-                build-users-group = nixbld
-                trusted-users = root m.sawyer
-                keep-outputs = true
-                keep-derivations = true
-                trusted-users = root m.sawyer
-                keep-outputs = true
-                keep-derivations = true
-              '';
-            };
-          })
-          home-manager.darwinModules.home-manager
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.users."${username}" = import ./home/KD21QWDKW7.nix;
-          }
-          # ./modules/haskell.nix
-          ./modules/mac.nix
-        ];
-      }; # KD21QWDKW7
+      KD21QWDKW7 =
+        let username = "m.sawyer";
+        in
+        darwin.lib.darwinSystem {
+          system = "aarch64-darwin";
+          specialArgs = inputs // { inherit username; };
+          modules = [
+            ({ config, pkgs, lib, ... }: {
+              users.users."${username}" = {
+                name = username;
+                home = "/Users/${username}";
+              };
+              nix = {
+                package = pkgs.nixVersions.stable;
+                extraOptions = ''
+                  system = aarch64-darwin
+                  extra-platforms = aarch64-darwin x86_64-darwin
+                  experimental-features = nix-command flakes
+                  build-users-group = nixbld
+                  trusted-users = root m.sawyer
+                  keep-outputs = true
+                  keep-derivations = true
+                  trusted-users = root m.sawyer
+                  keep-outputs = true
+                  keep-derivations = true
+                '';
+              };
+            })
+            home-manager.darwinModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+              home-manager.users."${username}" = import ./home/KD21QWDKW7.nix;
+            }
+            # ./modules/haskell.nix
+            ./modules/mac.nix
+          ];
+        }; # KD21QWDKW7
     }; # darwin.lib.darwinSystem
 
     # linux
@@ -187,6 +189,7 @@
             networking.firewall.allowPing = true;
             networking.firewall.allowedTCPPorts = [ 22 2022 ];
             services.openssh.enable = true;
+            services.openssh.ports = [ 777 ];
             time.timeZone = "America/Los_Angeles";
             environment.variables = rec {
               AWS_SDK_LOAD_CONFIG = "1";
@@ -219,6 +222,7 @@
               options = "--delete-older-than 30d";
             };
             virtualisation.docker.enable = true;
+            virtualisation.docker.extraOptions = "--bip 192.168.10.1/24";
           })
           home-manager.nixosModules.home-manager
           {

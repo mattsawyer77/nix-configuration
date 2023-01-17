@@ -198,16 +198,14 @@ in
       set -g message-style bg=black,fg=green
       set -g status-style bg="#2c2c34",fg=yellow
       set -g window-status-format "  #{window_index}|#{window_name}  "
-      set -g window-status-style fg="#888899",bg="#383845"
-      set -g window-status-last-style fg="#888899",bg="#383845"
+      set -g window-status-style fg="#888899",bg="#151e24"
+      set -g window-status-last-style fg="#888899",bg="#151e24"
       set -g window-status-current-format "  #{window_index}|#{window_name}  "
       set -g window-status-current-style fg="#ccccdd",bg="#4f4f58"
       set -g status-left-length 70
       set -g status-left "#[bg=#ff7e1f]#[fg=#eeeeee] #h "
-      # set -g status-right "#[bg=#444455]#[fg=#bbbbcc] %H:%M "
-      set -g status-right ""
-      set -g default-command "reattach-to-user-namespace -l zsh"
-      set -g status-left "#[bg=#e63634]#[fg=brightwhite]#{?client_prefix,#[bg=green],} #S "
+      set -g status-right '#[bg=#202017]#[fg=#585865] %H:%M%Z #(TZ=UTC date +"(%%H:%%MUTC)") '
+      set -g status-left "#[bg=#439fad]#[fg=#151e24]#{?client_prefix,#[bg=green],} #S "
       bind-key y run "tmux save-buffer - | xclip"
     '';
   };
