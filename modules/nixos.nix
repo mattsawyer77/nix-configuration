@@ -76,7 +76,7 @@ with lib;
     netcat
     netperf
     nix-direnv
-    nix-linter
+    # nix-linter # broken as of 2023-01-17
     nix-prefetch
     nix-prefetch-git
     nix-zsh-completions
