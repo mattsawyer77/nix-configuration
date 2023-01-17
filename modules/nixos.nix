@@ -8,7 +8,7 @@ with lib;
     aws-iam-authenticator
     awscli2
     azure-cli
-    bash_5
+    bash
     bat
     bat-extras.batman
     bind
@@ -25,8 +25,10 @@ with lib;
     diff-so-fancy
     direnv
     docker
+    docker-compose
     dos2unix
     emacsGit-nox
+    envsubst
     etcd
     eternal-terminal
     exa
@@ -44,7 +46,8 @@ with lib;
     gnupg
     go
     golangci-lint
-    google-cloud-sdk
+    (google-cloud-sdk.withExtraComponents
+      [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
     gopls
     graphviz
     grpcurl
@@ -73,7 +76,7 @@ with lib;
     netcat
     netperf
     nix-direnv
-    # nix-linter
+    # nix-linter # broken as of 2023-01-17
     nix-prefetch
     nix-prefetch-git
     nix-zsh-completions
@@ -90,8 +93,8 @@ with lib;
     pcre
     pcre2
     pinentry
-    pkgconfig
-    podman
+    pkg-config
+    # podman
     # protobuf
     # protobuf3_11
     prototool
@@ -111,6 +114,7 @@ with lib;
     ssm-session-manager-plugin
     starship
     taglib
+    taplo
     terraform
     terraform-ls
     tflint
@@ -122,10 +126,12 @@ with lib;
     valgrind
     wget
     wireshark
+    xsel
     xsv
     yaml-language-server
     youtube-dl
     yq-go
+    zellij
     zenith
     zlib
     zoxide
