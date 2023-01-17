@@ -36,7 +36,8 @@ in
       LC_ALL = "en_US.UTF-8";
       LESS = "-F -i -M -R -X --incsearch";
       SAML2AWS_USER_AGENT = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.00) Gecko/20100101 Firefox/82.0";
-      TERM = "xterm-24bit";
+      # not working:
+      # SKIM_TMUX_OPTS = "--color=current_bg:24 --height=40%";
       VISUAL = "em"; # see script file below and in scripts/em.zsh
     };
     # for git, $EDITOR/$VISUAL can't be set to reference a shell function, so deploy the script as follows
@@ -154,6 +155,7 @@ in
   programs.skim = {
     enable = true;
     enableZshIntegration = true;
+    defaultOptions = [ "--height 40%" ];
   };
   programs.starship = { enable = true; };
   programs.tmux = {
@@ -222,6 +224,8 @@ in
       set -g status-right '#[bg=#202017]#[fg=#585865] %H:%M%Z #(TZ=UTC date +"(%%H:%%MUTC)") '
       set -g status-left "#[bg=#439fad]#[fg=#151e24]#{?client_prefix,#[bg=green],} #S "
       bind-key y run "tmux save-buffer - | xclip"
+      # ensure SSH_TTY env var gets updated automatically when reattaching to a session
+      set -ag update-environment "SSH_TTY"
     '';
   };
   programs.zoxide = { enable = true; };
@@ -249,29 +253,6 @@ in
     };
     envExtra = builtins.readFile ./.zshenv-sawyer-dev-vio;
     initExtra = ''
-      # TERM==xterm-24bit breaks rendering with skim
-      skim-history-widget () {
-        local OLDTERM=$TERM
-        if infocmp -x alacritty > /dev/null 2>&1; then
-          export TERM=alacritty
-        fi
-        local selected num
-        setopt localoptions noglobsubst noposixbuiltins pipefail no_aliases 2> /dev/null
-        selected=($(fc -rl 1 | perl -ne 'print if !$seen{(/^\s*[0-9]+\**\s+(.*)/, $1)}++' |
-                      SKIM_DEFAULT_OPTIONS="--height '$'{SKIM_TMUX_HEIGHT:-40%} $SKIM_DEFAULT_OPTIONS -n2..,.. --tiebreak=index --bind=ctrl-r:toggle-sort $SKIM_CTRL_R_OPTS --query=$'{(qqq)LBUFFER} --no-multi" $(__skimcmd)))
-        local ret=$?
-        if [ -n "$selected" ]
-        then
-          num=$selected[1]
-          if [ -n "$num" ]
-          then
-            zle vi-fetch-history -n $num
-          fi
-        fi
-        zle reset-prompt
-        export TERM=$OLDTERM
-        return $ret
-      }
       source <(kubectl completion zsh)
       printf '\e]2;'$(hostname)'\a'
     '';
