@@ -23,11 +23,15 @@ find-proto-import-path() {
   (test -d "$target_dir" || echo >&2 "$target_dir is not a valid dir") \
     && dirs=$(cd "$target_dir" \
       && typeset -A import_paths \
-      && for import in $(grep -h import *.proto | cut -d'"' -f2); do \
+      && for import in $(grep -hE '^\s*import\s".*\.proto";' *.proto | cut -d'"' -f2); do \
         if [[ -z "${import_paths[$import]}" ]]; then
-          paths=$(find $(realpath --relative-to . $(git rev-parse --show-toplevel)) -wholename "*$import" \
+          paths=$(fd --follow --full-path --glob --no-ignore-vcs "**/$import" \
+            $(realpath --relative-to . $(git rev-parse --show-toplevel)) \
             | sd "/$import" "" \
-            | sd '^(.+)$' '    \"$1\"') \
+            | sd '^(.+)$' '    \"$1\"')
+          if [[ -z "$paths" ]]; then
+            echo >&2 "could not find proto files for $import"
+          fi
           import_paths+=( ["$import"]="$paths" )
         fi
         echo "${import_paths[$import]}"
@@ -798,6 +802,7 @@ matrix-renew-certs() {
 }
 
 gc-login() {
+  export USE_GKE_GCLOUD_AUTH_PLUGIN=True
   k cluster-info 2>/dev/null \
     || (gcloud auth login --project=devtest-293809 \
     && gcloud container clusters get-credentials gc01-int-ves-io --region us-east4)
