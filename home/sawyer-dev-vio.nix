@@ -36,7 +36,7 @@ in
       LC_ALL = "en_US.UTF-8";
       LESS = "-F -i -M -R -X --incsearch";
       SAML2AWS_USER_AGENT = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.00) Gecko/20100101 Firefox/82.0";
-      # not working:
+      # not working (causes the terminal to freeze):
       # SKIM_TMUX_OPTS = "--color=current_bg:24 --height=40%";
       VISUAL = "em"; # see script file below and in scripts/em.zsh
     };
@@ -194,7 +194,7 @@ in
       bind -n M-Down select-pane -D
       # set -g default-terminal "xterm-256color"
       set -g default-terminal "xterm-24bit"
-      # if 'infocmp -x alacritty > /dev/null 2>&1' 'set -g default-terminal "alacritty"'
+      if 'infocmp -x alacritty > /dev/null 2>&1' 'set -g default-terminal "alacritty"'
       set -ag terminal-overrides ",xterm-24bit:RGB"
       set -g automatic-rename off
       set -g focus-events on
