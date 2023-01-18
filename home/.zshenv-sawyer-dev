@@ -322,12 +322,17 @@ notify() {
   last_cmd=$(echo "$current_cl" | sed 's/;[^;]*$//' | sed 's/"//g')
   if tmux list-sessions | grep attached >/dev/null; then
     current_status_setting=$(tmux show status | sed 's/^status //')
+    default_message_style=$(tmux show-options -g message-style | sed 's/message-style //')
     tmux set-option status 2
     if [[ "$exit_code" != 0 ]]; then
+      tmux set -g message-style bg=red,fg=black
       tmux display-message -d 0 "failed: $last_cmd"
     else
+      tmux set -g message-style bg=green,fg=black
       tmux display-message -d 0 "succeeded: $last_cmd"
     fi
+    read -r
+    tmux set -g message-style "$default_message_style"
     tmux set-option status "${current_status_setting}" 2>/dev/null || tmux set-option status on
   fi
   tput bel

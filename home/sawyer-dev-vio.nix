@@ -212,6 +212,8 @@ in
       set -g status on                       # turn the status bar on
       set -g status-interval 30              # set update frequencey (default 15 seconds)
       set -g status-justify left             # center window list for clarity
+      set -ga window-active-style bg="#1b1f24",fg="#afc0d9"
+      set -ga window-style bg="#1b1f24",fg="#495d7c"
       set -g message-style bg=black,fg=green
       set -g status-style bg="#2c2c34",fg=yellow
       set -g window-status-format "  #{window_index}|#{window_name}  "
