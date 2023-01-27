@@ -270,6 +270,7 @@ docker-shell () {
     echo "running container shell with $image"
     echo "${USER}:x:${UID}:${GID}:Volterra User:${HOME}:/bin/bash" > "$temp_passwd_file" \
       && mkdir -p "${project_root}/.cache.go" \
+      && mkdir -p "${HOME}/.magefile" \
       && docker run --rm -it --user ${UID}:${GID} --userns=host \
         --env GOCACHE=${go_cache_dir} \
         --env GOPATH=${GOPATH} \
@@ -277,12 +278,14 @@ docker-shell () {
         --env TERM=xterm-256color \
         --env PS1="${image}:\w> " \
         --env DOCKER_IMAGE="$image" \
+        --env GOPRIVATE=gopkg.volterra.us \
         --net host \
         -v ${HOME}/.cache:${HOME}/.cache \
         -v "$temp_passwd_file":/etc/passwd:ro,Z \
         -v ${PWD}:/go/${GOPATH}/src:Z \
         -v ${HOME}/.gitconfig:${HOME}/.gitconfig:ro \
-        -v ${HOME}/.ssh:${HOME}/.ssh:ro \
+        -v ${HOME}/.ssh:${HOME}/.ssh \
+        -v ${HOME}/.magefile:${HOME}/.magefile \
         -v ${GOPATH}:${GOPATH} \
         -v ${project_root}:${project_root} \
         -v "${HOME}/.bashrc":"${HOME}/.bashrc" \
