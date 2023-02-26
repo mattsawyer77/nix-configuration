@@ -40,6 +40,22 @@ in
       TERM = "xterm-24bit";
       VISUAL = "em"; # see script file below and in scripts/em.zsh
     };
+    # install doom config into ~/.doom.d
+    # and doom itself into ~/.emacs.d (not a pure install, but this allows us to run doom commands outside nix)
+    file.".doom.d" = {
+      source = ./doom;
+      recursive = true;
+      onChange = ''
+        #!/usr/bin/env zsh
+        DOOM_DIR="$HOME/.emacs.d"
+        DOOM="$DOOM_DIR/bin/doom"
+        if [[ ! -d "$DOOM_DIR" ]]; then
+          git clone https://github.com/hlissner/doom-emacs.git $DOOM_DIR
+          $DOOM_DIR/bin/doom -y install
+        fi
+        $DOOM doctor && $DOOM -y sync
+      '';
+    };
     # for git, $EDITOR/$VISUAL can't be set to reference a shell function, so deploy the script as follows
     file."em.zsh" = {
       executable = true;
