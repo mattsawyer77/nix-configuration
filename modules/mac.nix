@@ -58,6 +58,7 @@ let
     cmake
     coreutils
     # curlFull # nixpkgs curl builds with openssl 3 which breaks legacy PKCS12 cert auth
+    deadcode
     delta
     delve
     # diff-so-fancy
@@ -72,7 +73,7 @@ let
     fd
     fontconfig
     fzf
-    gdb
+    # gdb # broken as of 2023-01-20
     gdbm
     ghostscript
     glib
@@ -84,6 +85,8 @@ let
     go
     golangci-lint # customized in golangci-lint.nix overlay since it's broken in nixpkgs right now
     (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
+    gocyclo
+    golint
     gopls
     graphviz
     grpcurl
@@ -145,6 +148,7 @@ let
     pcre2
     # pdfminer
     pkg-config
+    plantuml
     # podman # broken as of 2022-05-12
     # protobuf
     prototool
@@ -182,7 +186,7 @@ let
     # vmtouch
     wget
     xsv
-    # yabai
+    yabai
     yaml-language-server
     yarn
     yj
@@ -203,61 +207,60 @@ in
     (common-packages ++ (if stdenv.isAarch64 then arm64-packages else [ ])
       ++ (if stdenv.isx86_64 then x86-64-packages else [ ]));
   services.nix-daemon.enable = true;
-  services.yabai.package = pkgs.yabai;
-  services.yabai.enable = false;
-  services.yabai.config = {
-    mouse_follows_focus = "off";
-    focus_follows_mouse = "off";
-    window_placement = "second_child";
-    window_topmost = "off";
-    window_shadow = "on";
-    window_opacity = "off";
-    window_opacity_duration = "0.0";
-    active_window_opacity = "1.0";
-    normal_window_opacity = "0.90";
-    window_border = "off";
-    window_border_width = "6";
-    active_window_border_color = "0x99a5e7ff";
-    normal_window_border_color = "0x99505050";
-    insert_window_border_color = "0xffd75f5f";
-    split_ratio = "0.50";
-    auto_balance = "off";
-    mouse_modifier = "fn";
-    mouse_action1 = "move";
-    mouse_action2 = "resize";
-    mouse_drop_action = "swap";
+  services.yabai = {
+    package = pkgs.yabai;
+    enable = false;
+    config = {
+      mouse_follows_focus = "off";
+      focus_follows_mouse = "off";
+      window_placement = "second_child";
+      window_topmost = "off";
+      window_shadow = "on";
+      window_opacity = "off";
+      window_opacity_duration = "0.0";
+      active_window_opacity = "1.0";
+      normal_window_opacity = "0.90";
+      window_border = "off";
+      window_border_width = "6";
+      active_window_border_color = "0x99a5e7ff";
+      normal_window_border_color = "0x99505050";
+      insert_window_border_color = "0xffd75f5f";
+      split_ratio = "0.50";
+      auto_balance = "off";
+      mouse_modifier = "fn";
+      mouse_action1 = "move";
+      mouse_action2 = "resize";
+      mouse_drop_action = "swap";
 
-    # general space settings
-    layout = "bsp";
-    top_padding = "3";
-    bottom_padding = "3";
-    left_padding = "3";
-    right_padding = "3";
-    window_gap = "0";
+      # general space settings
+      layout = "bsp";
+      top_padding = "3";
+      bottom_padding = "3";
+      left_padding = "3";
+      right_padding = "3";
+      window_gap = "0";
+    };
+    extraConfig = ''
+      yabai -m rule --add app="^System Preferences$" manage=off
+      yabai -m rule --add app="^BIG-IP Edge Client$" manage=off
+      yabai -m rule --add app="Pikka" manage=off
+      yabai -m rule --add app="Lightroom" manage=off
+      yabai -m rule --add app="Microsoft.*Remote.*Desktop" manage=off
+      yabai -m rule --add app="Music" title!="Music" manage=off
+      yabai -m rule --add label=ignoreTeamsNotification app="Microsoft Teams" title="Microsoft Teams Notification" manage=off border=off
+      # The below signal only works on current master, not in 1.1.2
+      # Tries to focus the window under the cursor whenever the MS teams notification gains focus
+      # Probably conflicts with mouse follows focus in some ways
+      # yabai -m signal --add \
+      #     event=window_focused \
+      #     app='^Microsoft Teams$' \
+      #     title='^Microsoft Teams Notification$' \
+      #     action='yabai -m window --focus mouse > /dev/null 2>&1'
+      # yabai -m rule --add title="Outlook" space=4
+      # yabai -m rule --add app="Calendar" space=5
+      # yabai -m rule --add app="Messages" space=5
+    '';
   };
-
-  # yabai customizations
-  services.yabai.extraConfig = ''
-    yabai -m rule --add app="^System Preferences$" manage=off
-    yabai -m rule --add app="^BIG-IP Edge Client$" manage=off
-    yabai -m rule --add app="Pikka" manage=off
-    yabai -m rule --add app="Lightroom" manage=off
-    yabai -m rule --add app="Microsoft.*Remote.*Desktop" manage=off
-    yabai -m rule --add app="Music" title!="Music" manage=off
-    yabai -m rule --add label=ignoreTeamsNotification app="Microsoft Teams" title="Microsoft Teams Notification" manage=off border=off
-    yabai -m rule --add title="Minecraft" manage=off border=off
-    # The below signal only works on current master, not in 1.1.2
-    # Tries to focus the window under the cursor whenever the MS teams notification gains focus
-    # Probably conflicts with mouse follows focus in some ways
-    # yabai -m signal --add \
-    #     event=window_focused \
-    #     app='^Microsoft Teams$' \
-    #     title='^Microsoft Teams Notification$' \
-    #     action='yabai -m window --focus mouse > /dev/null 2>&1'
-    # yabai -m rule --add title="Outlook" space=4
-    # yabai -m rule --add app="Calendar" space=5
-    # yabai -m rule --add app="Messages" space=5
-  '';
   services.skhd.enable = false;
   services.skhd.package = pkgs.skhd;
   services.skhd.skhdConfig = ''
