@@ -17,9 +17,9 @@
   programs.zsh.promptInit = ''
     eval $(starship init zsh)
   '';
-  programs.zsh.loginShellInit = ''
-    ${builtins.readFile ./zsh/.zshenv}
-  '';
+  # programs.zsh.loginShellInit = ''
+  #   ${builtins.readFile ./zsh/.zshenv}
+  # '';
   # TODO: investigate syntax highlighting and autosuggestions, which aren't loading right now
   programs.zsh.interactiveShellInit = ''
     bindkey -v

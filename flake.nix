@@ -124,62 +124,126 @@
 
     # linux
     nixosConfigurations = {
-      "sawyer-dev" =
-        let username = "sawyer"; in
-        nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          specialArgs = inputs;
-          modules = [
-            ./hardware/sawyer-dev.nix
-            ./modules/nixos.nix
-            ./modules/tmux.nix
-            ./modules/zsh.nix
-            ({ pkgs, ... }: {
-              system.stateVersion = "22.11";
-              programs.tmux.enable = true;
-              programs.neovim.enable = true;
-              programs.zsh.enable = true;
-              programs.ssh.startAgent = true;
-              programs.ssh.agentTimeout = "1h";
-              networking.hostName = "sawyer-dev";
-              networking.firewall.enable = true;
-              networking.firewall.allowPing = true;
-              networking.firewall.allowedTCPPorts = [ 22 2022 ];
-              services.openssh.enable = true;
-              time.timeZone = "America/Los_Angeles";
-              environment.variables = rec {
-                AWS_SDK_LOAD_CONFIG = "1";
-                LANG = "en_US.UTF-8";
-                LANGUAGE = "en_US.UTF-8";
-                LC_ALL = "en_US.UTF-8";
-                LESS = "-F -i -M -R -X ";
-                LESSCHARSET = "utf-8";
-                TERM = "xterm-24bit";
-              };
-              services.eternal-terminal.enable = true;
-              users.users.${username} = {
-                isNormalUser = true;
-                home = "/home/${username}";
-                description = "Matt Sawyer";
-                extraGroups = [ "wheel" "networkmanager" "docker" ];
-                shell = pkgs.zsh;
-              };
-              users.users.${username}.openssh.authorizedKeys.keys = [
-                "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGStalU6J6DjgGa/HuAiGQw/N9JW8Np2xUmzNgAmBB40 m.sawyer@KD21QWDKW7
-"
-                "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMnKxUA4LekQTbtcGdZwVWFfsd5CR+YVqoU4w/pFKz2Q matt@MacBook-Pro"
-              ];
-              nix.settings.allowed-users = [ username "@wheel" ];
-              nix.settings.trusted-users = [ username "@wheel" ];
-              nix.gc = {
+      "sawyer-dev" = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        specialArgs = inputs;
+        modules = [
+          ./hardware/sawyer-dev.nix
+          ./modules/nixos.nix
+          # ./modules/tmux.nix
+          # ./modules/zsh.nix
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.users.sawyer = import ./home/sawyer-dev.nix;
+          }
+          ({ pkgs, ... }: {
+            system.stateVersion = "22.11";
+            users.users.sawyer = {
+              isNormalUser = true;
+              home = "/home/sawyer";
+              description = "Matt Sawyer";
+              extraGroups = [ "wheel" "networkmanager" "docker" ];
+              shell = pkgs.zsh;
+            };
+            users.users.sawyer.openssh.authorizedKeys.keys = [
+              "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH9y8o2poix1HHVcOX7eWS9PLcrZ/XZD4h4Mi3IOwumZ sawyer@SEA-ML-SAWYER"
+              "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMnKxUA4LekQTbtcGdZwVWFfsd5CR+YVqoU4w/pFKz2Q matt@MacBook-Pro"
+            ];
+            networking.hostName = "sawyer-dev";
+            networking.firewall = {
+              enable = true;
+              allowPing = true;
+              allowedTCPPorts = [ 22 2022 ];
+            };
+            nix = {
+              gc = {
                 automatic = true;
                 dates = "weekly";
-                options = "--delete-older-than 30d";
+                options = "--delete-older-than 7d";
               };
-              virtualisation.docker.enable = true;
-            })
-          ]; # modules
-        }; # sawyer-dev
+              settings = {
+                allowed-users = [ "sawyer" "@wheel" ];
+                trusted-users = [ "sawyer" "@wheel" ];
+              };
+            };
+            programs.ssh = {
+              startAgent = true;
+              agentTimeout = "1h";
+            };
+            programs.tmux.enable = true;
+            services.eternal-terminal.enable = true;
+            services.openssh.enable = true;
+            time.timeZone = "America/Los_Angeles";
+            virtualisation.docker.enable = true;
+          })
+        ]; # modules
+      }; # sawyer-dev
+
+      "sawyer-dev-vio" = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        specialArgs = inputs;
+        modules = [
+          ./hardware/sawyer-dev-vio.nix
+          ./modules/nixos.nix
+          ./modules/tmux.nix
+          ./modules/zsh.nix
+          ({ pkgs, ... }: {
+            system.stateVersion = "22.11";
+            programs.tmux.enable = true;
+            programs.neovim.enable = true;
+            programs.zsh.enable = true;
+            programs.ssh.startAgent = true;
+            programs.ssh.agentTimeout = "1h";
+            networking.hostName = "sawyer-dev-vio";
+            networking.firewall.enable = true;
+            networking.firewall.allowPing = true;
+            networking.firewall.allowedTCPPorts = [ 777 2022 ];
+            services.openssh.enable = true;
+            services.openssh.ports = [ 777 ];
+            time.timeZone = "America/Los_Angeles";
+            environment.variables = rec {
+              AWS_SDK_LOAD_CONFIG = "1";
+              LANG = "en_US.UTF-8";
+              LANGUAGE = "en_US.UTF-8";
+              LC_ALL = "en_US.UTF-8";
+              LESS = "-F -i -M -R -X ";
+              LESSCHARSET = "utf-8";
+              TERM = "xterm-24bit";
+            };
+            services.eternal-terminal.enable = true;
+            users.users.sawyer = {
+              isNormalUser = true;
+              home = "/home/sawyer";
+              description = "Matt Sawyer";
+              extraGroups = [ "wheel" "networkmanager" "docker" ];
+              shell = pkgs.zsh;
+            };
+            users.users.sawyer.openssh.authorizedKeys.keys = [
+              "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7ppj2JdG41nvNrtQzOSAOpRNmPFlrvFZ1l/JI/XrcI sawyer@sawyer-dev"
+              "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH9y8o2poix1HHVcOX7eWS9PLcrZ/XZD4h4Mi3IOwumZ sawyer@SEA-ML-SAWYER"
+              "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKtWvaKI+rSVDIE4L7cOfR1IdS+AVrLoFcJ5Cq69rvvK sawyer@sawyer-dev"
+              "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGStalU6J6DjgGa/HuAiGQw/N9JW8Np2xUmzNgAmBB40 m.sawyer@KD21QWDKW7"
+            ];
+            nix.settings.allowed-users = [ "sawyer" "@wheel" ];
+            nix.settings.trusted-users = [ "sawyer" "@wheel" ];
+            nix.gc = {
+              automatic = true;
+              dates = "weekly";
+              options = "--delete-older-than 30d";
+            };
+            virtualisation.docker.enable = true;
+            virtualisation.docker.extraOptions = "--bip 192.168.10.1/24";
+          })
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.users.sawyer = import ./home/sawyer-dev-vio.nix;
+          }
+        ]; # modules
+      }; # sawyer-dev
     }; # nixosConfigurations
   }; # outputs
 }

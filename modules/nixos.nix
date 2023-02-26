@@ -1,4 +1,12 @@
-{ config, pkgs, lib, emacs-overlay, neovim-nightly-overlay, ... }:
+{ config
+, pkgs
+, lib
+, emacs-overlay
+, emacs-src
+, emacs-vterm-src
+, neovim-nightly-overlay
+, ...
+}:
 
 with lib;
 
@@ -8,7 +16,7 @@ with lib;
     aws-iam-authenticator
     awscli2
     azure-cli
-    bash_5
+    bash
     bat
     bat-extras.batman
     bind
@@ -25,8 +33,12 @@ with lib;
     diff-so-fancy
     direnv
     docker
+    docker-compose
     dos2unix
-    emacsGit-nox
+    # emacsGit-nox
+    emacs-nixos # from overlay below
+    emacs-vterm
+    envsubst
     etcd
     eternal-terminal
     exa
@@ -44,7 +56,8 @@ with lib;
     gnupg
     go
     golangci-lint
-    google-cloud-sdk
+    (google-cloud-sdk.withExtraComponents
+      [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
     gopls
     graphviz
     grpcurl
@@ -73,7 +86,7 @@ with lib;
     netcat
     netperf
     nix-direnv
-    nix-linter
+    # nix-linter # broken as of 2023-01-17
     nix-prefetch
     nix-prefetch-git
     nix-zsh-completions
@@ -90,8 +103,8 @@ with lib;
     pcre
     pcre2
     pinentry
-    pkgconfig
-    podman
+    pkg-config
+    # podman
     # protobuf
     # protobuf3_11
     prototool
@@ -111,6 +124,7 @@ with lib;
     ssm-session-manager-plugin
     starship
     taglib
+    taplo
     terraform
     terraform-ls
     tflint
@@ -122,10 +136,12 @@ with lib;
     valgrind
     wget
     wireshark
+    xsel
     xsv
     yaml-language-server
     youtube-dl
     yq-go
+    zellij
     zenith
     zlib
     zoxide
@@ -147,7 +163,58 @@ with lib;
   };
   nixpkgs = {
     config.allowUnfree = true;
-    overlays = [ emacs-overlay.overlay (import ./neovim.nix) ]; # overlays
+    overlays = [
+      emacs-overlay.overlay
+      (import ./neovim.nix)
+      (final: prev: {
+        emacs-vterm = prev.stdenv.mkDerivation rec {
+          pname = "emacs-vterm";
+          version = "master";
+          src = emacs-vterm-src;
+          nativeBuildInputs = [ prev.cmake prev.libtool prev.glib.dev ];
+          buildInputs = [ prev.glib.out prev.libvterm-neovim prev.ncurses ];
+          cmakeFlags = [ "-DUSE_SYSTEM_LIBVTERM=yes" ];
+          preConfigure = ''
+            echo "include_directories(\"${prev.glib.out}/lib/glib-2.0/include\")" >> CMakeLists.txt
+            echo "include_directories(\"${prev.glib.dev}/include/glib-2.0\")" >> CMakeLists.txt
+            echo "include_directories(\"${prev.ncurses.dev}/include\")" >> CMakeLists.txt
+            echo "include_directories(\"${prev.libvterm-neovim}/include\")" >> CMakeLists.txt
+          '';
+          installPhase = ''
+            mkdir -p $out
+            cp ../vterm-module.so $out
+            cp ../vterm.el $out
+          '';
+        };
+        emacs-nixos = (prev.emacsGit.override {
+          srcRepo = true;
+          nativeComp = true;
+          withSQLite3 = true;
+        }).overrideAttrs (o: rec {
+          version = "30.0.50";
+          src = emacs-src;
+          buildInputs = o.buildInputs;
+          configureFlags = o.configureFlags ++ [
+            "--with-modules"
+            "--without-gpm"
+            "--without-dbus"
+            "--without-mailutils"
+            "--without-pop"
+          ];
+          postPatch = o.postPatch + ''
+            substituteInPlace lisp/loadup.el \
+            --replace '(emacs-repository-get-branch)' '"master"'
+          '';
+          postInstall = o.postInstall + ''
+            cp ${final.emacs-vterm}/vterm.el $out/share/emacs/site-lisp/vterm.el
+            cp ${final.emacs-vterm}/vterm-module.so $out/share/emacs/site-lisp/vterm-module.so
+          '';
+          CFLAGS =
+            # "-DMAC_OS_X_VERSION_MAX_ALLOWED=110203 -g -O3 -mtune=native -march=native -fomit-frame-pointer";
+            "-g -O3 -mtune=native -march=native -fomit-frame-pointer";
+        });
+      })
+    ]; # overlays
   }; # nixpkgs
   # programs.direnv.enable = true;
   # programs.direnv.nix-direnv.enable = true;
