@@ -21,7 +21,7 @@
  :g "C-s" #'basic-save-buffer
  :n "C-," (lambda ()
             (interactive)
-            (dired-other-window "~/.config/doom"))
+            (dired-other-window "~/.doom.d/doom"))
  (:after evil-nerd-commenter
   :nv "#" #'evilnc-comment-or-uncomment-lines)
  (:after centaur-tabs
