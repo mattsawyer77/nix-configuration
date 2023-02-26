@@ -168,6 +168,21 @@ in
           }];
         }
         {
+          description = "mute/unmute audio input with pause key (or Keychron Q1 knob)";
+          manipulators = [{
+            from = {
+              key_code = "pause";
+            };
+            to = [{
+              # shell function defined in home/.zshenv-KD21QWDKW7.nix
+              shell_command = "/etc/profiles/per-user/$USER/bin/zsh -c toggle-audio-input-mute";
+              # previous attempt at just muting/unmuting zoom (works but is specific to zoom):
+              # shell_command = "osascript -e 'tell application \"System Events\"' -e 'activate application id \"us.zoom.xos\"' -e 'keystroke \"a\" using {command down, shift down}' -e 'end tell'";
+            }];
+            type = "basic";
+          }];
+        }
+        {
           description = "Safari customization";
           manipulators = [{
             conditions = [{

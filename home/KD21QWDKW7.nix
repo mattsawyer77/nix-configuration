@@ -79,6 +79,35 @@ in
     enable = true;
     package = pkgs.emacs-mac; # from overlay in mac.nix
   };
+  # programs.git = {
+  #   aliases = {
+  #     lpg = "log --oneline --graph --format='%C(yellow)%H %<(15)%C(blue)%ci %<(20,trunc)%C(green)%aN %C(reset)%<(100,trunc)%s'";
+  #     lp = "log --oneline --format='%C(yellow)%H %C(blue)%ci %C(green)%an %C(reset)%<(100,trunc)%s'";
+  #     lt = "log --tags --simplify-by-decoration --format='%C(green)%H %<(15)%C(yellow)%ci %<(20,trunc)%C(cyan)%aN %C(reset)%<(100,trunc)%d%n   %s'";
+  #     st = "status -s";
+  #   };
+  #   delta = {
+  #     enable = true;
+  #     options = {
+  #       paging = "always";
+  #       line-numbers = "true";
+  #       navigate = "true";
+  #       syntax-theme = "zenburn";
+  #       width = "1";
+  #       minus-style = "syntax \"#450a15\"";
+  #       minus-emph-style = "syntax \"#600818\"";
+  #       plus-style = "syntax \"#0b4820\"";
+  #       plus-emph-style = "syntax \"#175c2e\"";
+  #       hunk-header-style = "syntax bold";
+  #       hunk-header-decoration-style = "omit";
+  #       file-style = "yellow italic";
+  #       file-decoration-style = "yellow ul";
+  #       line-numbers-zero-style = "#4b5263";
+  #       line-numbers-left-format = "\"{nm:^4} \"";
+  #       line-numbers-right-format = "\"{np:^4} \"";
+  #     };
+  #   };
+  # };
   programs.home-manager.enable = true;
   programs.alacritty = let alacrittyThemes = {
     afterglow = builtins.fromJSON (builtins.readFile ./alacritty-themes/Afterglow.json);
@@ -233,6 +262,12 @@ in
         C-s = ":w";
         C-y = "scroll_up";
         D = "kill_to_line_end";
+        g = {
+          b = "buffer_picker";
+          i = "goto_last_change";
+          I = "goto_implementation";
+          t = "goto_type_definition";
+        };
         G = "goto_file_end";
         P = "paste_clipboard_before";
         p = "paste_clipboard_after";
@@ -366,8 +401,10 @@ in
       set -g status-left-length 70
       set -g status-left "#[bg=#336688]#[fg=#eeeeee] #h #[bg=#113355]#[fg=brightwhite]#{?client_prefix,#[bg=green],} #S "
       # set -g status-right-length 60
-      # set -g status-right "#[bg=#444455]#[fg=#bbbbcc] %H:%M "
-      set -g status-right ""
+      # set -g status-right "#[bg=#444455]#[fg=#bbbbcc] #[fg="#888899"]#[bg="#383845"] %H:%M "
+      set -g status-right '#[bg=#202017]#[fg=#585865] %H:%M%Z #(TZ=UTC date +"(%%H:%%MUTC)") '
+      # emoji not working:
+      # set -g status-right '#[bg=#202017]#[fg=#585865] �🇸� %H: %�� ��M #(TZ=UTC dat +"(%%H:%%UTC �🇦�🇳 #(TCanada/Easternta date +"%%H:%%MUTC ) )  �🇳�🇧 #(TAsia/CalcuttaTC date +"%%H:%%MUTC ) )
       set -g default-command "reattach-to-user-namespace -l zsh"
       set -g status-left "#[bg=#e63634]#[fg=brightwhite]#{?client_prefix,#[bg=green],} #S "
       # set -g status-right "#[bg=#444444]#[fg=#888888] #(rainbarf --width 20 --rgb --no-battery --order fciaws)"
