@@ -6,7 +6,6 @@
 , emacs-src
 , emacs-vterm-src
 , neovim-nightly-overlay
-, username
 , ...
 }:
 

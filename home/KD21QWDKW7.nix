@@ -1,18 +1,15 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, username, fontConfig, ... }:
 
 let
-  username = "m.sawyer";
   homeDirectory = "/Users/" + username;
   goPathSuffix = "gocode";
   localBinPath = ".local/bin";
-
 in
 {
   home = {
     homeDirectory = homeDirectory;
     packages = [ ];
     stateVersion = "22.11";
-    username = username;
     # append these extra dirs to the nix-generated path
     sessionPath = [
       (homeDirectory + "/" + localBinPath)
@@ -128,12 +125,13 @@ in
           normal = {
             # family = "JetBrains Mono";
             # style = "Thin";
-            # family = "Input";
-            family = "PragmataPro Liga";
-            style = "Regular";
+            # family = "Iosevka Extended";
+            family = fontConfig.monospaceFamily;
+            # style = "Regular";
           };
           bold = {
-            family = "PragmataPro Liga";
+            family = fontConfig.monospaceFamily;
+            # family = "Iosevka Extended";
             # family = "Input";
             style = "Bold";
           };

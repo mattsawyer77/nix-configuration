@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, username, fontConfig, ... }:
 
 let
   username = "matt";
@@ -126,11 +126,11 @@ in
             # family = "JetBrains Mono";
             # style = "Thin";
             # family = "Input";
-            family = "PragmataPro Liga";
+            family = fontConfig.monospaceFamily;
             style = "Regular";
           };
           bold = {
-            family = "PragmataPro Liga";
+            family = fontConfig.monospaceFamily;
             # family = "Input";
             style = "Bold";
           };
