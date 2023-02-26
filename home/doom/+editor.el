@@ -645,3 +645,18 @@
 ;;            (indent-tabs-mode 1)
 ;;            (ws-butler-mode -1)
 ;;            )
+
+(after! impatient-showdown
+  ;; Display markdown depends on your flavor.
+  (setq impatient-showdown-flavor 'github)
+  ;; For display body background color.
+  (setq impatient-showdown-background-color "#f0f0f0")
+  ;; Preview HTML template.
+  ;; (setq impatient-showdown-preview-template )
+  ;; For display markdown border color.
+  (setq impatient-showdown-markdown-border-color "#f8f8f8")
+  ;; Default preview HTML template.
+  ;; (setq impatient-showdown--default-preview-template )
+  ;; display markdown background color.
+  (setq impatient-showdown-markdown-background-color "#f8f8f8")
+  )

@@ -10,7 +10,6 @@
 (package! doom-modeline)
 (package! prettier-js)
 (package! evil-nerd-commenter)
-(package! vmd-mode)
 (package! highlight-indent-guides)
 (package! treemacs-persp)
 (package! flycheck-posframe)
@@ -54,5 +53,6 @@
 ;; (package! doom-nano-modeline
 ;;   :recipe (:host github
 ;;   :repo "ronisbr/doom-nano-modeline"))
+(package! impatient-showdown)
 
 (disable-packages! hl-line)

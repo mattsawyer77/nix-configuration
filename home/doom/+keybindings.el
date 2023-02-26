@@ -82,10 +82,10 @@
        :desc "verify Flycheck setup" "v" #'flycheck-verify-setup
        :desc "list errors" "l" #'flycheck-list-errors)))
 
-(map! :after vmd
+(map! :after impatient-showdown-mode
       :mode markdown-mode
       (:localleader
-       :desc "VMD mode" "p" #'vmd-mode))
+       :desc "Impatient Showdown live preview" "p" #'impatient-showdown-mode))
 
 (map! :after rustic
       :map rustic-mode-map
