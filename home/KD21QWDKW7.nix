@@ -31,6 +31,24 @@ in
       SAML2AWS_USER_AGENT =
         "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.00) Gecko/20100101 Firefox/82.0";
     };
+    # install doom config into ~/.doom.d
+    # and doom itself into ~/.emacs.d (not a pure install, but this allows us to run doom commands outside nix)
+    # (also copy the splash image since a symlink won't work...)
+    file.".doom.d" = {
+      source = ./doom;
+      recursive = true;
+      onChange = ''
+        #!/usr/bin/env zsh
+        DOOM_DIR="$HOME/.emacs.d"
+        DOOM="$DOOM_DIR/bin/doom"
+        if [[ ! -d "$DOOM_DIR" ]]; then
+          git clone https://github.com/hlissner/doom-emacs.git $DOOM_DIR
+          $DOOM_DIR/bin/doom -y install
+        fi
+        cp $(readlink ~/.doom.d/black-hole.png) ~/.emacs.d/.local
+        $DOOM doctor && $DOOM -y sync
+      '';
+    };
     # for git, $EDITOR/$VISUAL can't be set to reference a shell function, so deploy the script as follows
     file."em.zsh" = {
       executable = true;
