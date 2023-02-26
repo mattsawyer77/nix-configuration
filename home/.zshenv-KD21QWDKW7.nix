@@ -25,6 +25,7 @@ find-proto-import-path() {
       && typeset -A import_paths \
       && for import in $(grep -hE '^\s*import\s".*\.proto";' *.proto | cut -d'"' -f2); do \
         if [[ -z "${import_paths[$import]}" ]]; then
+          echo >&2 "cache miss for $import"
           paths=$(fd --follow --full-path --glob --no-ignore-vcs "**/$import" \
             $(realpath --relative-to . $(git rev-parse --show-toplevel)) \
             | sd "/$import" "" \
@@ -33,6 +34,8 @@ find-proto-import-path() {
             echo >&2 "could not find proto files for $import"
           fi
           import_paths+=( ["$import"]="$paths" )
+        else
+          echo >&2 "cache hit for ${import}: ${import_paths[$import]}"
         fi
         echo "${import_paths[$import]}"
       done \
@@ -40,24 +43,83 @@ find-proto-import-path() {
   echo "$dirs"
 }
 
+# generate-protoc-import-dir-locals() {
+#   local root_dir
+#   local single_proto=""
+#   if [[ ! -v 1 ]]; then
+#     root_dir=.
+#   else
+#     if [[ -d "$1" ]]; then
+#       root_dir="$1"
+#     elif [[ -f "$1" ]]; then
+#       single_proto="$1"
+#       root_dir=$(dirname "$single_proto")
+#     else
+#       echo >&2 "$1 is neither a file nor a directory"
+#       return 1
+#     fi
+#   fi
+#   local repo_proto_dirs
+#   if [[ -n "$single_proto" ]]; then
+#     repo_proto_dirs=($root_dir)
+#     echo "generating .dir-locals.el for $single_proto in ${root_dir} (non-recursive)..."
+#   else
+#     repo_proto_dirs=($(fd '\.proto$' "$root_dir" -x dirname | sort -u))
+#     echo "generating .dir-locals.el for each directory recursively from ${root_dir}..."
+#   fi
+#   for repo_proto_dir in $repo_proto_dirs; do
+#     import_dirs=$(find-proto-import-path "$repo_proto_dir")
+#     if [[ -n "$import_dirs" ]]; then
+#       echo " - generating ${repo_proto_dir}/.dir-locals.el"
+#       cat >"${repo_proto_dir}/.dir-locals.el" <<EOF
+# ((protobuf-mode .
+#   ((flycheck-protoc-import-path .
+#     (
+# $import_dirs
+#     )))))
+# EOF
+#     else
+#       echo " - no import dirs found for $repo_proto_dir"
+#     fi
+#   done
+# }
+
 generate-protoc-import-dir-locals() {
-  if [[ ! -v 1 ]]; then root_dir=.; else root_dir="$1"; fi
+  local root_dir=$(git rev-parse --show-toplevel)
+  repo_name=$(echo "$root_dir" | pcregrep -o '[^/]+/?$')
+  repo_proto_dirs=($(fd --no-ignore-vcs '\.proto$' "$root_dir" -x dirname | grep -v vendor | sort -u))
+  declare -a absolute_proto_roots
+  absolute_proto_roots=(
+    ${HOME}/.local/share/protobuf-extras
+    ${HOME}/.local/share/protobuf-extras/protobuf
+    ${root_dir}/proto
+    ${root_dir}/schema
+    ${root_dir}/schema/vendor
+    ${root_dir}/schema/vendor/github.com/gogo/googleapis
+  )
+  declare -a found_proto_roots
+  for dir in $absolute_proto_roots; do
+    if [[ -d "$dir" ]]; then
+      found_proto_roots+="$dir"
+    fi
+  done
   echo "generating .dir-locals.el for each directory recursively from ${root_dir}..."
-  repo_proto_dirs=($(fd '\.proto$' "$root_dir" -x dirname | sort -u))
   for repo_proto_dir in $repo_proto_dirs; do
-    import_dirs=$(find-proto-import-path "$repo_proto_dir")
-    if [[ -n "$import_dirs" ]]; then
-      echo " - generating ${repo_proto_dir}/.dir-locals.el"
+    (cd $repo_proto_dir && \
+      declare -a rel_proto_roots && \
+      for dir in $found_proto_roots; do
+        rel_proto_root=$(realpath --relative-to=. "$dir") && \
+          rel_proto_roots+="\"$rel_proto_root\""
+      done && \
+      echo " - generating ${repo_proto_dir}/.dir-locals.el" && \
       cat >"${repo_proto_dir}/.dir-locals.el" <<EOF
 ((protobuf-mode .
   ((flycheck-protoc-import-path .
     (
-$import_dirs
+$rel_proto_roots
     )))))
 EOF
-    else
-      echo " - no import dirs found for $repo_proto_dir"
-    fi
+    )
   done
 }
 
@@ -512,6 +574,60 @@ vegactl() {
   fi
 }
 
+env-api-gw-hostname() {
+  if [ ! -v 1 ]; then
+    echo >&2 "must specify environment (demo1, crt, staging, prod)"
+    return 1
+  fi
+  local environment="$1"
+  case $environment in
+    demo1)
+      api_gw_hostname="${5:-gc01.int.ves.io}"
+      ;;
+    crt)
+      api_gw_hostname="${5:-gc01-crt.int.ves.io}"
+      ;;
+    staging)
+      api_gw_hostname="${5:-gc1-iad-01.int.volterra.us}"
+      ;;
+    prod)
+      api_gw_hostname="gc01-cle.int.ves.io"
+      ;;
+    *)
+      echo >&2 "unknown environment $environment"
+      return 1
+      ;;
+  esac
+  echo "$api_gw_hostname"
+}
+
+env-compass-hostname() {
+  if [ ! -v 1 ]; then
+    echo >&2 "must specify environment (demo1, crt, staging, prod)"
+    return 1
+  fi
+  local environment="$1"
+  case $environment in
+    demo1)
+      compass_hostname="compass-lma.demo1.volterra.us"
+      ;;
+    crt)
+      compass_hostname="compass-lma.crt.volterra.us"
+      ;;
+    staging)
+      compass_hostname="compass-lma.staging.volterra.us"
+      ;;
+    prod)
+      compass_hostname="compass-lma.ves.volterra.io"
+      ;;
+    *)
+      echo >&2 "unknown environment $environment"
+      return 1
+      ;;
+  esac
+  echo "$compass_hostname"
+}
+
 profile-service() {
   usage="usage:\nprofile_service service_name [environment] [pprof_type] [sample_time]"
   if [ ! -v 1 ]; then
@@ -523,29 +639,11 @@ profile-service() {
   local service="$1"
   local environment="${2:-demo1}"
   local pprof_type="${3:-profile}"
-  local sample_time="${4:-5}"
-  local api_gw_hostname
-  local compass_hostname
-  case $environment in
-    demo1)
-      compass_hostname="compass-lma.demo1.volterra.us"
-      api_gw_hostname="${5:-gc01.int.ves.io}"
-      ;;
-    crt)
-      compass_hostname="compass-lma.crt.volterra.us"
-      api_gw_hostname="${5:-gc01.int.ves.io}"
-      ;;
-    staging)
-      compass_hostname="compass-lma.staging.volterra.us"
-      api_gw_hostname="${5:-gc1-iad-01.int.volterra.us}"
-      ;;
-    *)
-      echo >&2 "unknown environment $environment"
-      return 1
-      ;;
-  esac
+  local sample_time="${4:-30}"
+  local api_gw_hostname=$(env-api-gw-hostname "$environment")
+  local compass_hostname=$(env-compass-hostname "$environment")
   output_filename="${service}.${environment}.${pprof_type}.$(date --iso-8601=seconds).pprof"
-  url="https://${compass_hostname}/introspection/${api_gw_hostname}/${service}/debug/pprof/${pprof_type}?seconds=${sample_time}"
+  url="https://${compass_hostname}/introspection/${api_gw_hostname}/${service}/debug/pprof/${pprof_type}?debug=1"
   echo "starting profile of $service on $environment (url: $url)..."
   curl \
     --insecure \
@@ -656,31 +754,9 @@ sic() {
     echo >&2 $usage
     return 1
   fi
-  local site
-  local compass_hostname
-  local environment=$1
-  case $environment in
-    demo1)
-      compass_hostname="compass-lma.demo1.volterra.us"
-      site="gc01.int.ves.io"
-      ;;
-    crt)
-      compass_hostname="compass-lma.crt.volterra.us"
-      site="gc01.int.ves.io"
-      ;;
-    staging)
-      compass_hostname="compass-lma.staging.volterra.us"
-      site="gc1-iad-01.int.volterra.us"
-      ;;
-    prod)
-      compass_hostname="compass-lma.ves.volterra.io"
-      site="gc01-cle.int.ves.io"
-      ;;
-    *)
-      echo >&2 "unknown environment $environment"
-      return 1
-      ;;
-  esac
+  local environment="$1"
+  local site=$(env-api-gw-hostname "$environment")
+  local compass_hostname=$(env-compass-hostname "$environment")
   shift
   local service=$1
   shift
@@ -740,26 +816,8 @@ sic() {
 
 get-latest-ce-version() {
   local environment="${1:-demo1}"
-  local api_gw_hostname
-  local compass_hostname
-  case $environment in
-    demo1)
-      compass_hostname="compass-lma.demo1.volterra.us"
-      api_gw_hostname="${5:-gc01.int.ves.io}"
-      ;;
-    crt)
-      compass_hostname="compass-lma.crt.volterra.us"
-      api_gw_hostname="${5:-gc01.int.ves.io}"
-      ;;
-    staging)
-      compass_hostname="compass-lma.staging.volterra.us"
-      api_gw_hostname="${5:-gc1-iad-01.int.volterra.us}"
-      ;;
-    *)
-      echo >&2 "unknown environment $environment"
-      return 1
-      ;;
-  esac
+  local api_gw_hostname=$(env-api-gw-hostname "$environment")
+  local compass_hostname=$(env-compass-hostname "$environment")
   curl "https://${compass_hostname}/introspection/${api_gw_hostname}/maurice/ves.io.stdlib/introspect/read/object/ves.io.pikachu.version.Object?response_format=1&page_start=0&page_limit=1000" \
     -H 'pragma: no-cache' \
     -H 'content-type: application/json' \
@@ -803,9 +861,18 @@ matrix-renew-certs() {
 
 gc-login() {
   export USE_GKE_GCLOUD_AUTH_PLUGIN=True
+  kubectl config use-context gke_devtest-293809_us-east4_gc01-int-ves-io
   k cluster-info 2>/dev/null \
     || (gcloud auth login --project=devtest-293809 \
     && gcloud container clusters get-credentials gc01-int-ves-io --region us-east4)
+}
+
+gc-crt-login() {
+  export USE_GKE_GCLOUD_AUTH_PLUGIN=True
+  kubectl config use-context gke_crt-env_us-east4_gc01-crt-int-ves-io
+  k cluster-info 2>/dev/null \
+    || (gcloud auth login --project=crt-env \
+    && gcloud container clusters get-credentials gc01-crt-int-ves-io --region us-east4)
 }
 
 site-terraform-output() {
@@ -837,8 +904,6 @@ site-terraform-output() {
 site-public-ips() {
   local environment
   local site
-  local api_gw_hostname
-  local compass_hostname
   local usage="usage:\nsite-public-ips [environment] site-name"
   if [ ! -v 1 ]; then
     echo >&2 "must specify site"
@@ -849,24 +914,8 @@ site-public-ips() {
     environment="$1"
     shift
   fi
-  case $environment in
-    demo1)
-      compass_hostname="compass-lma.demo1.volterra.us"
-      api_gw_hostname="gc01.int.ves.io"
-      ;;
-    crt)
-      compass_hostname="compass-lma.crt.volterra.us"
-      api_gw_hostname="gc01.int.ves.io"
-      ;;
-    staging)
-      compass_hostname="compass-lma.staging.volterra.us"
-      api_gw_hostname="gc1-iad-01.int.volterra.us"
-      ;;
-    *)
-      echo >&2 "unknown environment $environment"
-      return 1
-      ;;
-  esac
+  local compass_hostname=$(env-compass-hostname "$environment")
+  local api_gw_hostname=$(env-api-gw-hostname "$environment")
   site="$1"
   tf_params_objects=$(curl "https://${compass_hostname}/introspection/${api_gw_hostname}/vulpix/ves.io.stdlib/introspect/read/object/ves.io.vulpix.terraform_parameters.Object?response_format=1&page_start=0&page_limit=2000" \
     -H 'content-type: application/json' \
@@ -1021,4 +1070,82 @@ hydra-emacs-overlay-revision() {
  else
    curl -sf --location --header "Accept: application/json" 'https://hydra.nix-community.org/jobset/emacs-overlay/stable/evals' | jq -r ".evals[]|select(.id==${jobset_eval_id})|.jobsetevalinputs.src.revision"
  fi
+}
+
+set-input-volume-percent() {
+  if [[ ! -v 1 ]]; then
+    echo >&2 "error: must specify an input volume percentage (0-100)"
+    return 1
+  fi
+  input_volume="$1"
+  if echo "$input_volume" | pcregrep '\D'; then
+    echo >&2 "error: invalid input volume: $input_volume"
+    return 1
+  fi
+  osascript \
+    -e 'tell application "System Events"' \
+    -e "set volume input volume $input_volume" \
+    -e 'end tell'
+}
+
+# NOTE:
+# - input has no `muted` flag, it's simply a volume of 0
+# - store previous unmuted volume level in ~/.local/share/input-volume
+toggle-audio-input-mute() {
+  mkdir -p ~/.local/share
+  local default_input_volume=87
+  local prev_audio_input_volume_file=~/.local/share/input-volume
+  current_input_volume=$(osascript \
+    -e 'tell application "System Events"' \
+    -e 'get volume settings' \
+    -e 'end tell' \
+    | sd ',' '\n' \
+    | grep 'input volume:' \
+    | cut -d':' -f2)
+  if [[ -z "$current_input_volume" ]]; then
+    echo >&2 "error: could not determine current input volume"
+    return 1
+  fi
+  if echo "$current_input_volume" | pcregrep '\D'; then
+    echo >&2 "error: current input volume is unexpected: $current_input_volume"
+    return 1
+  fi
+  if [[ $current_input_volume -eq 0 ]]; then
+    if [[ -f $prev_audio_input_volume_file ]]; then
+      set-input-volume-percent $(cat $prev_audio_input_volume_file)
+    else
+      set-input-volume-percent $default_input_volume
+    fi
+  else
+    echo -e $current_input_volume > $prev_audio_input_volume_file
+    set-input-volume-percent 0
+  fi
+}
+
+png2icns() {
+  local png_file=$1
+  if [[ -z "$png_file" ]]; then
+    echo >&2 "must specify a png filename"
+    return 1
+  fi
+  file_info=$(file "$png_file")
+  if ! (echo "$file_info" | grep 'PNG image data, 512 x 512' >/dev/null) && ! (echo "$file_info" | grep 'PNG image data, 1024 x 1024' >/dev/null); then
+    echo >&1 "$png_file does not appear to be a valid 512 x 512 or 1024 x 1024 PNG file"
+    return 1
+  fi
+  local icns_file=$(echo "$png_file" | sd '\.([^\.]+)$' '.icns')
+  local temp_dir=$(mktemp -d)
+  sips -z 16 16     "${png_file}" --out ${temp_dir}/icon_16x16.png \
+  && sips -z 32 32     "${png_file}" --out ${temp_dir}/icon_16x16@2x.png \
+  && sips -z 32 32     "${png_file}" --out ${temp_dir}/icon_32x32.png \
+  && sips -z 64 64     "${png_file}" --out ${temp_dir}/icon_32x32@2x.png \
+  && sips -z 128 128   "${png_file}" --out ${temp_dir}/icon_128x128.png \
+  && sips -z 256 256   "${png_file}" --out ${temp_dir}/icon_128x128@2x.png \
+  && sips -z 256 256   "${png_file}" --out ${temp_dir}/icon_256x256.png \
+  && sips -z 512 512   "${png_file}" --out ${temp_dir}/icon_256x256@2x.png \
+  && sips -z 512 512   "${png_file}" --out ${temp_dir}/icon_512x512.png
+  cp "${png_file}" ${temp_dir}/icon_512x512@2x.png
+  iconutil --convert icns ${temp_dir} -o "$icns_file" \
+    && echo "converted $png_file to $icns_file"
+  rm -R ${temp_dir}
 }
