@@ -198,26 +198,23 @@ in
     # make packages available to file.onChange and activation scripts
     extraActivationPath = homePackages;
     sessionVariables = envVars;
-    activation.doom = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      #/usr/bin/env zsh
-      echo "syncing doom emacs..."
-      set -xe
-      # for default git
-      # export PATH="$PATH:/usr/bin"
-      # export PATH="$PATH:${(builtins.concatStringsSep ":" extraPaths)}"
-      export PATH=/Users/${username}/.nix-profile/bin:/etc/profiles/per-user/${username}/bin:/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/local/bin:/usr/bin:/usr/sbin:/bin:/sbin:/Users/${username}/.local/bin:/Users/${username}/.cargo/bin:/Users/${username}/gocode/bin
-      echo "PATH: $PATH"
-      export ${builtins.concatStringsSep " " (builtins.attrValues (builtins.mapAttrs (k: v: "${k}='${v}'") envVars))}
-      DOOM_DIR="$HOME/.emacs.d"
-      DOOM="$DOOM_DIR/bin/doom"
-      if [[ ! -f $DOOM ]]; then
-        echo 'doom is not yet installed, activation should occur via home.file."doom.d"'
-        exit 0
-      fi
-      $DOOM doctor --pager cat \
-        && $DOOM sync --force --pager cat \
-        && echo "doom emacs synced"
-    '';
+    # activation.doom = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    #   #/usr/bin/env zsh
+    #   echo "syncing doom emacs..."
+    #   set -xe
+    #   export PATH=/Users/${username}/.nix-profile/bin:/etc/profiles/per-user/${username}/bin:/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/local/bin:/usr/bin:/usr/sbin:/bin:/sbin:/Users/${username}/.local/bin:/Users/${username}/.cargo/bin:/Users/${username}/gocode/bin
+    #   echo "PATH: $PATH"
+    #   export ${builtins.concatStringsSep " " (builtins.attrValues (builtins.mapAttrs (k: v: "${k}='${v}'") envVars))}
+    #   DOOM_DIR="$HOME/.emacs.d"
+    #   DOOM="$DOOM_DIR/bin/doom"
+    #   if [[ ! -f $DOOM ]]; then
+    #     echo 'doom is not yet installed, activation should occur via home.file."doom.d"'
+    #     exit 0
+    #   fi
+    #   $DOOM doctor --pager cat \
+    #     && $DOOM sync --force --pager cat \
+    #     && echo "doom emacs synced"
+    # '';
     # setup application aliases and add them to the Dock
     activation.setupAliases = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       #/usr/bin/env zsh
@@ -258,29 +255,29 @@ in
     # install doom config into ~/.doom.d
     # and doom itself into ~/.emacs.d (not a pure install, but this allows us to run doom commands outside nix)
     # (also copy the splash image since a symlink won't work...)
-    file.".doom.d" = {
-      source = ./doom;
-      recursive = true;
-      # NOTE: the following script will only run if doom files have changed -- even if the script itself fails.
-      onChange = "${pkgs.writeShellScript "doom-change" ''
-        #/usr/bin/env zsh
-        set -xe
-        # export PATH="$PATH:${pkgs.emacs-mac}/bin"
-        # export PATH="$PATH:${pkgs.ripgrep}/bin"
-        # export PATH="$PATH:${pkgs.fd}/bin"
-        # export PATH="$PATH:/usr/bin"
-        DOOM_DIR="$HOME/.emacs.d"
-        DOOM="$DOOM_DIR/bin/doom"
-        export TERM=alacritty
-        if [[ ! -d "$DOOM_DIR" ]]; then
-          $DRY_RUN_CMD git clone https://github.com/hlissner/doom-emacs.git $DOOM_DIR
-          $DRY_RUN_CMD $DOOM_DIR/bin/doom install --force --pager cat
-        fi
-        if [[ ! -f "$DOOM_DIR/.local/black-hole.png" ]]; then
-          $DRY_RUN_CMD cp $(readlink ~/.doom.d/black-hole.png) ~/.emacs.d/.local
-        fi
-      ''}";
-    };
+    # file.".doom.d" = {
+    #   source = ./doom;
+    #   recursive = true;
+    #   # NOTE: the following script will only run if doom files have changed -- even if the script itself fails.
+    #   onChange = "${pkgs.writeShellScript "doom-change" ''
+    #     #/usr/bin/env zsh
+    #     set -xe
+    #     # export PATH="$PATH:${pkgs.emacs-mac}/bin"
+    #     # export PATH="$PATH:${pkgs.ripgrep}/bin"
+    #     # export PATH="$PATH:${pkgs.fd}/bin"
+    #     # export PATH="$PATH:/usr/bin"
+    #     DOOM_DIR="$HOME/.emacs.d"
+    #     DOOM="$DOOM_DIR/bin/doom"
+    #     export TERM=alacritty
+    #     if [[ ! -d "$DOOM_DIR" ]]; then
+    #       $DRY_RUN_CMD git clone https://github.com/hlissner/doom-emacs.git $DOOM_DIR
+    #       $DRY_RUN_CMD $DOOM_DIR/bin/doom install --force --pager cat
+    #     fi
+    #     if [[ ! -f "$DOOM_DIR/.local/black-hole.png" ]]; then
+    #       $DRY_RUN_CMD cp $(readlink ~/.doom.d/black-hole.png) ~/.emacs.d/.local
+    #     fi
+    #   ''}";
+    # };
     # for git, $EDITOR/$VISUAL can't be set to reference a shell function, so deploy the script as follows
     file."em.zsh" = {
       executable = true;
@@ -292,7 +289,7 @@ in
       text = builtins.toJSON (import ./karabiner.nix);
       target = homeDirectory + "/.config/karabiner/karabiner.json";
     };
-  };
+  } // (import ./doom/doom.nix { inherit config pkgs lib username envVars; });
   # programs.git = {
   #   aliases = {
   #     lpg = "log --oneline --graph --format='%C(yellow)%H %<(15)%C(blue)%ci %<(20,trunc)%C(green)%aN %C(reset)%<(100,trunc)%s'";
@@ -323,126 +320,7 @@ in
   #   };
   # };
   programs.home-manager.enable = true;
-  programs.alacritty = let alacrittyThemes = {
-    afterglow = builtins.fromJSON (builtins.readFile ./alacritty-themes/Afterglow.json);
-    argonaut = builtins.fromJSON (builtins.readFile ./alacritty-themes/Argonaut.json);
-    atelierLakeside = builtins.fromJSON (builtins.readFile ./alacritty-themes/Atelierlakeside.dark.json);
-    ayuDark = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ayu-Dark.json);
-    ayuMirage = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ayu-Mirage.json);
-    brewer = builtins.fromJSON (builtins.readFile ./alacritty-themes/Brewer.dark.json);
-    eqie6 = builtins.fromJSON (builtins.readFile ./alacritty-themes/Eqie6.json);
-    hybrid = builtins.fromJSON (builtins.readFile ./alacritty-themes/Hybrid.json);
-    icebergDark = builtins.fromJSON (builtins.readFile ./alacritty-themes/Iceberg-Dark.json);
-    oceanDark = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ocean.dark.json);
-    paleNight = builtins.fromJSON (builtins.readFile ./alacritty-themes/Palenight.json);
-    tokyoNight = builtins.fromJSON (builtins.readFile ./alacritty-themes/Tokyonight_Night.json);
-    twilightDark = builtins.fromJSON (builtins.readFile ./alacritty-themes/Twilight.dark.json);
-    githubDimmed = builtins.fromJSON (builtins.readFile ./alacritty-themes/github_dimmed.json);
-  }; in
-    {
-      enable = true;
-      settings = {
-        live_config_reload = true;
-        colors = alacrittyThemes.eqie6;
-        env = {
-          # TERM = "xterm-256color";
-          TERM = "alacritty";
-        };
-        key_bindings = [
-          # map ctrl+space to ctrl+l since zellij doesn't support ctrl+space
-          # {
-          #   key = "Space";
-          #  mods = "Control";
-          #  chars = "\\x0c";
-          #}
-        ]; # key_bindings
-        window = {
-          opacity = 1.0;
-          # Allow terminal applications to change Alacritty's window title.
-          dynamic_title = true;
-          # Window position (changes require restart)
-          # Specified in number of pixels.
-          # If the position is not set, the window manager will handle the placement.
-          # position = {
-          #   x = 0;
-          #   y = 0;
-          # };
-          # Window padding (changes require restart)
-          # Blank space added around the window in pixels. This padding is scaled
-          # by DPI and the specified value is always added at both opposing sides.
-          padding = {
-            x = 10;
-            y = 10;
-          };
-          # Spread additional padding evenly around the terminal content.
-          dynamic_padding = true;
-          # Window decorations
-          # Values for `decorations`:
-          #     - full: Borders and title bar
-          #     - none: Neither borders nor title bar
-          # Values for `decorations` (macOS only):
-          #     - transparent: Title bar, transparent background and title bar buttons
-          #     - buttonless: Title bar, transparent background, but no title bar buttons
-          decorations = "full";
-          # Startup Mode (changes require restart)
-          # Values for `startup_mode`:
-          #   - Windowed
-          #   - Maximized
-          #   - Fullscreen
-          # Values for `startup_mode` (macOS only):
-          #   - SimpleFullscreen
-          startup_mode = "Maximized";
-        }; # window
-        draw_bold_text_with_bright_colors = false;
-        scrolling = {
-          # Maximum number of lines in the scrollback buffer.
-          # Specifying '0' will disable scrolling.
-          history = 0;
-        };
-        font = {
-          # Normal (roman) font face
-          normal = {
-            # family = "JetBrains Mono";
-            # style = "Thin";
-            # family = "Iosevka Extended";
-            family = fontConfig.monospaceFamily;
-            # style = "Regular";
-          };
-          bold = {
-            family = fontConfig.monospaceFamily;
-            # family = "Iosevka Extended";
-            # family = "Input";
-            style = "Bold";
-          };
-          size = 20.0;
-          # Offset is the extra space around each character. `offset.y` can be thought of
-          # as modifying the line spacing, and `offset.x` as modifying the letter spacing.
-          offset = {
-            x = 0;
-            y = 6;
-          };
-          # Glyph offset determines the locations of the glyphs within their cells with
-          # the default being at the bottom. Increasing `x` moves the glyph to the right,
-          # increasing `y` moves the glyph upwards.
-          glyph_offset = {
-            x = 0;
-            y = 4;
-          };
-          AppleFontSmoothing = true;
-        }; # font
-        bell = {
-          animation = "EaseOutExpo";
-          duration = 0;
-          color = "0xffffff";
-        };
-        selection = { save_to_clipboard = true; };
-        cursor = { unfocused_hollow = true; };
-        mouse_bindings = [{
-          mouse = "Middle";
-          action = "PasteSelection";
-        }];
-      }; # settings
-    }; # alacritty
+  programs.alacritty = import ./alacritty/alacritty.nix { inherit fontConfig; };
   programs.direnv.enable = true;
   programs.helix = {
     enable = true;
