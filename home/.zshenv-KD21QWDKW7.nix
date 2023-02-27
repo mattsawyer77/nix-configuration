@@ -1,5 +1,19 @@
 #!/usr/bin/env zsh
 
+nix-config-check() {
+  darwin-rebuild check --flake ~/workspaces/nix-configuration
+}
+
+nix-config-switch() {
+  sudo echo -n \
+    && darwin-rebuild switch --flake ~/workspaces/nix-configuration
+}
+
+nix-config-update() {
+  (cd ~/workspaces/nix-configuration \
+    && nix flake update)
+}
+
 launchctl-restart() {
   if [[ -v 1 ]]; then
     pattern="$1"
