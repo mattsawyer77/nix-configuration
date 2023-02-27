@@ -583,6 +583,13 @@
   :side 'left
   :window-width 40)
 
+(set-popup-rule! "^\\*eww\\*"
+  :side 'right
+  :slot 5
+  :vslot 5
+  :size 0.50
+  )
+
 ;; centaur tabs
 (after! centaur-tabs
   (setq
