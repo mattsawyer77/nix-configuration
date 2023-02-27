@@ -4,50 +4,282 @@ let
   homeDirectory = "/Users/" + username;
   goPathSuffix = "gocode";
   localBinPath = ".local/bin";
+  homePackages = with pkgs; [
+    alacritty
+    automake
+    aws-iam-authenticator
+    awscli
+    azure-cli
+    bash
+    bat
+    bat-extras.batman
+    bottom # binary is `btm`
+    cachix
+    cask
+    ccls
+    cmake
+    coreutils
+    # curlFull # nixpkgs curl builds with openssl 3 which breaks legacy PKCS12 cert auth
+    deadcode
+    delta
+    delve
+    # diff-so-fancy
+    direnv
+    discord
+    dockutil
+    dos2unix
+    editorconfig-core-c
+    emacs-mac
+    emacs-vterm
+    # envsubst # conflicts with gettext which is required for home-manager
+    eternal-terminal
+    exa
+    fd
+    findutils
+    fontconfig
+    fzf
+    # gdb # broken as of 2023-01-20
+    gdbm
+    gettext
+    ghostscript
+    glib
+    # gmp6
+    gnumake
+    gnupg
+    gnuplot
+    gnused
+    go
+    golangci-lint # customized in golangci-lint.nix overlay since it's broken in nixpkgs right now
+    (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
+    gocyclo
+    golint
+    gopls
+    graphviz
+    grpcurl
+    gvproxy
+    harfbuzzFull
+    helix
+    html-tidy
+    htop
+    httrack
+    ijq
+    isync
+    jansson
+    jq
+    kubectl
+    less
+    libcxx
+    libgccjit
+    libiconv
+    libressl
+    libsndfile
+    libssh2
+    libtool
+    libvterm-neovim
+    libxml2
+    # lima
+    # llvm
+    # llvmPackages_12.lldb
+    # llvm_12
+    luajit
+    # most
+    msgpack
+    # mu
+    # multitail
+    # mutagen # broken as of 2022-05-13
+    ncurses
+    neovim # customized in ./neovim.nix overlay
+    netcat
+    netperf
+    # nim
+    # nimlsp
+    nil
+    ninja
+    nix-direnv
+    # nix-linter # broken as of 2023-01-04
+    nix-prefetch
+    nix-prefetch-git
+    nix-zsh-completions
+    nixfmt
+    nmap
+    nodejs
+    oniguruma
+    opam
+    openapi-generator-cli
+    openfortivpn
+    openldap
+    # openssl
+    pandoc
+    pcre
+    pcre2
+    # pdfminer
+    pkg-config
+    plantuml
+    # podman # broken as of 2022-05-12
+    # protobuf
+    prototool
+    python3
+    python310Packages.grip
+    pywal
+    readline
+    reattach-to-user-namespace
+    # redis
+    ripgrep
+    rnix-lsp
+    rust-analyzer
+    rustup
+    # scons
+    sd
+    shared-mime-info
+    shellcheck
+    shfmt
+    skhd
+    skim
+    skopeo
+    starship
+    sqlite
+    taglib
+    taplo
+    terraform
+    terraform-ls
+    tflint
+    tmux
+    tokei
+    tree
+    # trivy # broken as of 2022-05-24
+    # ttfautohint
+    unixtools.watch
+    upx
+    # vmtouch
+    wget
+    xsv
+    yabai
+    yaml-language-server
+    yarn
+    yj
+    youtube-dl
+    yq-go
+    zlib
+    zoxide
+    zsh
+    zsh-autosuggestions
+    zsh-syntax-highlighting
+    zsh-z
+    zstd
+  ];
+  envVars = {
+    COLORTERM = "truecolor";
+    EDITOR = "em";
+    VISUAL = "em";
+    GOPATH = (homeDirectory + "/" + goPathSuffix);
+    USE_GKE_GCLOUD_AUTH_PLUGIN = "True";
+    LC_ALL = "en_US.UTF-8";
+    LANG = "en_US.UTF-8";
+    LANGUAGE = "en_US.UTF-8";
+    GO111MODULE = "on";
+    BAT_THEME = "1337";
+    LESS = "-F -i -M -R -X --incsearch";
+    SAML2AWS_USER_AGENT =
+      "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.00) Gecko/20100101 Firefox/82.0";
+  };
+  extraPaths = [
+    (homeDirectory + "/" + localBinPath)
+    (homeDirectory + "/.cargo/bin")
+    (homeDirectory + "/" + goPathSuffix + "/bin")
+  ];
 in
 {
   home = {
     homeDirectory = homeDirectory;
-    packages = [ ];
+    packages = homePackages;
     stateVersion = "22.11";
     # append these extra dirs to the nix-generated path
-    sessionPath = [
-      (homeDirectory + "/" + localBinPath)
-      (homeDirectory + "/.cargo/bin")
-      (homeDirectory + "/" + goPathSuffix + "/bin")
-    ];
-    sessionVariables = {
-      COLORTERM = "truecolor";
-      EDITOR = "em";
-      VISUAL = "em";
-      GOPATH = (homeDirectory + "/" + goPathSuffix);
-      USE_GKE_GCLOUD_AUTH_PLUGIN = "True";
-      LC_ALL = "en_US.UTF-8";
-      LANG = "en_US.UTF-8";
-      LANGUAGE = "en_US.UTF-8";
-      GO111MODULE = "on";
-      BAT_THEME = "1337";
-      LESS = "-F -i -M -R -X --incsearch";
-      SAML2AWS_USER_AGENT =
-        "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.00) Gecko/20100101 Firefox/82.0";
-    };
+    sessionPath = extraPaths;
+    # make packages available to file.onChange and activation scripts
+    extraActivationPath = homePackages;
+    sessionVariables = envVars;
+    activation.doom = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      #/usr/bin/env zsh
+      echo "syncing doom emacs..."
+      set -xe
+      # for default git
+      # export PATH="$PATH:/usr/bin"
+      # export PATH="$PATH:${(builtins.concatStringsSep ":" extraPaths)}"
+      export PATH=/Users/${username}/.nix-profile/bin:/etc/profiles/per-user/${username}/bin:/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/local/bin:/usr/bin:/usr/sbin:/bin:/sbin:/Users/${username}/.local/bin:/Users/${username}/.cargo/bin:/Users/${username}/gocode/bin
+      echo "PATH: $PATH"
+      export ${builtins.concatStringsSep " " (builtins.attrValues (builtins.mapAttrs (k: v: "${k}='${v}'") envVars))}
+      DOOM_DIR="$HOME/.emacs.d"
+      DOOM="$DOOM_DIR/bin/doom"
+      if [[ ! -f $DOOM ]]; then
+        echo 'doom is not yet installed, activation should occur via home.file."doom.d"'
+        exit 0
+      fi
+      $DOOM doctor --pager cat \
+        && $DOOM sync --force --pager cat \
+        && echo "doom emacs synced"
+    '';
+    # setup application aliases and add them to the Dock
+    activation.setupAliases = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      #/usr/bin/env zsh
+      set -xe
+      echo "setting up ~/Applications..." >&2
+      applications="$HOME/Applications"
+
+      # Needs to be writable by the user so that home-manager can create aliases there
+      chown ${username} "$applications"
+      chmod u+w "$applications"
+
+      for app in ~/Applications/*.app; do
+        $DRY_RUN_CMD rm -f "$app"
+      done
+
+      find ~/Applications/Home\ Manager\ Apps/* -maxdepth 0 -mindepth 0 -wholename '*.app' -exec readlink '{}' + |
+        while read src; do
+          rm -f "$"
+          # Spotlight does not recognize symlinks, it will ignore directory we link to the applications folder.
+          # It does understand MacOS aliases though, a unique filesystem feature. Sadly they cannot be created
+          # from bash (as far as I know), so we use the oh-so-great Apple Script instead.
+          /usr/bin/osascript -e "
+            set fileToAlias to POSIX file \"$src\"
+            set applicationsFolder to POSIX file \"$applications\"
+            tell application \"Finder\"
+              $DRY_RUN_CMD make alias file to fileToAlias at applicationsFolder
+              # This renames the alias; 'mpv.app alias' -> 'mpv.app'
+              $DRY_RUN_CMD set name of result to \"$(rev <<< "$src" | cut -d'/' -f1 | rev)\"
+            end tell
+          "
+      done
+      for app in ~/Applications/*.app; do
+        app_name=$(basename "$app" | sd '\.[^\.]+$' $''')
+        $DRY_RUN_CMD dockutil --add "$app" --replacing "$app_name" ~${username}
+      done
+      set +x
+    '';
     # install doom config into ~/.doom.d
     # and doom itself into ~/.emacs.d (not a pure install, but this allows us to run doom commands outside nix)
     # (also copy the splash image since a symlink won't work...)
     file.".doom.d" = {
       source = ./doom;
       recursive = true;
-      onChange = ''
-        #!/usr/bin/env zsh
+      # NOTE: the following script will only run if doom files have changed -- even if the script itself fails.
+      onChange = "${pkgs.writeShellScript "doom-change" ''
+        #/usr/bin/env zsh
+        set -xe
+        # export PATH="$PATH:${pkgs.emacs-mac}/bin"
+        # export PATH="$PATH:${pkgs.ripgrep}/bin"
+        # export PATH="$PATH:${pkgs.fd}/bin"
+        # export PATH="$PATH:/usr/bin"
         DOOM_DIR="$HOME/.emacs.d"
         DOOM="$DOOM_DIR/bin/doom"
+        export TERM=alacritty
         if [[ ! -d "$DOOM_DIR" ]]; then
-          git clone https://github.com/hlissner/doom-emacs.git $DOOM_DIR
-          $DOOM_DIR/bin/doom -y install
+          $DRY_RUN_CMD git clone https://github.com/hlissner/doom-emacs.git $DOOM_DIR
+          $DRY_RUN_CMD $DOOM_DIR/bin/doom install --force --pager cat
         fi
-        cp $(readlink ~/.doom.d/black-hole.png) ~/.emacs.d/.local
-        $DOOM doctor && $DOOM -y sync
-      '';
+        if [[ ! -f "$DOOM_DIR/.local/black-hole.png" ]]; then
+          $DRY_RUN_CMD cp $(readlink ~/.doom.d/black-hole.png) ~/.emacs.d/.local
+        fi
+      ''}";
     };
     # for git, $EDITOR/$VISUAL can't be set to reference a shell function, so deploy the script as follows
     file."em.zsh" = {
@@ -60,42 +292,6 @@ in
       text = builtins.toJSON (import ./karabiner.nix);
       target = homeDirectory + "/.config/karabiner/karabiner.json";
     };
-    # setup application aliases
-    #   activation.setupAliases = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    #     echo "setting up ~/Applications..." >&2
-    #     applications="$HOME/Applications"
-    #     nix_apps="$applications/Nix Apps"
-
-    #     # Needs to be writable by the user so that home-manager can symlink into it
-    #     if ! test -d "$applications"; then
-    #       mkdir -p "$applications"
-    #       chown ${username} "$applications"
-    #       chmod u+w "$applications"
-    #     fi
-
-    #     # Delete the directory to remove old links
-    #     rm -rf "$nix_apps"
-    #     mkdir -p "$nix_apps"
-    #     find ${config.system.build.applications}/Applications -maxdepth 1 -type l -exec readlink '{}' + |
-    #       while read src; do
-    #         # Spotlight does not recognize symlinks, it will ignore directory we link to the applications folder.
-    #         # It does understand MacOS aliases though, a unique filesystem feature. Sadly they cannot be created
-    #         # from bash (as far as I know), so we use the oh-so-great Apple Script instead.
-    #         /usr/bin/osascript -e "
-    #           set fileToAlias to POSIX file \"$src\"
-    #           set applicationsFolder to POSIX file \"$nix_apps\"
-    #           tell application \"Finder\"
-    #             make alias file to fileToAlias at applicationsFolder
-    #             # This renames the alias; 'mpv.app alias' -> 'mpv.app'
-    #             set name of result to \"$(rev <<< "$src" | cut -d'/' -f1 | rev)\"
-    #           end tell
-    #         " 1>/dev/null
-    #     done
-    #   '';
-  };
-  programs.emacs = {
-    enable = true;
-    package = pkgs.emacs-mac; # from overlay in mac.nix
   };
   # programs.git = {
   #   aliases = {
