@@ -45,6 +45,11 @@
 ;; use GNU Makefile mode instead of BSD
 (add-to-list 'auto-mode-alist '("\\Makefile" . makefile-gmake-mode))
 
+(after! evil
+  ;; prevent paste from its default behavior of replacing the clipboard register with the replaced contents
+  (setq-default evil-kill-on-visual-paste nil)
+  (setq evil-kill-on-visual-paste nil))
+
 ;; disable format-on-save for yaml-mode
 ;; NOTE: +format-on-save-enabled-modes is a strange variable:
 ;; if the list starts with 'not, then it's an exclusion list;
@@ -85,11 +90,9 @@
   (setq ws-butler-global-exempt-modes (add-to-list 'ws-butler-global-exempt-modes 'makefile-gmake-mode t))
   (setq ws-butler-global-exempt-modes (add-to-list 'ws-butler-global-exempt-modes 'makefile-bsdmake-mode t)))
 
-;; use tree-sitter for syntax highlighting
-;; (unless EMACS29+
+;; use tree-sitter for syntax highlighting for modes that don't have native tree-sitter support
 (after! tree-sitter
   (require 'tree-sitter-langs)
-  (global-tree-sitter-mode)
   ;; (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
   ;; (setq-default tree-sitter-hl-use-font-lock-keywords nil)
   (add-hook! go-mode
@@ -99,13 +102,31 @@
     ;;                 (string= capture-name "type"))
     )
   )
-;;)
 
-;; (when EMACS29+
-;; (after! treesit-auto
-;;  (global-treesit-auto-mode 1)
-;; )
-  ;; )
+(global-treesit-auto-mode 1)
+;; don't use tree-sitter for go until one or both of the following are fixed:
+;; https://github.com/dominikh/go-mode.el/issues/396
+;; https://github.com/dominikh/go-mode.el/issues/401
+(add-hook! go-ts-mode #'go-mode)
+;; until then, use native tree-sitter for major modes that work well with it:
+;; (add-hook! rustic-mode #'rust-ts-mode)
+;; (add-hook! c++-mode #'c++-ts-mode)
+;; (add-hook! c-mode #'c-ts-mode)
+;; (add-hook! js-mode #'js-ts-mode)
+;; (add-hook! css-mode #'css-ts-mode)
+;; (add-hook! shell-mode #'bash-ts-mode) ;; ??
+;; (add-hook! html-mode #'html-ts-mode)
+;; (add-hook! java-mode #'java-ts-mode)
+;; (add-hook! json-mode #'json-ts-mode)
+;; (add-hook! ruby-mode #'json-ts-mode)
+;; (add-hook! conf-toml-mode #'toml-ts-mode)
+;; (add-hook! yaml-mode #'yaml-ts-mode)
+;; (add-hook! cmake-mode #'cmake-ts-mode)
+;; (add-hook! csharp-mode #'csharp-ts-mode)
+;; (add-hook! go-mod-mode #'go-mod-ts-mode)
+;; (add-hook! python-mode #'python-ts-mode)
+;; (add-hook! dockerfile-mode #'dockerfile-ts-mode)
+;; (add-hook! typescript-mode #'typescript-ts-mode)
 
 (after! rustic
   (setq rustic-lsp-server 'rust-analyzer
@@ -130,8 +151,11 @@
   ;; (setq flycheck-golangci-lint-fast t)
   ;; )
 
-(add-hook! conf-toml-mode #'lsp)
-(add-hook! toml-ts-mode #'lsp)
+;; taplo is broken on macOS, at least.
+;; https://github.com/tamasfe/taplo/issues/363
+(when IS-LINUX
+  (add-hook! conf-toml-mode #'lsp)
+  (add-hook! toml-ts-mode #'lsp))
 
 (add-hook! emacs-lisp-mode #'+word-wrap-mode)
 (add-hook! emacs-lisp-mode #'rainbow-delimiters-mode-enable)
@@ -261,14 +285,14 @@
            )
 
 
-(add-hook! rustic-mode #'tree-sitter-mode)
+;; (add-hook! rustic-mode #'tree-sitter-mode)
 (add-hook! (rustic-mode rust-ts-mode)
            (lsp)
            ;; (lsp-toggle-signature-auto-activate)
            (+word-wrap-mode)
            (flycheck-posframe-mode -1)
            (flycheck-mode -1)
-           (tree-sitter-hl-mode 1)
+           ;; (tree-sitter-hl-mode 1)
            )
 (add-hook! lsp-ui-mode
   (when (or (eq major-mode 'rustic-mode) (eq major-mode 'rust-ts-mode))
@@ -457,7 +481,7 @@
 (after! ccls
   (setq ccls-initialization-options '(:index (:comments 2) :completion (:detailedLabel t)))
   (set-lsp-priority! 'ccls 2)) ; optional as ccls is the default in Doom
-(add-hook! ccls #'tree-sitter-mode)
+;; (add-hook! ccls #'tree-sitter-mode)
 
 (add-hook! protobuf-mode #'display-line-numbers-mode)
 (add-hook! protobuf-mode #'flycheck-mode)
@@ -568,6 +592,10 @@
 ;;   (advice-add #'vertico-buffer--setup :after #'my-vertico-buffer-setup)
 ;;   )
 
+(after! vterm
+  (setq vterm-shell "/bin/zsh")
+  (setq vterm-tramp-shells nil)
+  )
 (set-popup-rule! "^\\*doom:vterm.*"
   :side 'right
   :slot 5

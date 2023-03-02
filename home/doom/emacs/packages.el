@@ -22,7 +22,7 @@
 ;;   (unpin! tree-sitter-langs)
 ;;   (package! tree-sitter-langs)
 ;;   )
-;;(package! treesit-auto)
+(package! treesit-auto)
 (package! uuidgen)
 (package! dap-mode)
 (package! protobuf-mode)

@@ -15,13 +15,12 @@
 ;;   :nv "g i" nil
 ;;   :nv "g i" nil
 ;;  )
-
 (map!
  :map general-override-mode-map
  :g "C-s" #'basic-save-buffer
  :n "C-," (lambda ()
             (interactive)
-            (dired-other-window "~/.doom.d/doom"))
+            (dired-other-window "~/workspaces/nix-configuration/home/doom/emacs"))
  (:after evil-nerd-commenter
   :nv "#" #'evilnc-comment-or-uncomment-lines)
  (:after centaur-tabs
@@ -127,3 +126,7 @@
       :g "<prior>" #'rfc-mode-backward-page
       )
 
+(map! :after magit
+      :mode magit-blame-mode
+      (:leader
+       :nv "g v" #'magit-visit-ref))

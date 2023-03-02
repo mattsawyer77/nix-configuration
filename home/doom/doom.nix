@@ -15,9 +15,10 @@
       echo 'doom is not yet installed, activation should occur via home.file."doom.d"'
       exit 0
     fi
-    $DOOM doctor --pager cat \
-      && $DRY_RUN_CMD $DOOM sync --force --pager cat \
-      && $DRY_RUN_CMD echo "doom emacs synced"
+    # $DOOM doctor --pager cat \
+    $DRY_RUN_CMD $DOOM sync --force --pager cat \
+      && set +x \
+      && $DRY_RUN_CMD echo "doom emacs synced" \
   '';
   # run doom install only once
   file.".doom.d" = {
@@ -37,6 +38,7 @@
       if [[ ! -f "$DOOM_DIR/.local/black-hole.png" ]]; then
         $DRY_RUN_CMD cp $(readlink ~/.doom.d/black-hole.png) ~/.emacs.d/.local
       fi
+      set +x
     ''}";
   };
 }
