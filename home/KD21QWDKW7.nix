@@ -4,7 +4,12 @@ let
   homeDirectory = "/Users/" + username;
   goPathSuffix = "gocode";
   localBinPath = ".local/bin";
-  homePackages = with pkgs; [
+  # to update/regenerate, run node2nix -i <(echo '["bash-language-server"]') --nodejs-18
+  # then copy the resulting files into ./npm-packages
+  npmPackages = import ./npm-packages {
+    inherit pkgs;
+  };
+  homePackages = (with pkgs; [
     alacritty
     automake
     aws-iam-authenticator
@@ -102,6 +107,7 @@ let
     nix-zsh-completions
     nixfmt
     nmap
+    node2nix
     nodejs
     oniguruma
     opam
@@ -166,7 +172,8 @@ let
     zsh-syntax-highlighting
     zsh-z
     zstd
-  ];
+  ]) ++
+  (with npmPackages; [ bash-language-server ]);
   envVars = {
     COLORTERM = "truecolor";
     EDITOR = "em";
@@ -187,6 +194,7 @@ let
     (homeDirectory + "/.cargo/bin")
     (homeDirectory + "/" + goPathSuffix + "/bin")
   ];
+  doomConfig = import ./doom/doom.nix { inherit config pkgs lib username envVars; };
 in
 {
   home = {
@@ -235,18 +243,20 @@ in
       done
       set +x
     '';
+    activation.doom = doomConfig.activation;
+    file."doom.d" = doomConfig.userConfigDir;
     # for git, $EDITOR/$VISUAL can't be set to reference a shell function, so deploy the script as follows
     file."em.zsh" = {
       executable = true;
       source = ./scripts/em.zsh;
-      target = homeDirectory + "/" + localBinPath + "/em";
+      target = localBinPath + "/em";
     };
     # install karabiner config (note: this may make the Karabiner Elements app unable to make config changes)
     file."karabiner.json" = {
       text = builtins.toJSON (import ./karabiner.nix);
-      target = homeDirectory + "/.config/karabiner/karabiner.json";
+      target = ".config/karabiner/karabiner.json";
     };
-  } // (import ./doom/doom.nix { inherit config pkgs lib username envVars; });
+  };
   # programs.git = {
   #   aliases = {
   #     lpg = "log --oneline --graph --format='%C(yellow)%H %<(15)%C(blue)%ci %<(20,trunc)%C(green)%aN %C(reset)%<(100,trunc)%s'";

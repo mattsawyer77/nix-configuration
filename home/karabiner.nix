@@ -116,7 +116,7 @@ in
           }];
         }
         {
-          description = "Post Esc if Caps is tapped, Control if held.";
+          description = "Post Esc if left Control is tapped, Control if held.";
           manipulators = [{
             conditions = [{
               bundle_identifiers = [ "^org\\.mozilla\\." ];
@@ -124,6 +124,25 @@ in
             }];
             from = {
               key_code = "left_control";
+              modifiers = { optional = [ "any" ]; };
+            };
+            to = [{
+              key_code = "left_control";
+              lazy = true;
+            }];
+            to_if_alone = [{ key_code = "escape"; }];
+            type = "basic";
+          }];
+        }
+        {
+          description = "Post Esc if Caps is tapped, Control if held.";
+          manipulators = [{
+            conditions = [{
+              bundle_identifiers = [ "^org\\.mozilla\\." ];
+              type = "frontmost_application_unless";
+            }];
+            from = {
+              key_code = "caps_lock";
               modifiers = { optional = [ "any" ]; };
             };
             to = [{
@@ -238,10 +257,10 @@ in
         ignore = false;
         manipulate_caps_lock_led = false;
         simple_modifications = [
-          {
-            from = { key_code = "caps_lock"; };
-            to = [{ key_code = "left_control"; }];
-          }
+          # {
+          #   from = { key_code = "caps_lock"; };
+          #   to = [{ key_code = "left_control"; }];
+          # }
           {
             from = { key_code = "left_command"; };
             to = [{ key_code = "left_option"; }];
@@ -280,10 +299,12 @@ in
         };
         ignore = false;
         manipulate_caps_lock_led = true;
-        simple_modifications = [{
-          from = { key_code = "caps_lock"; };
-          to = [{ key_code = "left_control"; }];
-        }];
+        simple_modifications = [
+          # {
+          #   from = { key_code = "caps_lock"; };
+          #   to = [{ key_code = "left_control"; }];
+          # }
+        ];
       }
       {
         disable_built_in_keyboard_if_exists = false;
@@ -430,10 +451,12 @@ in
     name = "Default profile";
     parameters = { delay_milliseconds_before_open_device = 1000; };
     selected = true;
-    simple_modifications = [{
-      from = { key_code = "caps_lock"; };
-      to = [{ key_code = "left_control"; }];
-    }];
+    simple_modifications = [
+      # {
+      #   from = { key_code = "caps_lock"; };
+      #   to = [{ key_code = "left_control"; }];
+      # }
+    ];
     virtual_hid_keyboard = {
       country_code = 0;
       indicate_sticky_modifier_keys_state = true;

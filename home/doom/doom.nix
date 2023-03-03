@@ -2,7 +2,7 @@
 { config, pkgs, lib, username, envVars, ... }:
 {
   # always run doom sync when activating home manager
-  activation.doom = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+  activation = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     #/usr/bin/env zsh
     $DRY_RUN_CMD echo "syncing doom emacs..."
     set -xe
@@ -21,7 +21,7 @@
       && $DRY_RUN_CMD echo "doom emacs synced" \
   '';
   # run doom install only once
-  file.".doom.d" = {
+  userConfigDir = {
     source = ./emacs;
     recursive = true;
     # NOTE: the following script will only run if doom files have changed -- even if the script itself fails.
