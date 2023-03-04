@@ -15,6 +15,7 @@ let
   # emacs-mac-overlays = (import ./emacs-mac.nix);
   # packages specific to arm64
   arm64-packages = with pkgs; [
+    alacritty # make sure alacritty's terminfo gets installed system-wide
     # emacsGit
   ];
 

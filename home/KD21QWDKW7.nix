@@ -6,9 +6,7 @@ let
   localBinPath = ".local/bin";
   # to update/regenerate, run node2nix -i <(echo '["bash-language-server"]') --nodejs-18
   # then copy the resulting files into ./npm-packages
-  npmPackages = import ./npm-packages {
-    inherit pkgs;
-  };
+  npmPackages = import ./npm-packages { inherit pkgs; };
   homePackages = (with pkgs; [
     alacritty
     automake
@@ -55,7 +53,8 @@ let
     gnused
     go
     golangci-lint # customized in golangci-lint.nix overlay since it's broken in nixpkgs right now
-    (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
+    (google-cloud-sdk.withExtraComponents
+      [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
     gocyclo
     golint
     gopls
@@ -105,7 +104,7 @@ let
     nix-prefetch
     nix-prefetch-git
     nix-zsh-completions
-    nixfmt
+    nixpkgs-fmt
     nmap
     node2nix
     nodejs
@@ -172,8 +171,7 @@ let
     zsh-syntax-highlighting
     zsh-z
     zstd
-  ]) ++
-  (with npmPackages; [ bash-language-server ]);
+  ]) ++ (with npmPackages; [ bash-language-server ]);
   envVars = {
     COLORTERM = "truecolor";
     EDITOR = "em";
@@ -194,7 +192,8 @@ let
     (homeDirectory + "/.cargo/bin")
     (homeDirectory + "/" + goPathSuffix + "/bin")
   ];
-  doomConfig = import ./doom/doom.nix { inherit config pkgs lib username envVars; };
+  doomConfig =
+    import ./doom/doom.nix { inherit config pkgs lib username envVars; };
 in
 {
   home = {
@@ -257,114 +256,48 @@ in
       target = ".config/karabiner/karabiner.json";
     };
   };
-  # programs.git = {
-  #   aliases = {
-  #     lpg = "log --oneline --graph --format='%C(yellow)%H %<(15)%C(blue)%ci %<(20,trunc)%C(green)%aN %C(reset)%<(100,trunc)%s'";
-  #     lp = "log --oneline --format='%C(yellow)%H %C(blue)%ci %C(green)%an %C(reset)%<(100,trunc)%s'";
-  #     lt = "log --tags --simplify-by-decoration --format='%C(green)%H %<(15)%C(yellow)%ci %<(20,trunc)%C(cyan)%aN %C(reset)%<(100,trunc)%d%n   %s'";
-  #     st = "status -s";
-  #   };
-  #   delta = {
-  #     enable = true;
-  #     options = {
-  #       paging = "always";
-  #       line-numbers = "true";
-  #       navigate = "true";
-  #       syntax-theme = "zenburn";
-  #       width = "1";
-  #       minus-style = "syntax \"#450a15\"";
-  #       minus-emph-style = "syntax \"#600818\"";
-  #       plus-style = "syntax \"#0b4820\"";
-  #       plus-emph-style = "syntax \"#175c2e\"";
-  #       hunk-header-style = "syntax bold";
-  #       hunk-header-decoration-style = "omit";
-  #       file-style = "yellow italic";
-  #       file-decoration-style = "yellow ul";
-  #       line-numbers-zero-style = "#4b5263";
-  #       line-numbers-left-format = "\"{nm:^4} \"";
-  #       line-numbers-right-format = "\"{np:^4} \"";
-  #     };
-  #   };
-  # };
+  programs.git = {
+    aliases = {
+      lpg =
+        "log --oneline --graph --format='%C(yellow)%H %<(15)%C(blue)%ci %<(20,trunc)%C(green)%aN %C(reset)%<(100,trunc)%s'";
+      lp =
+        "log --oneline --format='%C(yellow)%H %C(blue)%ci %C(green)%an %C(reset)%<(100,trunc)%s'";
+      lt =
+        "log --tags --simplify-by-decoration --format='%C(green)%H %<(15)%C(yellow)%ci %<(20,trunc)%C(cyan)%aN %C(reset)%<(100,trunc)%d%n   %s'";
+      st = "status -s";
+    };
+    delta = {
+      enable = true;
+      options = {
+        paging = "always";
+        line-numbers = "true";
+        navigate = "true";
+        syntax-theme = "zenburn";
+        width = "1";
+        minus-style = ''syntax "#450a15"'';
+        minus-emph-style = ''syntax "#600818"'';
+        plus-style = ''syntax "#0b4820"'';
+        plus-emph-style = ''syntax "#175c2e"'';
+        hunk-header-style = "syntax bold";
+        hunk-header-decoration-style = "omit";
+        file-style = "yellow italic";
+        file-decoration-style = "yellow ul";
+        line-numbers-zero-style = "#4b5263";
+        line-numbers-left-format = ''"{nm:^4} "'';
+        line-numbers-right-format = ''"{np:^4} "'';
+      };
+    };
+  };
   programs.home-manager.enable = true;
   programs.alacritty = import ./alacritty/alacritty.nix { inherit fontConfig; };
   programs.direnv.enable = true;
-  programs.helix = import ./helix/helix.nix {};
+  programs.helix = import ./helix/helix.nix { };
   programs.skim = {
     enable = true;
     enableZshIntegration = true;
   };
   programs.starship = { enable = true; };
-  programs.tmux = {
-    enable = true;
-    extraConfig = ''
-      unbind C-b
-      # set -g prefix C-l
-      set -g prefix C-space
-      # bind l send-prefix
-      set -g mode-keys vi
-      bind-key -T copy-mode-vi 'v' send -X begin-selection
-      bind-key -T copy-mode-vi 'y' send -X copy-selection-and-cancel
-      set -g base-index 1
-      bind-key j command-prompt -p "join pane from:"  "join-pane -hs '%%'"
-      bind-key s choose-tree
-      bind-key b break-pane
-      bind-key c command-prompt -p "new window name:" "new-window -n '%%'"
-      bind-key BSpace send-keys " clear && tmux clear-history" \; send-keys "Enter"
-      bind-key -n S-Up set-option -g status on
-      bind-key -n S-Down set-option -g status off
-      bind-key -n S-Left previous-window
-      bind-key -n S-Right next-window
-      bind-key -n f3 next-layout
-      bind-key -n M-J resize-pane -D 5
-      bind-key -n M-K resize-pane -U 5
-      bind-key -n M-H resize-pane -L 5
-      bind-key -n M-L resize-pane -R 5
-      bind -n M-Left select-pane -L
-      bind -n M-Right select-pane -R
-      bind -n M-Up select-pane -U
-      bind -n M-Down select-pane -D
-      # set -g default-terminal "xterm-256color"
-      set -g default-terminal "alacritty"
-      # if 'infocmp -x alacritty > /dev/null 2>&1' 'set -g default-terminal "alacritty"'
-      set -ag terminal-overrides ",alacritty:RGB"
-      set -g automatic-rename off
-      set -g focus-events on
-      set -g -q mode-mouse on
-      set -g -q mouse-resize-pane on
-      set -g -q mouse on
-      bind -n WheelUpPane if-shell -F -t = "#{mouse_any_flag}" "send-keys -M" "if -Ft= '#{pane_in_mode}' 'send-keys -M' 'copy-mode -e'"
-      set -g history-limit 50000
-      set -g escape-time 10
-      # set pane colors - hilight the active pane
-      set -g pane-border-style fg=colour235,bg=black
-      set -g pane-active-border-style fg=colour240,bg=black
-      # ----------------------
-      # Status Bar
-      # -----------------------
-      set -g status on                       # turn the status bar on
-      set -g status-interval 30              # set update frequencey (default 15 seconds)
-      set -g status-justify left             # center window list for clarity
-      set -g message-style bg=black,fg=green
-      set -g status-style bg="#2c2c34",fg=yellow
-      set -g window-status-format "  #{window_index}|#{window_name}  "
-      set -g window-status-style fg="#888899",bg="#383845"
-      set -g window-status-last-style fg="#888899",bg="#383845"
-      set -g window-status-current-format "  #{window_index}|#{window_name}  "
-      set -g window-status-current-style fg="#ccccdd",bg="#4f4f58"
-      set -g status-left-length 70
-      set -g status-left "#[bg=#336688]#[fg=#eeeeee] #h #[bg=#113355]#[fg=brightwhite]#{?client_prefix,#[bg=green],} #S "
-      # set -g status-right-length 60
-      # set -g status-right "#[bg=#444455]#[fg=#bbbbcc] #[fg="#888899"]#[bg="#383845"] %H:%M "
-      set -g status-right '#[bg=#202017]#[fg=#585865] %H:%M%Z #(TZ=UTC date +"(%%H:%%MUTC)") '
-      # emoji not working:
-      # set -g status-right '#[bg=#202017]#[fg=#585865] �🇸� %H: %�� ��M #(TZ=UTC dat +"(%%H:%%UTC �🇦�🇳 #(TCanada/Easternta date +"%%H:%%MUTC ) )  �🇳�🇧 #(TAsia/CalcuttaTC date +"%%H:%%MUTC ) )
-      set -g default-command "reattach-to-user-namespace -l zsh"
-      set -g status-left "#[bg=#e63634]#[fg=brightwhite]#{?client_prefix,#[bg=green],} #S "
-      # set -g status-right "#[bg=#444444]#[fg=#888888] #(rainbarf --width 20 --rgb --no-battery --order fciaws)"
-      bind-key y run "tmux save-buffer - | reattach-to-user-namespace pbcopy"
-    '';
-  };
+  programs.tmux = import ./tmux { inherit pkgs lib; };
   programs.zellij = {
     enable = false;
     settings = {

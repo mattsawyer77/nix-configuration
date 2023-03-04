@@ -23,6 +23,7 @@
   # run doom install only once
   userConfigDir = {
     source = ./emacs;
+    target = ".doom.d";
     recursive = true;
     # NOTE: the following script will only run if doom files have changed -- even if the script itself fails.
     onChange = "${pkgs.writeShellScript "doom-change" ''

@@ -13,7 +13,8 @@
     flake-utils.url = "github:numtide/flake-utils";
     emacs-overlay = {
       # emacs-overlay:stable from 2023-02-17:
-      url = "github:nix-community/emacs-overlay/ab0f3828a6305fe7fd8c4909e67c1c2107292486";
+      url =
+        "github:nix-community/emacs-overlay/ab0f3828a6305fe7fd8c4909e67c1c2107292486";
     };
     neovim-nightly-overlay = {
       url = "github:nix-community/neovim-nightly-overlay";
@@ -36,90 +37,87 @@
   outputs = { self, nixpkgs, darwin, flake-utils, home-manager, ... }@inputs: {
     # mac
     darwinConfigurations =
-      let
-        fontConfig = { monospaceFamily = "PragmataPro Liga"; };
-      in
-      {
-        mmbpm1 =
-          let username = "matt"; in
-          darwin.lib.darwinSystem {
-            system = "aarch64-darwin";
-            specialArgs = inputs;
-            modules = [
-              ({ config, pkgs, lib, ... }: {
-                users.users."${username}" = {
-                  name = username;
-                  home = "/Users/${username}";
-                };
-                nix = {
-                  package = pkgs.nixVersions.stable;
-                  extraOptions = ''
-                    system = aarch64-darwin
-                    extra-platforms = aarch64-darwin x86_64-darwin
-                    experimental-features = nix-command flakes
-                    build-users-group = nixbld
-                    trusted-users = root matt
-                    keep-outputs = true
-                    keep-derivations = true
-                    trusted-users = root matt
-                    keep-outputs = true
-                    keep-derivations = true
-                  '';
-                };
-              })
-              home-manager.darwinModules.home-manager
-              {
-                home-manager.useGlobalPkgs = true;
-                home-manager.useUserPackages = true;
-                home-manager.users."${username}" = ({ config, lib, pkgs, ... }: import ./home/KD21QWDKW7.nix {
+      let fontConfig = { monospaceFamily = "PragmataPro Liga"; };
+      in {
+        mmbpm1 = let username = "matt";
+        in darwin.lib.darwinSystem {
+          system = "aarch64-darwin";
+          specialArgs = inputs;
+          modules = [
+            ({ config, pkgs, lib, ... }: {
+              users.users."${username}" = {
+                name = username;
+                home = "/Users/${username}";
+              };
+              nix = {
+                package = pkgs.nixVersions.stable;
+                extraOptions = ''
+                  system = aarch64-darwin
+                  extra-platforms = aarch64-darwin x86_64-darwin
+                  experimental-features = nix-command flakes
+                  build-users-group = nixbld
+                  trusted-users = root matt
+                  keep-outputs = true
+                  keep-derivations = true
+                  trusted-users = root matt
+                  keep-outputs = true
+                  keep-derivations = true
+                '';
+              };
+            })
+            home-manager.darwinModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+              home-manager.users."${username}" = ({ config, lib, pkgs, ... }:
+                import ./home/KD21QWDKW7.nix {
                   inherit config lib pkgs username fontConfig;
                 });
-              }
-              # ./modules/haskell.nix
-              ./modules/mac.nix
-            ];
-          }; # mmbpm1
+            }
+            # ./modules/haskell.nix
+            ./modules/mac.nix
+          ];
+        }; # mmbpm1
 
-        KD21QWDKW7 =
-          let username = "m.sawyer";
-          in
-          darwin.lib.darwinSystem {
-            system = "aarch64-darwin";
-            specialArgs = inputs;
-            modules = [
-              ({ config, pkgs, lib, ... }: {
-                users.users."${username}" = {
-                  name = username;
-                  home = "/Users/${username}";
-                };
-                nix = {
-                  package = pkgs.nixVersions.stable;
-                  extraOptions = ''
-                    system = aarch64-darwin
-                    extra-platforms = aarch64-darwin x86_64-darwin
-                    experimental-features = nix-command flakes
-                    build-users-group = nixbld
-                    trusted-users = root m.sawyer
-                    keep-outputs = true
-                    keep-derivations = true
-                    trusted-users = root m.sawyer
-                    keep-outputs = true
-                    keep-derivations = true
-                  '';
-                };
-              })
-              home-manager.darwinModules.home-manager
-              {
-                home-manager.useGlobalPkgs = true;
-                home-manager.useUserPackages = true;
-                home-manager.users."${username}" = ({ config, lib, pkgs, ... }: import ./home/KD21QWDKW7.nix {
+        KD21QWDKW7 = let username = "m.sawyer";
+        in darwin.lib.darwinSystem {
+          system = "aarch64-darwin";
+          specialArgs = inputs;
+          modules = [
+            ({ config, pkgs, lib, ... }: {
+              users.users."${username}" = {
+                name = username;
+                home = "/Users/${username}";
+              };
+              nix = {
+                package = pkgs.nixVersions.stable;
+                extraOptions = ''
+                  system = aarch64-darwin
+                  extra-platforms = aarch64-darwin x86_64-darwin
+                  experimental-features = nix-command flakes
+                  build-users-group = nixbld
+                  trusted-users = root m.sawyer
+                  keep-outputs = true
+                  keep-derivations = true
+                  trusted-users = root m.sawyer
+                  keep-outputs = true
+                  keep-derivations = true
+                '';
+              };
+            })
+            home-manager.darwinModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+              home-manager.users."${username}" = ({ config, lib, pkgs, ... }:
+                import ./home/KD21QWDKW7.nix {
                   inherit config lib pkgs username fontConfig;
                 });
-              }
-              # ./modules/haskell.nix
-              ./modules/mac.nix
-            ];
-          }; # KD21QWDKW7
+            }
+            # ./modules/haskell.nix
+            ./modules/mac.nix
+          ];
+        }; # KD21QWDKW7
       }; # darwin.lib.darwinSystem
 
     # linux
@@ -203,7 +201,7 @@
             services.openssh.enable = true;
             services.openssh.ports = [ 777 ];
             time.timeZone = "America/Los_Angeles";
-            environment.variables = rec {
+            environment.variables = {
               AWS_SDK_LOAD_CONFIG = "1";
               LANG = "en_US.UTF-8";
               LANGUAGE = "en_US.UTF-8";

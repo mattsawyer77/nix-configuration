@@ -1,7 +1,6 @@
 # map the following keys from ctrl to cmd
 let ctrlToCMDKeys = [ "c" "v" "x" "f" "g" "t" "n" "z" ];
-in
-{
+in {
   global = {
     check_for_updates_on_startup = true;
     show_in_menu_bar = true;
@@ -19,82 +18,80 @@ in
       rules = [
         {
           description = "map cmd variants to ctrl";
-          manipulators = (map
-            (key: {
-              conditions = [{
-                type = "frontmost_application_unless";
-                bundle_identifiers = [
-                  "^org\\.alacritty"
-                  "^io\\.alacritty"
-                  "^org\\.gnu\\.emacs"
-                  "^org\\.gnu\\.Emacs"
-                ];
-              }];
-              from = {
-                modifiers = { mandatory = [ "control" ]; };
-                key_code = key;
-              };
-              to = {
-                modifiers = [ "command" ];
-                key_code = key;
-              };
-              type = "basic";
-            })
-            ctrlToCMDKeys);
+          manipulators = (map (key: {
+            conditions = [{
+              type = "frontmost_application_unless";
+              bundle_identifiers = [
+                "^org\\.alacritty"
+                "^io\\.alacritty"
+                "^org\\.gnu\\.emacs"
+                "^org\\.gnu\\.Emacs"
+              ];
+            }];
+            from = {
+              modifiers = { mandatory = [ "control" ]; };
+              key_code = key;
+            };
+            to = {
+              modifiers = [ "command" ];
+              key_code = key;
+            };
+            type = "basic";
+          }) ctrlToCMDKeys);
         }
         {
           description = "firefox customization";
-          manipulators = [
-            {
-              conditions = [{
-                bundle_identifiers = [ "^org\\.mozilla\\." ];
-                type = "frontmost_application_if";
-              }];
-              description = "reload the page with ctrl+r";
-              from = {
-                key_code = "r";
-                modifiers = { mandatory = [ "left_control" ]; };
-              };
-              to = [{
-                key_code = "r";
-                modifiers = [ "left_command" ];
-              }];
-              type = "basic";
-            }
-            {
-              conditions = [{
-                bundle_identifiers = [ "^org\\.mozilla\\." ];
-                type = "frontmost_application_if";
-              }];
-              description = "prevent esc from from exiting full screen";
-              from = { key_code = "escape"; };
-              to = [{
-                key_code = "escape";
-                modifiers = [ "shift" ];
-              }];
-              type = "basic";
-            }
-            {
-              conditions = [{
-                bundle_identifiers = [ "^org\\.mozilla\\." ];
-                type = "frontmost_application_if";
-              }];
-              description = "map left ctrl to shift+esc if tapped";
-              from = {
-                key_code = "left_control";
-                modifiers = { optional = [ "any" ]; };
-              };
-              to = [{
-                key_code = "left_control";
-                lazy = true;
-              }];
-              to_if_alone = [{
-                key_code = "escape";
-                modifiers = [ "shift" ];
-              }];
-              type = "basic";
-            }
-          ];
+          manipulators = [{
+            conditions = [{
+              bundle_identifiers = [ "^org\\.mozilla\\." ];
+              type = "frontmost_application_if";
+            }];
+            description = "reload the page with ctrl+r";
+            from = {
+              key_code = "r";
+              modifiers = { mandatory = [ "left_control" ]; };
+            };
+            to = [{
+              key_code = "r";
+              modifiers = [ "left_command" ];
+            }];
+            type = "basic";
+          }
+          # now this seems to open firefox task manager which is not the intention
+          # {
+          #   conditions = [{
+          #     bundle_identifiers = [ "^org\\.mozilla\\." ];
+          #     type = "frontmost_application_if";
+          #   }];
+          #   description = "prevent esc from from exiting full screen";
+          #   from = { key_code = "escape"; };
+          #   to = [{
+          #     key_code = "escape";
+          #     modifiers = [ "shift" ];
+          #   }];
+          #   type = "basic";
+          # }
+          # {
+          #   conditions = [{
+          #     bundle_identifiers = [ "^org\\.mozilla\\." ];
+          #     type = "frontmost_application_if";
+          #   }];
+          #   description = "map left ctrl to shift+esc if tapped";
+          #   from = {
+          #     key_code = "left_control";
+          #     modifiers = { optional = [ "any" ]; };
+          #   };
+          #   to = [{
+          #     key_code = "left_control";
+          #     lazy = true;
+          #   }];
+          #   to_if_alone = [{
+          #     key_code = "escape";
+          #     modifiers = [ "shift" ];
+          #   }];
+          #   type = "basic";
+          # }
+            ];
         }
         {
           description = "Apple Mail customization";
@@ -137,10 +134,6 @@ in
         {
           description = "Post Esc if Caps is tapped, Control if held.";
           manipulators = [{
-            conditions = [{
-              bundle_identifiers = [ "^org\\.mozilla\\." ];
-              type = "frontmost_application_unless";
-            }];
             from = {
               key_code = "caps_lock";
               modifiers = { optional = [ "any" ]; };
@@ -187,14 +180,14 @@ in
           }];
         }
         {
-          description = "mute/unmute audio input with pause key (or Keychron Q1 knob)";
+          description =
+            "mute/unmute audio input with pause key (or Keychron Q1 knob)";
           manipulators = [{
-            from = {
-              key_code = "pause";
-            };
+            from = { key_code = "pause"; };
             to = [{
               # shell function defined in home/.zshenv-KD21QWDKW7.nix
-              shell_command = "/etc/profiles/per-user/$USER/bin/zsh -c toggle-audio-input-mute";
+              shell_command =
+                "/etc/profiles/per-user/$USER/bin/zsh -c toggle-audio-input-mute";
               # previous attempt at just muting/unmuting zoom (works but is specific to zoom):
               # shell_command = "osascript -e 'tell application \"System Events\"' -e 'activate application id \"us.zoom.xos\"' -e 'keystroke \"a\" using {command down, shift down}' -e 'end tell'";
             }];

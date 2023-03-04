@@ -50,7 +50,7 @@
   (setq-default evil-kill-on-visual-paste nil)
   (setq evil-kill-on-visual-paste nil))
 
-;; disable format-on-save for yaml-mode
+;; disable format-on-save modes that are problematic or unconfigurable
 ;; NOTE: +format-on-save-enabled-modes is a strange variable:
 ;; if the list starts with 'not, then it's an exclusion list;
 ;; if the list does not start with 'not, then it's an inclusion list
@@ -398,6 +398,7 @@
   ;; (setq lsp-diagnostics-provider :flymake)
   ;; (setq lsp-diagnostics-provider :flycheck)
   (setq lsp-rust-analyzer-server-display-inlay-hints t)
+  (setq lsp-nix-nil-formatter ["nixpkgs-fmt"])
 )
 
 (after! org
