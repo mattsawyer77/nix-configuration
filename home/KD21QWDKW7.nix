@@ -1,9 +1,10 @@
-{ config, lib, pkgs, username, fontConfig, ... }:
+{ config, lib, pkgs, username, fontConfig, mkalias, ... }:
 
 let
   homeDirectory = "/Users/" + username;
   goPathSuffix = "gocode";
   localBinPath = ".local/bin";
+  mkaliasPackage = mkalias.packages.aarch64-darwin.mkalias;
   # to update/regenerate, run node2nix -i <(echo '["bash-language-server"]') --nodejs-18
   # then copy the resulting files into ./npm-packages
   npmPackages = import ./npm-packages { inherit pkgs; };
@@ -171,7 +172,12 @@ let
     zsh-syntax-highlighting
     zsh-z
     zstd
-  ]) ++ (with npmPackages; [ bash-language-server ]);
+  ])
+  # npm packages setup via node2nix
+  ++ (with npmPackages; [ bash-language-server ])
+  # flakes outside nixpkgs (that don't have overlays)
+  # TODO: how to make this more idiomatic without specifying the system arch
+  ++ [ mkaliasPackage ];
   envVars = {
     COLORTERM = "truecolor";
     EDITOR = "em";
@@ -210,35 +216,26 @@ in
       #/usr/bin/env zsh
       set -xe
       echo "setting up ~/Applications..." >&2
-      applications="$HOME/Applications"
 
       # Needs to be writable by the user so that home-manager can create aliases there
-      chown ${username} "$applications"
-      chmod u+w "$applications"
+      $DRY_RUN_CMD chown ${username} ~/Applications
+      $DRY_RUN_CMD chmod u+w ~/Applications
 
       for app in ~/Applications/*.app; do
         $DRY_RUN_CMD rm -f "$app"
       done
 
       find ~/Applications/Home\ Manager\ Apps/* -maxdepth 0 -mindepth 0 -wholename '*.app' -exec readlink '{}' + |
-        while read src; do
-          rm -f "$"
+        while read app; do
           # Spotlight does not recognize symlinks, it will ignore directory we link to the applications folder.
           # It does understand MacOS aliases though, a unique filesystem feature. Sadly they cannot be created
-          # from bash (as far as I know), so we use the oh-so-great Apple Script instead.
-          /usr/bin/osascript -e "
-            set fileToAlias to POSIX file \"$src\"
-            set applicationsFolder to POSIX file \"$applications\"
-            tell application \"Finder\"
-              $DRY_RUN_CMD make alias file to fileToAlias at applicationsFolder
-              # This renames the alias; 'mpv.app alias' -> 'mpv.app'
-              $DRY_RUN_CMD set name of result to \"$(rev <<< "$src" | cut -d'/' -f1 | rev)\"
-            end tell
-          "
+          # from bash (as far as I know), so we use a custom utility called mkalias.
+          app_name=$(basename "$app" | sd '\.[^\.]+$' $''')
+          $DRY_RUN_CMD ${mkaliasPackage}/bin/mkalias $app ~/Applications/$app_name
       done
       for app in ~/Applications/*.app; do
         app_name=$(basename "$app" | sd '\.[^\.]+$' $''')
-        $DRY_RUN_CMD dockutil --add "$app" --replacing "$app_name" ~${username}
+        $DRY_RUN_CMD ${pkgs.dockutil}/bin/dockutil --add "$app" --replacing "$app_name" ~${username}
       done
       set +x
     '';

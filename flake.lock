@@ -169,6 +169,26 @@
         "type": "github"
       }
     },
+    "mkalias": {
+      "inputs": {
+        "nixpkgs": [
+          "unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1677814234,
+        "narHash": "sha256-Uzi8GIzo+ATX9dPOJduBjvSDtQc6+7EpJZasD8+/uoo=",
+        "owner": "reckenrode",
+        "repo": "mkalias",
+        "rev": "592596818a3175cdc1f1c7349d44387ed18aa975",
+        "type": "github"
+      },
+      "original": {
+        "owner": "reckenrode",
+        "repo": "mkalias",
+        "type": "github"
+      }
+    },
     "neovim-flake": {
       "inputs": {
         "flake-utils": "flake-utils_3",
@@ -275,6 +295,7 @@
         "emacs-vterm-src": "emacs-vterm-src",
         "flake-utils": "flake-utils_2",
         "home-manager": "home-manager",
+        "mkalias": "mkalias",
         "neovim-nightly-overlay": "neovim-nightly-overlay",
         "nil": "nil",
         "nixpkgs": "nixpkgs_2",
