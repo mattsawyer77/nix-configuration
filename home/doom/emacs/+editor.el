@@ -211,7 +211,12 @@
   (treemacs-project-follow-mode 1)
   (treemacs-git-mode 'deferred)
   (setq-default treemacs--width-is-locked nil)
-  )
+  (setq treemacs-position 'left)
+  (setq treemacs-width 40)
+  ;; necessary after https://github.com/Alexander-Miller/treemacs/pull/971
+  (set-popup-rule! "^ \\*Treemacs"
+    :side treemacs-position
+    :window-width treemacs-width))
 
 (after! company
   (global-company-mode)
@@ -605,12 +610,6 @@
   :select t
   :quit t
   :autosave t)
-
-;; necessary after https://github.com/Alexander-Miller/treemacs/pull/971
-;; hopefully doom will fix this in the treemacs module
-(set-popup-rule! "^ \\*Treemacs"
-  :side 'left
-  :window-width 40)
 
 (set-popup-rule! "^\\*eww\\*"
   :side 'right

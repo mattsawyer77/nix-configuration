@@ -17,7 +17,7 @@ let
     bash
     bat
     bat-extras.batman
-    bottom # binary is `btm`
+    bottom # app command is `btm`
     cachix
     cask
     ccls

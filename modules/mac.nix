@@ -16,7 +16,8 @@ let
   # packages specific to arm64
   arm64-packages = with pkgs; [
     alacritty # make sure alacritty's terminfo gets installed system-wide
-    # emacsGit
+    # emacs-mac
+    # emacs-vterm
   ];
 
   # packages specific to x86-64
@@ -116,8 +117,7 @@ in
         }).overrideAttrs (o: rec {
           version = "30.0.50";
           src = emacs-src;
-          buildInputs = o.buildInputs
-            ++ [ prev.darwin.apple_sdk.frameworks.WebKit ];
+          buildInputs = o.buildInputs ++ [ prev.darwin.apple_sdk.frameworks.WebKit ];
           configureFlags = o.configureFlags ++ [
             "--with-modules"
             "--without-gpm"
