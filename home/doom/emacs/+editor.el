@@ -212,11 +212,7 @@
   (treemacs-git-mode 'deferred)
   (setq-default treemacs--width-is-locked nil)
   (setq treemacs-position 'left)
-  (setq treemacs-width 40)
-  ;; necessary after https://github.com/Alexander-Miller/treemacs/pull/971
-  (set-popup-rule! "^ \\*Treemacs"
-    :side treemacs-position
-    :window-width treemacs-width))
+  (setq treemacs-width 70))
 
 (after! company
   (global-company-mode)
@@ -601,15 +597,15 @@
 (after! vterm
   (setq vterm-shell "/bin/zsh")
   (setq vterm-tramp-shells nil)
-  )
-(set-popup-rule! "^\\*doom:vterm.*"
-  :side 'right
-  :slot 5
-  :vslot 5
-  :size 0.40
-  :select t
-  :quit t
-  :autosave t)
+  ;; (set-popup-rule! "^\\*doom:vterm.*"
+  ;;   :side 'right
+  ;;   :slot 5
+  ;;   :vslot 5
+  ;;   :size 0.40
+  ;;   :select t
+  ;;   :quit t
+  ;;   :autosave t)
+  (set-popup-rule! "^\\*doom:vterm.*" :ignore t))
 
 (set-popup-rule! "^\\*eww\\*"
   :side 'right

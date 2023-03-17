@@ -1,12 +1,12 @@
 # return an activation script and an file/onChange script for use within home modules
-{ config, pkgs, lib, username, envVars, ... }:
+{ config, pkgs, lib, homeDir, username, envVars, ... }:
 {
   # always run doom sync when activating home manager
   activation = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     #/usr/bin/env zsh
-    $DRY_RUN_CMD echo "syncing doom emacs..."
+    echo "syncing doom emacs..."
     set -xe
-    export PATH=/Users/${username}/.nix-profile/bin:/etc/profiles/per-user/${username}/bin:/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/local/bin:/usr/bin:/usr/sbin:/bin:/sbin:/Users/${username}/.local/bin:/Users/${username}/.cargo/bin:/Users/${username}/gocode/bin
+    export PATH=${homeDir}/.nix-profile/bin:/etc/profiles/per-user/${username}/bin:/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/local/bin:/usr/bin:/usr/sbin:/bin:/sbin:${homeDir}/.local/bin:${homeDir}/.cargo/bin:${homeDir}/gocode/bin
     echo "PATH: $PATH"
     export ${builtins.concatStringsSep " " (builtins.attrValues (builtins.mapAttrs (k: v: "${k}='${v}'") envVars))}
     DOOM_DIR="$HOME/.emacs.d"

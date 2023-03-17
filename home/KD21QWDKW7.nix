@@ -198,8 +198,10 @@ let
     (homeDirectory + "/.cargo/bin")
     (homeDirectory + "/" + goPathSuffix + "/bin")
   ];
-  doomConfig =
-    import ./doom/doom.nix { inherit config pkgs lib username envVars; };
+  doomConfig = import ./doom/doom.nix {
+    inherit config pkgs lib homeDirectory username envVars;
+    homeDir = homeDirectory;
+  };
 in
 {
   home = {
