@@ -294,7 +294,10 @@ in
     enableZshIntegration = true;
   };
   programs.starship = { enable = true; };
-  programs.tmux = import ./tmux { inherit pkgs lib; };
+  programs.tmux = import ./tmux {
+    inherit pkgs lib;
+    optionOverrides = [ ];
+  };
   programs.zellij = {
     enable = false;
     settings = {

@@ -1,4 +1,4 @@
-{ pkgs, lib, ... }:
+{ pkgs, lib, optionOverrides, ... }:
 
 let
   optionFlags = {
@@ -165,7 +165,7 @@ let
       value = ",alacritty:RGB";
       flags = [ "global" "append" ];
     }
-  ];
+  ] ++ optionOverrides;
 
   # utility function to map attrset to tmux key bind syntax
   # where command is something like "bind -n" or "bind"
@@ -213,9 +213,11 @@ let
     "c" = ''
       command-prompt -p "new window name:" "new-window -n '%%'"
     '';
-    "y" = ''
+    "y" = (if pkgs.stdenv.isDarwin then ''
       run "tmux save-buffer - | reattach-to-user-namespace pbcopy"
-    '';
+    '' else ''
+      run "tmux save-buffer - | xclip"
+    '');
   };
 
   # keys to bind in vi copy-mode table
