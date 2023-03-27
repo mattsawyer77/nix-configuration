@@ -18,26 +18,30 @@ in {
       rules = [
         {
           description = "map cmd variants to ctrl";
-          manipulators = (map (key: {
-            conditions = [{
-              type = "frontmost_application_unless";
-              bundle_identifiers = [
-                "^org\\.alacritty"
-                "^io\\.alacritty"
-                "^org\\.gnu\\.emacs"
-                "^org\\.gnu\\.Emacs"
-              ];
-            }];
-            from = {
-              modifiers = { mandatory = [ "control" ]; };
-              key_code = key;
-            };
-            to = {
-              modifiers = [ "command" ];
-              key_code = key;
-            };
-            type = "basic";
-          }) ctrlToCMDKeys);
+          manipulators = (map
+            (key: {
+              conditions = [{
+                type = "frontmost_application_unless";
+                bundle_identifiers = [
+                  "^org\\.alacritty"
+                  "^io\\.alacritty"
+                  "^org\\.gnu\\.emacs"
+                  "^org\\.gnu\\.Emacs"
+                  "com.jetbrains.goland"
+                  "com.microsoft.VSCode"
+                ];
+              }];
+              from = {
+                modifiers = { mandatory = [ "control" ]; };
+                key_code = key;
+              };
+              to = {
+                modifiers = [ "command" ];
+                key_code = key;
+              };
+              type = "basic";
+            })
+            ctrlToCMDKeys);
         }
         {
           description = "firefox customization";
@@ -57,41 +61,41 @@ in {
             }];
             type = "basic";
           }
-          # now this seems to open firefox task manager which is not the intention
-          # {
-          #   conditions = [{
-          #     bundle_identifiers = [ "^org\\.mozilla\\." ];
-          #     type = "frontmost_application_if";
-          #   }];
-          #   description = "prevent esc from from exiting full screen";
-          #   from = { key_code = "escape"; };
-          #   to = [{
-          #     key_code = "escape";
-          #     modifiers = [ "shift" ];
-          #   }];
-          #   type = "basic";
-          # }
-          # {
-          #   conditions = [{
-          #     bundle_identifiers = [ "^org\\.mozilla\\." ];
-          #     type = "frontmost_application_if";
-          #   }];
-          #   description = "map left ctrl to shift+esc if tapped";
-          #   from = {
-          #     key_code = "left_control";
-          #     modifiers = { optional = [ "any" ]; };
-          #   };
-          #   to = [{
-          #     key_code = "left_control";
-          #     lazy = true;
-          #   }];
-          #   to_if_alone = [{
-          #     key_code = "escape";
-          #     modifiers = [ "shift" ];
-          #   }];
-          #   type = "basic";
-          # }
-            ];
+            # now this seems to open firefox task manager which is not the intention
+            # {
+            #   conditions = [{
+            #     bundle_identifiers = [ "^org\\.mozilla\\." ];
+            #     type = "frontmost_application_if";
+            #   }];
+            #   description = "prevent esc from from exiting full screen";
+            #   from = { key_code = "escape"; };
+            #   to = [{
+            #     key_code = "escape";
+            #     modifiers = [ "shift" ];
+            #   }];
+            #   type = "basic";
+            # }
+            # {
+            #   conditions = [{
+            #     bundle_identifiers = [ "^org\\.mozilla\\." ];
+            #     type = "frontmost_application_if";
+            #   }];
+            #   description = "map left ctrl to shift+esc if tapped";
+            #   from = {
+            #     key_code = "left_control";
+            #     modifiers = { optional = [ "any" ]; };
+            #   };
+            #   to = [{
+            #     key_code = "left_control";
+            #     lazy = true;
+            #   }];
+            #   to_if_alone = [{
+            #     key_code = "escape";
+            #     modifiers = [ "shift" ];
+            #   }];
+            #   type = "basic";
+            # }
+          ];
         }
         {
           description = "Apple Mail customization";
@@ -215,32 +219,32 @@ in {
     devices = [
       {
         disable_built_in_keyboard_if_exists = false;
-        fn_function_keys = [
-          {
-            from = { key_code = "f1"; };
-            to = [{ consumer_key_code = "mute"; }];
-          }
-          {
-            from = { key_code = "f2"; };
-            to = [{ consumer_key_code = "volume_decrement"; }];
-          }
-          {
-            from = { key_code = "f3"; };
-            to = [{ consumer_key_code = "volume_increment"; }];
-          }
-          {
-            from = { key_code = "f4"; };
-            to = [{ consumer_key_code = "rewind"; }];
-          }
-          {
-            from = { key_code = "f5"; };
-            to = [{ consumer_key_code = "play_or_pause"; }];
-          }
-          {
-            from = { key_code = "f6"; };
-            to = [{ consumer_key_code = "fastforward"; }];
-          }
-        ];
+        # fn_function_keys = [
+        #   {
+        #     from = { key_code = "f1"; };
+        #     to = [{ consumer_key_code = "mute"; }];
+        #   }
+        #   {
+        #     from = { key_code = "f2"; };
+        #     to = [{ consumer_key_code = "volume_decrement"; }];
+        #   }
+        #   {
+        #     from = { key_code = "f3"; };
+        #     to = [{ consumer_key_code = "volume_increment"; }];
+        #   }
+        #   {
+        #     from = { key_code = "f4"; };
+        #     to = [{ consumer_key_code = "rewind"; }];
+        #   }
+        #   {
+        #     from = { key_code = "f5"; };
+        #     to = [{ consumer_key_code = "play_or_pause"; }];
+        #   }
+        #   {
+        #     from = { key_code = "f6"; };
+        #     to = [{ consumer_key_code = "fastforward"; }];
+        #   }
+        # ];
         identifiers = {
           is_keyboard = true;
           is_pointing_device = false;
@@ -391,56 +395,56 @@ in {
         simple_modifications = [ ];
       }
     ];
-    fn_function_keys = [
-      {
-        from = { key_code = "f1"; };
-        to = [{ consumer_key_code = "display_brightness_decrement"; }];
-      }
-      {
-        from = { key_code = "f2"; };
-        to = [{ consumer_key_code = "display_brightness_increment"; }];
-      }
-      {
-        from = { key_code = "f3"; };
-        to = [{ key_code = "mission_control"; }];
-      }
-      {
-        from = { key_code = "f4"; };
-        to = [{ key_code = "launchpad"; }];
-      }
-      {
-        from = { key_code = "f5"; };
-        to = [{ key_code = "illumination_decrement"; }];
-      }
-      {
-        from = { key_code = "f6"; };
-        to = [{ key_code = "illumination_increment"; }];
-      }
-      {
-        from = { key_code = "f7"; };
-        to = [{ consumer_key_code = "rewind"; }];
-      }
-      {
-        from = { key_code = "f8"; };
-        to = [{ consumer_key_code = "play_or_pause"; }];
-      }
-      {
-        from = { key_code = "f9"; };
-        to = [{ consumer_key_code = "fastforward"; }];
-      }
-      {
-        from = { key_code = "f10"; };
-        to = [{ consumer_key_code = "mute"; }];
-      }
-      {
-        from = { key_code = "f11"; };
-        to = [{ consumer_key_code = "volume_decrement"; }];
-      }
-      {
-        from = { key_code = "f12"; };
-        to = [{ consumer_key_code = "volume_increment"; }];
-      }
-    ];
+    # fn_function_keys = [
+    #   {
+    #     from = { key_code = "f1"; };
+    #     to = [{ consumer_key_code = "display_brightness_decrement"; }];
+    #   }
+    #   {
+    #     from = { key_code = "f2"; };
+    #     to = [{ consumer_key_code = "display_brightness_increment"; }];
+    #   }
+    #   {
+    #     from = { key_code = "f3"; };
+    #     to = [{ key_code = "mission_control"; }];
+    #   }
+    #   {
+    #     from = { key_code = "f4"; };
+    #     to = [{ key_code = "launchpad"; }];
+    #   }
+    #   {
+    #     from = { key_code = "f5"; };
+    #     to = [{ key_code = "illumination_decrement"; }];
+    #   }
+    #   {
+    #     from = { key_code = "f6"; };
+    #     to = [{ key_code = "illumination_increment"; }];
+    #   }
+    #   {
+    #     from = { key_code = "f7"; };
+    #     to = [{ consumer_key_code = "rewind"; }];
+    #   }
+    #   {
+    #     from = { key_code = "f8"; };
+    #     to = [{ consumer_key_code = "play_or_pause"; }];
+    #   }
+    #   {
+    #     from = { key_code = "f9"; };
+    #     to = [{ consumer_key_code = "fastforward"; }];
+    #   }
+    #   {
+    #     from = { key_code = "f10"; };
+    #     to = [{ consumer_key_code = "mute"; }];
+    #   }
+    #   {
+    #     from = { key_code = "f11"; };
+    #     to = [{ consumer_key_code = "volume_decrement"; }];
+    #   }
+    #   {
+    #     from = { key_code = "f12"; };
+    #     to = [{ consumer_key_code = "volume_increment"; }];
+    #   }
+    # ];
     name = "Default profile";
     parameters = { delay_milliseconds_before_open_device = 1000; };
     selected = true;

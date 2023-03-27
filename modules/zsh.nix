@@ -73,7 +73,7 @@
     export GOPATH="$HOME/gocode"
     export GO111MODULE="on"
     export BAT_THEME="1337"
-    export LESS="-F -i -M -R -X --incsearch"
+    export LESS="-F -i -M -R -X --incsearch --mouse --wheel-lines 3";
     export FZF_DEFAULT_OPTS="--info=inline --layout=default --tac --no-sort"
     export FZF_CTRL_R_OPTS="--sort"
     export SAML2AWS_USER_AGENT="Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.00) Gecko/20100101 Firefox/82.0"

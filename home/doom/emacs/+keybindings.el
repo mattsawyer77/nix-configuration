@@ -3,24 +3,16 @@
 (map! "<mouse-4>" 'up-slightly)
 (map! "<mouse-5>" 'down-slightly)
 
-;; (map!
-;;  :after tab-bar
-;;  :nv "g t" nil
-;;  )
-
-;; (map!
-;;  :after evil-goggles
-;;   :nv "g r" nil
-;;   :nv "g r" nil
-;;   :nv "g i" nil
-;;   :nv "g i" nil
-;;  )
 (map!
  :map general-override-mode-map
  :g "C-s" #'basic-save-buffer
  :n "C-," (lambda ()
             (interactive)
             (dired-other-window "~/workspaces/nix-configuration/home/doom/emacs"))
+ (:after lsp-ui
+         :nv "<f1>" (lambda ()
+                    (interactive)
+                    (lsp-ui-doc-show)))
  (:after evil-nerd-commenter
   :nv "#" #'evilnc-comment-or-uncomment-lines)
  (:after centaur-tabs
@@ -35,17 +27,6 @@
     :desc "Switch Tab" "TAB" #'centaur-tabs-switch-group
     :desc "Close Tab" "x" #'centaur-tabs-kill-all-buffers-in-current-group
     :desc "New Tab" "n" #'centaur-tabs--create-new-tab
-    )))
- (:after dap-mode
-  :leader
-  (:prefix ("d" . "debug")
-   :desc "DAP Debug" "d" #'dap-debug
-   :desc "DAP Hydra" "h" #'dap-hydra
-   :desc "DAP Disconnect" "Q" #'dap-disconnect
-   (:prefix ("b" . "breakpoint")
-    :desc "DAP Breakpoint Add" "a" #'dap-breakpoint-add
-    :desc "DAP Breakpoint Delete" "d" #'dap-breakpoint-delete
-    :desc "DAP Breakpoint Delete All" "D" #'dap-breakpoint-delete
     )))
  (:after flycheck
   :leader
@@ -130,3 +111,20 @@
       :mode magit-blame-mode
       (:leader
        :nv "g v" #'magit-visit-ref))
+
+(map! :after dap-mode
+      (:map dap-ui-session-mode-map
+       :nv "<f5>" #'dap-continue
+       :nv "<f6>" #'dap-next
+       :nv "<f7>" #'dap-step-out
+       :nv "<f8>" #'dap-step-in)
+      :leader
+      (:prefix ("d" . "debug")
+       :desc "DAP Debug" "d" #'dap-debug
+       :desc "DAP Hydra" "h" #'dap-hydra
+       :desc "DAP Disconnect" "Q" #'dap-disconnect
+       (:prefix ("b" . "breakpoint")
+        :desc "DAP Breakpoint Add" "a" #'dap-breakpoint-add
+        :desc "DAP Breakpoint Delete" "d" #'dap-breakpoint-delete
+        :desc "DAP Breakpoint Delete All" "D" #'dap-breakpoint-delete
+        )))

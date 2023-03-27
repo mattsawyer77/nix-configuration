@@ -29,7 +29,7 @@ in
       LANGUAGE = "en_US.UTF-8";
       GO111MODULE = "on";
       BAT_THEME = "1337";
-      LESS = "-F -i -M -R -X --incsearch";
+      LESS = "-F -i -M -R -X --incsearch --mouse --wheel-lines 3";
     };
     # install doom config into ~/.doom.d
     # and doom itself into ~/.emacs.d (not a pure install, but this allows us to run doom commands outside nix)
@@ -62,22 +62,25 @@ in
     };
   };
   programs.home-manager.enable = true;
-  programs.alacritty = let alacrittyThemes = {
-    afterglow = builtins.fromJSON (builtins.readFile ./alacritty-themes/Afterglow.json);
-    argonaut = builtins.fromJSON (builtins.readFile ./alacritty-themes/Argonaut.json);
-    atelierLakeside = builtins.fromJSON (builtins.readFile ./alacritty-themes/Atelierlakeside.dark.json);
-    ayuDark = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ayu-Dark.json);
-    ayuMirage = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ayu-Mirage.json);
-    brewer = builtins.fromJSON (builtins.readFile ./alacritty-themes/Brewer.dark.json);
-    eqie6 = builtins.fromJSON (builtins.readFile ./alacritty-themes/Eqie6.json);
-    hybrid = builtins.fromJSON (builtins.readFile ./alacritty-themes/Hybrid.json);
-    icebergDark = builtins.fromJSON (builtins.readFile ./alacritty-themes/Iceberg-Dark.json);
-    oceanDark = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ocean.dark.json);
-    paleNight = builtins.fromJSON (builtins.readFile ./alacritty-themes/Palenight.json);
-    tokyoNight = builtins.fromJSON (builtins.readFile ./alacritty-themes/Tokyonight_Night.json);
-    twilightDark = builtins.fromJSON (builtins.readFile ./alacritty-themes/Twilight.dark.json);
-    githubDimmed = builtins.fromJSON (builtins.readFile ./alacritty-themes/github_dimmed.json);
-  }; in
+  programs.alacritty =
+    let
+      alacrittyThemes = {
+        afterglow = builtins.fromJSON (builtins.readFile ./alacritty-themes/Afterglow.json);
+        argonaut = builtins.fromJSON (builtins.readFile ./alacritty-themes/Argonaut.json);
+        atelierLakeside = builtins.fromJSON (builtins.readFile ./alacritty-themes/Atelierlakeside.dark.json);
+        ayuDark = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ayu-Dark.json);
+        ayuMirage = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ayu-Mirage.json);
+        brewer = builtins.fromJSON (builtins.readFile ./alacritty-themes/Brewer.dark.json);
+        eqie6 = builtins.fromJSON (builtins.readFile ./alacritty-themes/Eqie6.json);
+        hybrid = builtins.fromJSON (builtins.readFile ./alacritty-themes/Hybrid.json);
+        icebergDark = builtins.fromJSON (builtins.readFile ./alacritty-themes/Iceberg-Dark.json);
+        oceanDark = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ocean.dark.json);
+        paleNight = builtins.fromJSON (builtins.readFile ./alacritty-themes/Palenight.json);
+        tokyoNight = builtins.fromJSON (builtins.readFile ./alacritty-themes/Tokyonight_Night.json);
+        twilightDark = builtins.fromJSON (builtins.readFile ./alacritty-themes/Twilight.dark.json);
+        githubDimmed = builtins.fromJSON (builtins.readFile ./alacritty-themes/github_dimmed.json);
+      };
+    in
     {
       enable = true;
       settings = {

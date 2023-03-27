@@ -2,6 +2,7 @@
 
 let
   homeDirectory = "/Users/" + username;
+  doomDirectory = ".doom.d";
   goPathSuffix = "gocode";
   localBinPath = ".local/bin";
   mkaliasPackage = mkalias.packages.aarch64-darwin.mkalias;
@@ -21,6 +22,7 @@ let
     cachix
     cask
     ccls
+    certigo
     cmake
     coreutils
     # curlFull # nixpkgs curl builds with openssl 3 which breaks legacy PKCS12 cert auth
@@ -150,6 +152,7 @@ let
     terraform-ls
     tflint
     tmux
+    tmuxPlugins.resurrect
     tokei
     tree
     # trivy # broken as of 2022-05-24
@@ -189,7 +192,7 @@ let
     LANGUAGE = "en_US.UTF-8";
     GO111MODULE = "on";
     BAT_THEME = "1337";
-    LESS = "-F -i -M -R -X --incsearch";
+    LESS = "-F -i -M -R -X --incsearch --mouse --wheel-lines 3";
     SAML2AWS_USER_AGENT =
       "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.00) Gecko/20100101 Firefox/82.0";
   };
@@ -201,6 +204,7 @@ let
   doomConfig = import ./doom/doom.nix {
     inherit config pkgs lib homeDirectory username envVars;
     homeDir = homeDirectory;
+    doomDir = doomDirectory;
   };
 in
 {
@@ -242,7 +246,7 @@ in
       set +x
     '';
     activation.doom = doomConfig.activation;
-    file."doom.d" = doomConfig.userConfigDir;
+    file."${doomDirectory}" = doomConfig.userConfigDir;
     # for git, $EDITOR/$VISUAL can't be set to reference a shell function, so deploy the script as follows
     file."em.zsh" = {
       executable = true;

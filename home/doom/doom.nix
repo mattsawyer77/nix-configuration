@@ -1,5 +1,5 @@
 # return an activation script and an file/onChange script for use within home modules
-{ config, pkgs, lib, homeDir, username, envVars, ... }:
+{ config, pkgs, lib, doomDir, homeDir, username, envVars, ... }:
 {
   # always run doom sync when activating home manager
   activation = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
@@ -9,8 +9,8 @@
     export PATH=${homeDir}/.nix-profile/bin:/etc/profiles/per-user/${username}/bin:/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/local/bin:/usr/bin:/usr/sbin:/bin:/sbin:${homeDir}/.local/bin:${homeDir}/.cargo/bin:${homeDir}/gocode/bin
     echo "PATH: $PATH"
     export ${builtins.concatStringsSep " " (builtins.attrValues (builtins.mapAttrs (k: v: "${k}='${v}'") envVars))}
-    DOOM_DIR="$HOME/.emacs.d"
-    DOOM="$DOOM_DIR/bin/doom"
+    EMACS_DIR="$HOME/.emacs.d"
+    DOOM="$EMACS_DIR/bin/doom"
     if [[ ! -f $DOOM ]]; then
       echo 'doom is not yet installed, activation should occur via home.file."doom.d"'
       exit 0
@@ -29,14 +29,14 @@
     onChange = "${pkgs.writeShellScript "doom-change" ''
       #/usr/bin/env zsh
       set -xe
-      DOOM_DIR="$HOME/.emacs.d"
-      DOOM="$DOOM_DIR/bin/doom"
+      EMACS_DIR="$HOME/.emacs.d"
+      DOOM="$EMACS_DIR/bin/doom"
       export TERM=alacritty
-      if [[ ! -d "$DOOM_DIR" ]]; then
-        $DRY_RUN_CMD git clone https://github.com/hlissner/doom-emacs.git $DOOM_DIR
-        $DRY_RUN_CMD $DOOM_DIR/bin/doom install --force --pager cat
+      if [[ ! -d "$EMACS_DIR" ]]; then
+        $DRY_RUN_CMD git clone https://github.com/hlissner/doom-emacs.git $EMACS_DIR
+        $DRY_RUN_CMD $EMACS_DIR/bin/doom install --force --pager cat
       fi
-      if [[ ! -f "$DOOM_DIR/.local/black-hole.png" ]]; then
+      if [[ ! -f "$EMACS_DIR/.local/black-hole.png" ]]; then
         $DRY_RUN_CMD cp $(readlink ~/.doom.d/black-hole.png) ~/.emacs.d/.local
       fi
       set +x
