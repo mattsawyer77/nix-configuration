@@ -10,11 +10,13 @@
             (interactive)
             (dired-other-window "~/workspaces/nix-configuration/home/doom/emacs"))
  (:after lsp-ui
-         :nv "<f1>" (lambda ()
-                    (interactive)
-                    (lsp-ui-doc-show)))
- (:after evil-nerd-commenter
-  :nv "#" #'evilnc-comment-or-uncomment-lines)
+  :nv "<f1>" (lambda ()
+               (interactive)
+               (lsp-ui-doc-show))
+  (:leader
+   (:prefix ("o" . "open")
+    :desc "lsp-ui-imenu" "i" #'lsp-ui-imenu))
+  )
  (:after centaur-tabs
   :nv "S-<left>" #'centaur-tabs-backward
   :nv "S-<right>" #'centaur-tabs-forward
@@ -45,14 +47,20 @@
    :desc "Repeat last Vertico search" "\"" #'vertico-repeat-select))
 )
 
-(map! :after (evil projectile consult)
-      :nv "g d" #'+lookup/definition
-      :nv "g t" #'+lookup/type-definition
-      :nv "g r" #'+lookup/references
-      :nv "g I" #'+lookup/implementations
-      :nv "g a" #'projectile-project-buffers-other-buffer
-      :nv "g b" #'consult-buffer
-      )
+(after! evil-nerd-commenter
+  (map! :map general-override-mode-map
+        :nv "#" #'evilnc-comment-or-uncomment-lines)
+  )
+
+(after! (evil projectile consult)
+  (map! :map general-override-mode-map
+        :nv "g d" #'+lookup/definition
+        :nv "g t" #'+lookup/type-definition
+        :nv "g r" #'+lookup/references
+        :nv "g I" #'+lookup/implementations
+        :nv "g a" #'projectile-project-buffers-other-buffer
+        :nv "g b" #'consult-buffer)
+  )
 
 (map! :after flycheck
       (:leader

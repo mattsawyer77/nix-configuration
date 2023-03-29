@@ -84,9 +84,9 @@
        ;; term              ; basic terminal emulator for Emacs
        vterm             ; the best terminal emulation in Emacs
 
-       ;; :checkers
+       :checkers
        ; syntax              ; tasing you for every semicolon you forget
-       ;(syntax +childframe)              ; tasing you for every semicolon you forget
+       (syntax +childframe)              ; tasing you for every semicolon you forget
        ;;spell             ; tasing you for misspelling mispelling
        ;;grammar           ; tasing grammar mistake every you make
 
@@ -100,8 +100,8 @@
        (eval +overlay)     ; run code, run (also, repls)
        ;;gist              ; interacting with github gists
        (lookup +dictionary +offline)             ; navigate your code and its documentation
-       lsp
-       ;;(lsp +peek)
+       ;; lsp
+       (lsp +peek)
        ;;(lsp +eglot)
        ; (magit +forge)             ; a git porcelain for Emacs
        magit             ; a git porcelain for Emacs
@@ -137,7 +137,7 @@
        ;;fsharp            ; ML stands for Microsoft's Language
        ;;fstar             ; (dependent) types and (monadic) effects and Z3
        (go +lsp +tree-sitter)         ; the hipster dialect
-       (haskell +lsp)  ; a language that's lazier than I am
+       ;; (haskell +lsp)  ; a language that's lazier than I am
        ;;hy                ; readability of scheme w/ speed of python
        ;;idris             ;
        (json +lsp)              ; At least it ain't XML

@@ -103,7 +103,7 @@
     )
   )
 
-(global-treesit-auto-mode 1)
+;; (global-treesit-auto-mode 1)
 ;; don't use tree-sitter for go until one or both of the following are fixed:
 ;; https://github.com/dominikh/go-mode.el/issues/396
 ;; https://github.com/dominikh/go-mode.el/issues/401
@@ -212,7 +212,27 @@
   (treemacs-git-mode 'deferred)
   (setq-default treemacs--width-is-locked nil)
   (setq treemacs-position 'left)
-  (setq treemacs-width 70))
+  (setq treemacs-width 40))
+
+
+(after! (textsize treemacs)
+  (defun sawyer/handle-frame-resize ()
+    "function to execute whenever the frame resizes"
+    (let
+        ((dimensions (cddr (frame-monitor-attribute 'geometry (selected-frame)))))
+      (if (> (/ (float (car dimensions)) (car (cdr dimensions))) 2)
+          ;; wide aspect ratio
+          (setq treemacs-width 70)
+        ;; normal aspect ratio
+        (setq treemacs-width 50)
+        ))
+    )
+  (textsize-mode 1)
+  (sawyer/handle-frame-resize)
+  ;; (advice-add 'set-frame-height :after #'sawyer/handle-frame-resize)
+  ;; (advice-add 'set-frame-width :after #'sawyer/handle-frame-resize)
+  ;; (advice-add 'set-frame-size :after #'sawyer/handle-frame-resize)
+  )
 
 (after! company
   (global-company-mode)
@@ -248,21 +268,22 @@
 ;; (after! flycheck
 ;;   (add-hook! prog-mode (flycheck-mode 1)))
 
-;; (after! (flycheck-posframe lsp-ui)
-;;   (flycheck-posframe-configure-pretty-defaults)
-;;   (add-hook! prog-mode
-;;     (unless (-contains? local-minor-modes 'lsp-ui-mode)
-;;         (flycheck-posframe-mode 1)
-;;         )
-;;     )
-;;   (add-hook! evil-insert-state-entry
-;;     (unless (-contains? local-minor-modes 'lsp-ui-mode)
-;;       (flycheck-posframe-mode -1)))
-;;   (add-hook! evil-insert-state-exit
-;;     (unless (-contains? local-minor-modes 'lsp-ui-mode)
-;;       (flycheck-posframe-mode 1))
-;;     )
-;;   )
+(after! (flycheck-posframe lsp-ui)
+  (flycheck-posframe-configure-pretty-defaults)
+  (setq flycheck-posframe-border-width 8)
+  ;; (add-hook! prog-mode
+  ;;   (unless (-contains? local-minor-modes 'lsp-ui-mode)
+  ;;       (flycheck-posframe-mode 1)
+  ;;       )
+  ;;   )
+  ;; (add-hook! evil-insert-state-entry
+  ;;   (unless (-contains? local-minor-modes 'lsp-ui-mode)
+  ;;     (flycheck-posframe-mode -1)))
+  ;; (add-hook! evil-insert-state-exit
+  ;;   (unless (-contains? local-minor-modes 'lsp-ui-mode)
+  ;;     (flycheck-posframe-mode 1))
+  ;;   )
+  )
 (unless (display-graphic-p)
   (after! git-gutter
     (setq git-gutter:modified-sign "▕")
@@ -345,6 +366,72 @@
 
 
 (after! (lsp-mode lsp-ui)
+  ;; borrowed from https://github.com/emacs-lsp/lsp-ui/issues/184#issuecomment-1162406920
+  ;; to fix issues with lsp-ui-sideline alignment caused by having the default font scaled up
+  ;; XXX: not working
+  ;; (defun lsp-ui-sideline--compute-text-width (text-with-properties &optional window)
+  ;;   (let ((window (or window (selected-window)))
+  ;;         (remapping-alist face-remapping-alist))
+  ;;     (with-temp-buffer
+  ;;       (setq-local face-remapping-alist remapping-alist)
+  ;;       (set-window-buffer window (current-buffer))
+  ;;       (insert text-with-properties)
+  ;;       (car (window-text-pixel-size)))))
+
+  ;; borrowed from https://github.com/emacs-lsp/lsp-ui/issues/184#issuecomment-1161554461
+  ;; to fix issues with lsp-ui-sideline alignment caused by having the default font scaled up
+  (defun lsp-ui-sideline--window-width ()
+    (- (window-max-chars-per-line)
+       (lsp-ui-sideline--margin-width)
+       (or (and (>= emacs-major-version 27)
+                ;; We still need this number when calculating available space
+                ;; even with emacs >= 27
+                (lsp-ui-util-line-number-display-width))
+           0)))
+
+  (defun lsp-ui-sideline--display-all-info (list-infos tag bol eol)
+    (when (and (lsp-ui-sideline--valid-tag-p tag 'line)
+               (not (lsp-ui-sideline--stop-p)))
+      (let ((inhibit-modification-hooks t)
+            (win-width (lsp-ui-sideline--window-width))
+            ;; sort by bounds
+            (list-infos (--sort (< (caadr it) (caadr other)) list-infos)))
+        (lsp-ui-sideline--delete-kind 'info)
+        (--each list-infos
+          (-let (((symbol bounds info) it))
+            (lsp-ui-sideline--push-info win-width symbol bounds info bol eol))))))
+
+  ;; borrowed from https://github.com/emacs-lsp/lsp-ui/issues/441#issue-611772813
+  ;; to make lsp-ui-peek appear in a childframe/posframe
+  (defun lsp-ui-peek--peek-display (src1 src2)
+    (-let* ((win-width (frame-width))
+            (lsp-ui-peek-list-width (/ (frame-width) 2))
+            (string (-some--> (-zip-fill "" src1 src2)
+                      (--map (lsp-ui-peek--adjust win-width it) it)
+                      (-map-indexed 'lsp-ui-peek--make-line it)
+                      (-concat it (lsp-ui-peek--make-footer))))
+            )
+      (setq lsp-ui-peek--buffer (get-buffer-create " *lsp-peek--buffer*"))
+      (posframe-show lsp-ui-peek--buffer
+                     :string (mapconcat 'identity string "")
+                     :min-width (frame-width)
+                     :poshandler #'posframe-poshandler-frame-center)))
+
+  (defun lsp-ui-peek--peek-destroy ()
+    (when (bufferp lsp-ui-peek--buffer)
+      (posframe-delete lsp-ui-peek--buffer))
+    (setq lsp-ui-peek--buffer nil
+          lsp-ui-peek--last-xref nil)
+    (set-window-start (get-buffer-window) lsp-ui-peek--win-start))
+
+  (advice-add #'lsp-ui-peek--peek-new :override #'lsp-ui-peek--peek-display)
+  (advice-add #'lsp-ui-peek--peek-hide :override #'lsp-ui-peek--peek-destroy)
+
+  (defun lsp-ui-sideline--align (&rest lengths)
+    (list (* (window-font-width)
+             (+ (apply '+ lengths) (if (display-graphic-p) 1 2)))))
+  ;; end of lsp-ui-sideline patches
+
   (setq lsp-response-timeout 30)
   (setq lsp-file-watch-ignored-directories
         ;; NOTE: [/\\\\]  is a custom token defined by lsp-mode to represent a path separator
@@ -373,29 +460,28 @@
   (setq lsp-headerline-breadcrumb-enable 't)
   (setq lsp-headerline-breadcrumb-segments '(path-up-to-project symbols))
   (setq lsp-enable-symbol-highlighting nil)
-  (setq lsp-ui-doc-enable 't)
+  (setq lsp-ui-peek-enable t)
+  (setq lsp-ui-doc-enable t)
   (setq lsp-ui-doc-position 'at-point)
   (setq lsp-ui-doc-border (doom-lighten 'bg 0.1))
   (add-to-list 'lsp-ui-doc-frame-parameters '(internal-border-width . 8))
   (setq lsp-ui-doc-show-with-cursor nil)
   (setq lsp-ui-doc-show-with-mouse t)
   (setq lsp-lens-enable t)
-  ;; 'above-line causes C-e to snag
-  ;; (setq lsp-lens-place-position 'end-of-line)
   (setq lsp-headerline-breadcrumb-enable t)
-  (setq lsp-ui-sideline-enable nil)
-  (setq lsp-ui-sideline-show-hover nil)
+  (setq lsp-ui-sideline-enable t)
+  (setq lsp-ui-sideline-show-hover t)
   (setq lsp-ui-sideline-show-code-actions nil)
   (setq lsp-ui-sideline-show-diagnostics nil)
   (setq lsp-modeline-code-actions-enable t)
-  ;; 9. Sideline diagnostics * disable whole sideline via
   (setq lsp-modeline-diagnostics-enable t)
   (setq lsp-signature-auto-activate t) ;; you could manually request them via `lsp-signature-activate`
   (setq lsp-signature-render-documentation t)
   (setq lsp-completion-show-detail t)
   (setq lsp-completion-show-kind t)
   ;; fix for https://github.com/emacs-lsp/lsp-mode/issues/2701
-  (setq lsp-enable-links nil)
+  (setq lsp-enable-links t) ;; is this working?
+  (setq lsp-ui-imenu-buffer-position 'left)
   ;; (setq lsp-diagnostics-provider :flymake)
   ;; (setq lsp-diagnostics-provider :flycheck)
   (setq lsp-rust-analyzer-server-display-inlay-hints t)
@@ -487,6 +573,7 @@
 
 (add-hook! protobuf-mode #'display-line-numbers-mode)
 (add-hook! protobuf-mode #'flycheck-mode)
+(add-hook! protobuf-mode #'+word-wrap-mode)
 (put 'flycheck-protoc-import-path 'safe-local-variable #'listp)
 
 ;; (after! (yaml-mode lsp-mode)
@@ -513,6 +600,8 @@
 (after! org-pandoc-import
   ;; automatically convert markdown to org (and back) on-the-fly
   (org-pandoc-import-transient-mode 1)
+  (add-hook! markdown-mode
+    (org-pandoc-import-transient-mode 1))
   )
 
 (after! magit
@@ -630,7 +719,7 @@
    centaur-tabs-set-icons nil
    centaur-tabs-gray-out-icons 'buffer
    centaur-tabs-set-bar nil
-   ;centaur-tabs-set-bar 'over
+   ;; centaur-tabs-set-bar 'over
    )
   (centaur-tabs-group-by-projectile-project)
   (defun centaur-tabs-hide-tab (x)
@@ -690,4 +779,28 @@
   ;; (setq impatient-showdown--default-preview-template )
   ;; display markdown background color.
   (setq impatient-showdown-markdown-background-color "#f8f8f8")
+  )
+
+;; (after! consult
+;;   (consult-customize
+;;    consult-ripgrep consult-git-grep consult-grep
+;;    consult-bookmark consult-recent-file
+;;    +default/search-project
+;;    +default/search-other-project
+;;    +default/search-project-for-symbol-at-point
+;;    +default/search-cwd
+;;    +default/search-other-cwd
+;;    +default/search-notes-for-symbol-at-point
+;;    +default/search-emacsd
+;;    consult--source-recent-file
+;;    consult--source-project-recent-file
+;;    consult--source-bookmark
+;;    :preview-key (list :debounce 0.1 'any))
+;;   )
+
+(after! vertico
+  (vertico-multiform-mode 1)
+  (setq vertico-multiform-commands
+        '((consult-imenu grid)
+          ))
   )

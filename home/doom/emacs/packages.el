@@ -1,7 +1,7 @@
 ;;;  -*- no-byte-compile: t; -*-
 
-(unpin! lsp-mode)
-(unpin! lsp-ui)
+;; (unpin! lsp-mode)
+;; (unpin! lsp-ui)
 (unpin! rustic)
 (unpin! consult-lsp)
 ;; (unpin! treemacs)

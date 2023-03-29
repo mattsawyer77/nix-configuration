@@ -19,6 +19,7 @@
       && $DRY_RUN_CMD $DOOM sync --force --pager cat \
       && set +x \
       && $DRY_RUN_CMD echo "doom emacs synced" \
+      && $DRY_RUN_CMD find ${doomDir} -name custom.el -exec rm -f "{}" \;
   '';
   # run doom install only once
   userConfigDir = {

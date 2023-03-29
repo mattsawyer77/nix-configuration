@@ -1,4 +1,4 @@
-{ pkgs, lib, optionOverrides, ... }:
+{ pkgs, optionOverrides, ... }:
 
 let
   optionFlags = {
@@ -195,9 +195,9 @@ let
     "M-Right" = "select-pane -R";
     "M-Up" = "select-pane -U";
     "M-Down" = "select-pane -D";
-    "WheelUpPane" = ''
-      if-shell -F -t = "#{mouse_any_flag}" "send-keys -M" "if -Ft= '#{pane_in_mode}' 'send-keys -M' 'copy-mode -e'"
-    '';
+    # "WheelUpPane" = ''
+    #   if-shell -F -t = "#{mouse_any_flag}" "send-keys -M" "if -Ft= '#{pane_in_mode}' 'send-keys -M' 'copy-mode -e'"
+    # '';
   };
 
   # keys to bind with prefix
@@ -213,23 +213,28 @@ let
     "c" = ''
       command-prompt -p "new window name:" "new-window -n '%%'"
     '';
-    "y" = (if pkgs.stdenv.isDarwin then ''
-      run "tmux save-buffer - | reattach-to-user-namespace pbcopy"
-    '' else ''
-      run "tmux save-buffer - | xclip"
-    '');
   };
 
-  # keys to bind in vi copy-mode table
-  viModeKeys = {
-    "v" = "send -X begin-selection";
-    "y" = "send -X copy-selection-and-cancel";
-  };
+  clipboardSettings = ''
+    unbind   -T copy-mode MouseDragEnd1Pane
+    unbind   -T copy-mode-vi MouseDragEnd1Pane
+    bind-key -T copy-mode-vi v send-keys -X begin-selection
+  '' + (if pkgs.stdenv.isDarwin then ''
+    set -g default-command "reattach-to-user-namespace -l zsh";
+    bind-key -T copy-mode y send-keys -X copy-pipe-and-cancel "reattach-to-user-namespace pbcopy" \; send-keys -X clear-selection
+    bind-key -T copy-mode-vi y send-keys -X copy-pipe "reattach-to-user-namespace pbcopy" \; send-keys -X clear-selection
+  '' else ''
+    bind-key -T copy-mode y send-keys -X copy-pipe-and-cancel "xclip -i -f -selection primary | xclip -i -selection clipboard" \; send-keys -X clear-selection
+    bind-key -T copy-mode-vi y send-keys -X copy-pipe "xclip -i -f -selection primary | xclip -i -selection clipboard" \; send-keys -X clear-selection
+  '');
 
 in
 {
   enable = true;
   package = pkgs.tmux;
+  plugins = with pkgs.tmuxPlugins; [
+    resurrect
+  ];
   baseIndex = 1;
   clock24 = true;
   disableConfirmationPrompt = true;
@@ -244,7 +249,7 @@ in
     ${mapKeyUnbinds unbindKeys}
     ${mapKeyBinds "bind -n" rootKeys}
     ${mapKeyBinds "bind" prefixKeys}
-    ${mapKeyBinds "bind-key -T copy-mode-vi" viModeKeys}
+    ${clipboardSettings}
     ${mapOptions extraConfigOptions}
   '';
 }

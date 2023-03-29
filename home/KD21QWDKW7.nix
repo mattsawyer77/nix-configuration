@@ -238,10 +238,7 @@ in
           # from bash (as far as I know), so we use a custom utility called mkalias.
           app_name=$(basename "$app" | sd '\.[^\.]+$' $''')
           $DRY_RUN_CMD ${mkaliasPackage}/bin/mkalias $app ~/Applications/$app_name
-      done
-      for app in ~/Applications/*.app; do
-        app_name=$(basename "$app" | sd '\.[^\.]+$' $''')
-        $DRY_RUN_CMD ${pkgs.dockutil}/bin/dockutil --add "$app" --replacing "$app_name" ~${username}
+          $DRY_RUN_CMD ${pkgs.dockutil}/bin/dockutil --add "$app" --replacing "$app_name" ~${username}
       done
       set +x
     '';
