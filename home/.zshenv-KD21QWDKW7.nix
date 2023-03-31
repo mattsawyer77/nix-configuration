@@ -596,13 +596,13 @@ env-api-gw-hostname() {
   local environment="$1"
   case $environment in
     demo1)
-      api_gw_hostname="${5:-gc01.int.ves.io}"
+      api_gw_hostname="gc01.int.ves.io"
       ;;
     crt)
-      api_gw_hostname="${5:-gc01-crt.int.ves.io}"
+      api_gw_hostname="gc01.int.ves.io"
       ;;
     staging)
-      api_gw_hostname="${5:-gc1-iad-01.int.volterra.us}"
+      api_gw_hostname="gc1-iad-01.int.volterra.us"
       ;;
     prod)
       api_gw_hostname="gc01-cle.int.ves.io"

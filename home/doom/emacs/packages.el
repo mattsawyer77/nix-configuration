@@ -54,5 +54,8 @@
 ;;   :recipe (:host github
 ;;   :repo "ronisbr/doom-nano-modeline"))
 (package! impatient-showdown)
+(package! jsonnet-mode)
+(package! vertico-posframe
+    :recipe (:host github :repo "tumashu/vertico-posframe"))
 
 (disable-packages! hl-line)

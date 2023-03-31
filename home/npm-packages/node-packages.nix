@@ -40,6 +40,24 @@ let
         sha512 = "b8um+L1RzM3WDSzvhm6gIz1yfTbBt6YTlcEKAvsmqCZZFw46z626lVj9j1yEPW33H5H+lBQpZMP1k8l+78Ha0A==";
       };
     };
+    "commander-2.20.3" = {
+      name = "commander";
+      packageName = "commander";
+      version = "2.20.3";
+      src = fetchurl {
+        url = "https://registry.npmjs.org/commander/-/commander-2.20.3.tgz";
+        sha512 = "GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==";
+      };
+    };
+    "commandpost-1.4.0" = {
+      name = "commandpost";
+      packageName = "commandpost";
+      version = "1.4.0";
+      src = fetchurl {
+        url = "https://registry.npmjs.org/commandpost/-/commandpost-1.4.0.tgz";
+        sha512 = "aE2Y4MTFJ870NuB/+2z1cXBhSBBzRydVVjzhFC4gtenEhpnj15yu0qptWGJsO9YGrcPZ3ezX8AWb1VA391MKpQ==";
+      };
+    };
     "domino-2.1.6" = {
       name = "domino";
       packageName = "domino";
@@ -47,6 +65,15 @@ let
       src = fetchurl {
         url = "https://registry.npmjs.org/domino/-/domino-2.1.6.tgz";
         sha512 = "3VdM/SXBZX2omc9JF9nOPCtDaYQ67BGp5CoLpIQlO2KCAPETs8TcDHacF26jXadGbvUteZzRTeos2fhID5+ucQ==";
+      };
+    };
+    "editorconfig-0.15.3" = {
+      name = "editorconfig";
+      packageName = "editorconfig";
+      version = "0.15.3";
+      src = fetchurl {
+        url = "https://registry.npmjs.org/editorconfig/-/editorconfig-0.15.3.tgz";
+        sha512 = "M9wIMFx96vq0R4F+gRpY3o2exzb8hEj/n9S8unZtHSvYjibBp/iMufSzvmOcV/laG0ZtuTVGtiJggPOSW2r93g==";
       };
     };
     "encoding-0.1.13" = {
@@ -139,6 +166,15 @@ let
         sha512 = "41Cifkg6e8TylSpdtTpeLVMqvSBEVzTttHvERD741+pnZ8ANv0004MRL43QKPDlK9cGvNp6NZWZUBlbGXYxxng==";
       };
     };
+    "lru-cache-4.1.5" = {
+      name = "lru-cache";
+      packageName = "lru-cache";
+      version = "4.1.5";
+      src = fetchurl {
+        url = "https://registry.npmjs.org/lru-cache/-/lru-cache-4.1.5.tgz";
+        sha512 = "sWZlbEP2OsHNkXrMl5GYk/jKk70MBng6UU4YI/qGDYbgf6YbP4EvmqISbXCoJiRKs+1bSpFHVgQxvJ17F2li5g==";
+      };
+    };
     "merge2-1.4.1" = {
       name = "merge2";
       packageName = "merge2";
@@ -173,6 +209,15 @@ let
       src = fetchurl {
         url = "https://registry.npmjs.org/picomatch/-/picomatch-2.3.1.tgz";
         sha512 = "JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==";
+      };
+    };
+    "pseudomap-1.0.2" = {
+      name = "pseudomap";
+      packageName = "pseudomap";
+      version = "1.0.2";
+      src = fetchurl {
+        url = "https://registry.npmjs.org/pseudomap/-/pseudomap-1.0.2.tgz";
+        sha512 = "b/YwNhb8lk1Zz2+bXXpS/LK9OisiZZ1SNsSLxN1x2OXVEhW2Ckr/7mWE5vrC1ZTiJlD9g19jWszTmJsB+oEpFQ==";
       };
     };
     "queue-microtask-1.2.3" = {
@@ -211,6 +256,24 @@ let
         sha512 = "YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==";
       };
     };
+    "semver-5.7.1" = {
+      name = "semver";
+      packageName = "semver";
+      version = "5.7.1";
+      src = fetchurl {
+        url = "https://registry.npmjs.org/semver/-/semver-5.7.1.tgz";
+        sha512 = "sauaDf/PZdVgrLTNYHRtpXa1iRiKcaebiKQ1BJdpQlWH2lCvexQdX55snPFyK7QzpudqbCI0qXFfOasHdyNDGQ==";
+      };
+    };
+    "sigmund-1.0.1" = {
+      name = "sigmund";
+      packageName = "sigmund";
+      version = "1.0.1";
+      src = fetchurl {
+        url = "https://registry.npmjs.org/sigmund/-/sigmund-1.0.1.tgz";
+        sha512 = "fCvEXfh6NWpm+YSuY2bpXb/VIihqWA6hLsgboC+0nl71Q7N7o2eaCW8mJa/NLvQhs6jpd3VZV4UiUQlV6+lc8g==";
+      };
+    };
     "to-regex-range-5.0.1" = {
       name = "to-regex-range";
       packageName = "to-regex-range";
@@ -229,13 +292,22 @@ let
         sha512 = "N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==";
       };
     };
-    "turndown-7.1.1" = {
+    "turndown-7.1.2" = {
       name = "turndown";
       packageName = "turndown";
-      version = "7.1.1";
+      version = "7.1.2";
       src = fetchurl {
-        url = "https://registry.npmjs.org/turndown/-/turndown-7.1.1.tgz";
-        sha512 = "BEkXaWH7Wh7e9bd2QumhfAXk5g34+6QUmmWx+0q6ThaVOLuLUqsnkq35HQ5SBHSaxjSfSM7US5o4lhJNH7B9MA==";
+        url = "https://registry.npmjs.org/turndown/-/turndown-7.1.2.tgz";
+        sha512 = "ntI9R7fcUKjqBP6QU8rBK2Ehyt8LAzt3UBT9JR9tgo6GtuKvyUzpayWmeMKJw1DPdXzktvtIT8m2mVXz+bL/Qg==";
+      };
+    };
+    "typescript-5.0.2" = {
+      name = "typescript";
+      packageName = "typescript";
+      version = "5.0.2";
+      src = fetchurl {
+        url = "https://registry.npmjs.org/typescript/-/typescript-5.0.2.tgz";
+        sha512 = "wVORMBGO/FAs/++blGNeAVdbNKtIh1rbBL2EyQ1+J9lClJ93KiiKe8PmFIVdXhHcyv44SL9oglmfeSsndo0jRw==";
       };
     };
     "vscode-jsonrpc-8.0.2" = {
@@ -310,13 +382,22 @@ let
         sha512 = "saE57nupxk6v3HY35+jzBwYa0rKSy0XR8JSxZPwgLr7ys0IBzhGviA1/TUGJLmSVqs8pb9AnvICXEuOHLprYTw==";
       };
     };
-    "zod-3.20.5" = {
+    "yallist-2.1.2" = {
+      name = "yallist";
+      packageName = "yallist";
+      version = "2.1.2";
+      src = fetchurl {
+        url = "https://registry.npmjs.org/yallist/-/yallist-2.1.2.tgz";
+        sha512 = "ncTzHV7NvsQZkYe1DW7cbDLm0YpzHmZF5r/iyP3ZnQtMiJ+pjzisCiMNI+Sj+xQF5pXhSHxSB3uDbsBTzY/c2A==";
+      };
+    };
+    "zod-3.21.4" = {
       name = "zod";
       packageName = "zod";
-      version = "3.20.5";
+      version = "3.21.4";
       src = fetchurl {
-        url = "https://registry.npmjs.org/zod/-/zod-3.20.5.tgz";
-        sha512 = "BTAAliwfoB9dWf2hC+TXlyWKk/YTqRGZjHQR0WLC2A2pzierWo7KuQ1ebjS4SNaFaxg/lDItzl9/QTgLjcHbgw==";
+        url = "https://registry.npmjs.org/zod/-/zod-3.21.4.tgz";
+        sha512 = "m46AKbrzKVzOzs/DZgVnG5H55N1sv1M8qZU3A8RIKbs3mrACDNeIOeilDymVb2HdmP8uwshOCF4uJ8uM9rCqJw==";
       };
     };
   };
@@ -325,10 +406,10 @@ in
   bash-language-server = nodeEnv.buildNodePackage {
     name = "bash-language-server";
     packageName = "bash-language-server";
-    version = "4.7.0";
+    version = "4.8.4";
     src = fetchurl {
-      url = "https://registry.npmjs.org/bash-language-server/-/bash-language-server-4.7.0.tgz";
-      sha512 = "JLe8bk0/FtOiGIdFWg/2JoAGJctYQyrYpmj24dhCSEAjIq9HHqr9I6L9k32fh9WkWjHcrh6v70Epiv6m+SxvDQ==";
+      url = "https://registry.npmjs.org/bash-language-server/-/bash-language-server-4.8.4.tgz";
+      sha512 = "k8bw2G4bzpe8Pv20Isch6KoAVsOdm4dNZNPTQmdf0zapOPiDRAOehd1MpoxameKgwz6njF6oRUaxH6W+4LTUKw==";
     };
     dependencies = [
       sources."@nodelib/fs.scandir-2.1.5"
@@ -356,7 +437,7 @@ in
       sources."safer-buffer-2.1.2"
       sources."to-regex-range-5.0.1"
       sources."tr46-0.0.3"
-      sources."turndown-7.1.1"
+      sources."turndown-7.1.2"
       sources."vscode-jsonrpc-8.0.2"
       sources."vscode-languageserver-8.0.2"
       sources."vscode-languageserver-protocol-3.17.2"
@@ -365,12 +446,59 @@ in
       sources."web-tree-sitter-0.20.7"
       sources."webidl-conversions-3.0.1"
       sources."whatwg-url-5.0.0"
-      sources."zod-3.20.5"
+      sources."zod-3.21.4"
     ];
     buildInputs = globalBuildInputs;
     meta = {
       description = "A language server for Bash";
       homepage = "https://github.com/bash-lsp/bash-language-server#readme";
+      license = "MIT";
+    };
+    production = true;
+    bypassCache = true;
+    reconstructLock = true;
+  };
+  typescript-formatter = nodeEnv.buildNodePackage {
+    name = "typescript-formatter";
+    packageName = "typescript-formatter";
+    version = "7.2.2";
+    src = fetchurl {
+      url = "https://registry.npmjs.org/typescript-formatter/-/typescript-formatter-7.2.2.tgz";
+      sha512 = "V7vfI9XArVhriOTYHPzMU2WUnm5IMdu9X/CPxs8mIMGxmTBFpDABlbkBka64PZJ9/xgQeRpK8KzzAG4MPzxBDQ==";
+    };
+    dependencies = [
+      sources."commander-2.20.3"
+      sources."commandpost-1.4.0"
+      sources."editorconfig-0.15.3"
+      sources."lru-cache-4.1.5"
+      sources."pseudomap-1.0.2"
+      sources."semver-5.7.1"
+      sources."sigmund-1.0.1"
+      sources."typescript-5.0.2"
+      sources."yallist-2.1.2"
+    ];
+    buildInputs = globalBuildInputs;
+    meta = {
+      description = "Formatter of TypeScript code";
+      homepage = "https://github.com/vvakame/typescript-formatter";
+      license = "MIT";
+    };
+    production = true;
+    bypassCache = true;
+    reconstructLock = true;
+  };
+  prettier = nodeEnv.buildNodePackage {
+    name = "prettier";
+    packageName = "prettier";
+    version = "2.8.7";
+    src = fetchurl {
+      url = "https://registry.npmjs.org/prettier/-/prettier-2.8.7.tgz";
+      sha512 = "yPngTo3aXUUmyuTjeTUT75txrf+aMh9FiD7q9ZE/i6r0bPb22g4FsE6Y338PQX1bmfy08i9QQCB7/rcUAVntfw==";
+    };
+    buildInputs = globalBuildInputs;
+    meta = {
+      description = "Prettier is an opinionated code formatter";
+      homepage = "https://prettier.io";
       license = "MIT";
     };
     production = true;

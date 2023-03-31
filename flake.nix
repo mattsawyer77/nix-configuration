@@ -214,7 +214,7 @@
               LANG = "en_US.UTF-8";
               LANGUAGE = "en_US.UTF-8";
               LC_ALL = "en_US.UTF-8";
-              LESS = "-F -i -M -R -X ";
+              LESS = "-F -i -M -R -X --incsearch --mouse --wheel-lines 3";
               LESSCHARSET = "utf-8";
               TERM = "xterm-24bit";
             };

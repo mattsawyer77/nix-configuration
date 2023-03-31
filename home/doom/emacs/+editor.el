@@ -44,6 +44,8 @@
 (add-to-list 'auto-mode-alist '("\\go\.mod". go-mode))
 ;; use GNU Makefile mode instead of BSD
 (add-to-list 'auto-mode-alist '("\\Makefile" . makefile-gmake-mode))
+;; jsonnet
+(add-to-list 'auto-mode-alist '("\\\.libsonnet$" . jsonnet-mode))
 
 (after! evil
   ;; prevent paste from its default behavior of replacing the clipboard register with the replaced contents

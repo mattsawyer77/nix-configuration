@@ -6,7 +6,7 @@ let
   goPathSuffix = "gocode";
   localBinPath = ".local/bin";
   mkaliasPackage = mkalias.packages.aarch64-darwin.mkalias;
-  # to update/regenerate, run node2nix -i <(echo '["bash-language-server"]') --nodejs-18
+  # to update/regenerate, run node2nix -i <(echo '["bash-language-server", "prettier", "typescript-formatter"]') --nodejs-18
   # then copy the resulting files into ./npm-packages
   npmPackages = import ./npm-packages { inherit pkgs; };
   homePackages = (with pkgs; [
@@ -177,7 +177,11 @@ let
     zstd
   ])
   # npm packages setup via node2nix
-  ++ (with npmPackages; [ bash-language-server ])
+  ++ (with npmPackages; [
+    bash-language-server
+    typescript-formatter
+    prettier
+  ])
   # flakes outside nixpkgs (that don't have overlays)
   # TODO: how to make this more idiomatic without specifying the system arch
   ++ [ mkaliasPackage ];

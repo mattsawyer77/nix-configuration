@@ -133,6 +133,7 @@
     `(internal-border :background ,(doom-darken 'bg 0.2))
     `(fringe :background ,(doom-darken 'bg 0.0))
     `(window-divider :background ,(doom-darken 'bg 0.1))
+    `(header-line :background ,(doom-color 'bg))
     ;; `(nav-flash-face :foreground ,(doom-color 'fg) :background ,(doom-color 'bg) :box (:line-width 1 :color "#444444"))
     )
   )
