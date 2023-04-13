@@ -130,6 +130,15 @@ let
         sha512 = "AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow==";
       };
     };
+    "google-protobuf-3.21.2" = {
+      name = "google-protobuf";
+      packageName = "google-protobuf";
+      version = "3.21.2";
+      src = fetchurl {
+        url = "https://registry.npmjs.org/google-protobuf/-/google-protobuf-3.21.2.tgz";
+        sha512 = "3MSOYFO5U9mPGikIYCzK0SaThypfGgS6bHqrUGXG3DPHCrb+txNqeEcns1W0lkGfk0rCyNXm7xB9rMxnCiZOoA==";
+      };
+    };
     "iconv-lite-0.6.3" = {
       name = "iconv-lite";
       packageName = "iconv-lite";
@@ -301,13 +310,13 @@ let
         sha512 = "ntI9R7fcUKjqBP6QU8rBK2Ehyt8LAzt3UBT9JR9tgo6GtuKvyUzpayWmeMKJw1DPdXzktvtIT8m2mVXz+bL/Qg==";
       };
     };
-    "typescript-5.0.2" = {
+    "typescript-5.0.3" = {
       name = "typescript";
       packageName = "typescript";
-      version = "5.0.2";
+      version = "5.0.3";
       src = fetchurl {
-        url = "https://registry.npmjs.org/typescript/-/typescript-5.0.2.tgz";
-        sha512 = "wVORMBGO/FAs/++blGNeAVdbNKtIh1rbBL2EyQ1+J9lClJ93KiiKe8PmFIVdXhHcyv44SL9oglmfeSsndo0jRw==";
+        url = "https://registry.npmjs.org/typescript/-/typescript-5.0.3.tgz";
+        sha512 = "xv8mOEDnigb/tN9PSMTwSEqAnUvkoXMQlicOb0IUVDBSQCgBSaAAROUZYy2IcUy5qU6XajK5jjjO7TMWqBTKZA==";
       };
     };
     "vscode-jsonrpc-8.0.2" = {
@@ -406,10 +415,10 @@ in
   bash-language-server = nodeEnv.buildNodePackage {
     name = "bash-language-server";
     packageName = "bash-language-server";
-    version = "4.8.4";
+    version = "4.9.0";
     src = fetchurl {
-      url = "https://registry.npmjs.org/bash-language-server/-/bash-language-server-4.8.4.tgz";
-      sha512 = "k8bw2G4bzpe8Pv20Isch6KoAVsOdm4dNZNPTQmdf0zapOPiDRAOehd1MpoxameKgwz6njF6oRUaxH6W+4LTUKw==";
+      url = "https://registry.npmjs.org/bash-language-server/-/bash-language-server-4.9.0.tgz";
+      sha512 = "rMb/d5NeFWviMzuW5DSJSWQ6eHlGPnt0ArfKP0Ayk00bUQzd5GlATJ1BUQ8UACYG/nn7pU6+JWiLgYAw32GL3Q==";
     };
     dependencies = [
       sources."@nodelib/fs.scandir-2.1.5"
@@ -474,7 +483,7 @@ in
       sources."pseudomap-1.0.2"
       sources."semver-5.7.1"
       sources."sigmund-1.0.1"
-      sources."typescript-5.0.2"
+      sources."typescript-5.0.3"
       sources."yallist-2.1.2"
     ];
     buildInputs = globalBuildInputs;
@@ -500,6 +509,27 @@ in
       description = "Prettier is an opinionated code formatter";
       homepage = "https://prettier.io";
       license = "MIT";
+    };
+    production = true;
+    bypassCache = true;
+    reconstructLock = true;
+  };
+  ts-protoc-gen = nodeEnv.buildNodePackage {
+    name = "ts-protoc-gen";
+    packageName = "ts-protoc-gen";
+    version = "0.15.0";
+    src = fetchurl {
+      url = "https://registry.npmjs.org/ts-protoc-gen/-/ts-protoc-gen-0.15.0.tgz";
+      sha512 = "TycnzEyrdVDlATJ3bWFTtra3SCiEP0W0vySXReAuEygXCUr1j2uaVyL0DhzjwuUdQoW5oXPwk6oZWeA0955V+g==";
+    };
+    dependencies = [
+      sources."google-protobuf-3.21.2"
+    ];
+    buildInputs = globalBuildInputs;
+    meta = {
+      description = "Protoc Plugin for TypeScript Declarations and Service Definitions";
+      homepage = "https://github.com/improbable-eng/ts-protoc-gen#readme";
+      license = "Apache-2.0";
     };
     production = true;
     bypassCache = true;
