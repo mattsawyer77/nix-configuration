@@ -37,18 +37,8 @@ let
       flags = [ "global" ];
     }
     {
-      name = "-q";
-      value = "mode-mouse on";
-      flags = [ "global" ];
-    }
-    {
-      name = "-q";
-      value = "mouse-resize-pane on";
-      flags = [ "global" ];
-    }
-    {
-      name = "-q";
-      value = "mouse on";
+      name = "mouse";
+      value = "off";
       flags = [ "global" ];
     }
     {
@@ -240,7 +230,6 @@ in
   disableConfirmationPrompt = true;
   historyLimit = 50000;
   keyMode = "vi";
-  mouse = true;
   prefix = "C-space";
   shortcut = "space"; # ??
   sensibleOnTop = false;

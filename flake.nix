@@ -12,8 +12,10 @@
     };
     # flake-utils.url = "github:numtide/flake-utils";
     emacs-overlay = {
-      # emacs-overlay:stable from 2023-03-11:
-      url = "github:nix-community/emacs-overlay/72f135581fa189c5c3829bb668fcaf456850d9de";
+      # emacs-overlay:stable:emacsGit from 2023-03-11:
+      # url = "github:nix-community/emacs-overlay/72f135581fa189c5c3829bb668fcaf456850d9de";
+      # emacs-overlay:stable:emacsUnstable from 2023-04-13:
+      url = "github:nix-community/emacs-overlay/e28c8932e5023d19dfb4ce260c88b9557f40e89b";
     };
     neovim-nightly-overlay = {
       url = "github:nix-community/neovim-nightly-overlay";

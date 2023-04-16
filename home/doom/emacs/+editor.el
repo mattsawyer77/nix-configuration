@@ -46,6 +46,9 @@
 (add-to-list 'auto-mode-alist '("\\Makefile" . makefile-gmake-mode))
 ;; jsonnet
 (add-to-list 'auto-mode-alist '("\\\.libsonnet$" . jsonnet-mode))
+;; mermaid
+(add-to-list 'auto-mode-alist '("\\\.mmd$" . mermaid-mode))
+(add-to-list 'auto-mode-alist '("\\\.mermaid$" . mermaid-mode))
 
 (after! evil
   ;; prevent paste from its default behavior of replacing the clipboard register with the replaced contents

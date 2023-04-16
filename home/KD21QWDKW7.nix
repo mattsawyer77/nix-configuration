@@ -177,11 +177,7 @@ let
     zstd
   ])
   # npm packages setup via node2nix
-  ++ (with npmPackages; [
-    bash-language-server
-    typescript-formatter
-    prettier
-  ])
+  ++ (builtins.attrValues npmPackages)
   # flakes outside nixpkgs (that don't have overlays)
   # TODO: how to make this more idiomatic without specifying the system arch
   ++ [ mkaliasPackage ];

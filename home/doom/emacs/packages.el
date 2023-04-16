@@ -25,7 +25,9 @@
 (package! treesit-auto)
 (package! uuidgen)
 (package! dap-mode)
-(package! protobuf-mode)
+;; protobuf-mode repo contains way more than just the emacs package, and changes frequently
+;; though protobuf-mode.el changes very seldom
+(package! protobuf-mode :pin "a05c57d43c914eccbebf1cbcc74aa8abba76aa93")
 (package! org-pandoc-import
   :recipe (:host github
            :repo "tecosaur/org-pandoc-import"
@@ -55,6 +57,7 @@
 ;;   :repo "ronisbr/doom-nano-modeline"))
 (package! impatient-showdown)
 (package! jsonnet-mode)
+(package! mermaid-mode)
 (package! vertico-posframe
     :recipe (:host github :repo "tumashu/vertico-posframe"))
 
