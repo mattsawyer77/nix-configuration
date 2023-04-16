@@ -126,6 +126,10 @@
               }
               # ./modules/haskell.nix
               ./modules/mac.nix
+              ({ config, pkgs, ... }: import ./modules/tailscale.nix {
+                inherit config pkgs;
+                needFirewall = false;
+              })
             ];
           }; # KD21QWDKW7
       }; # darwin.lib.darwinSystem
