@@ -58,19 +58,6 @@ in
   programs.zsh.enableBashCompletion = true;
   programs.zsh.enableSyntaxHighlighting = true;
   nix.configureBuildUsers = true;
-  nix.gc = {
-    # automatically collect garbage
-    # Minute <integer> # The minute on which this job will be run.
-    # Hour <integer> # The hour on which this job will be run.
-    # Day <integer> # The day on which this job will be run.
-    # Weekday <integer> # The weekday on which this job will be run (0 and 7 are Sunday).
-    # Month <integer> # The month on which this job will be run.
-    automatic = true;
-    interval = {
-      Hour = 2;
-      Minute = 0;
-    };
-  };
   nixpkgs = {
     config = {
       allowUnfree = true;

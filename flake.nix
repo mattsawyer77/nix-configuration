@@ -43,10 +43,12 @@
     # mac
     darwinConfigurations =
       let fontConfig = { monospaceFamily = "PragmataPro Liga"; };
-      in {
+      in
+      {
         mmbpm1 =
           let username = "matt";
-          in darwin.lib.darwinSystem {
+          in
+          darwin.lib.darwinSystem {
             system = "aarch64-darwin";
             specialArgs = inputs;
             modules = [
@@ -76,20 +78,19 @@
                 home-manager.useGlobalPkgs = true;
                 home-manager.useUserPackages = true;
                 home-manager.users."${username}" = ({ config, lib, pkgs, ... }:
-                  import ./home/mmbpm1.nix
-                    {
-                      inherit config lib pkgs username fontConfig;
-                      mkalias = inputs.mkalias;
-                    });
+                  import ./home/mmbpm1.nix {
+                    inherit config lib pkgs username fontConfig;
+                    mkalias = inputs.mkalias;
+                  });
               }
-              # ./modules/haskell.nix
               ./modules/mac.nix
             ];
           }; # mmbpm1
 
         KD21QWDKW7 =
           let username = "m.sawyer";
-          in darwin.lib.darwinSystem {
+          in
+          darwin.lib.darwinSystem {
             system = "aarch64-darwin";
             specialArgs = inputs;
             modules = [
