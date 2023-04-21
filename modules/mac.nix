@@ -109,13 +109,13 @@ in
             cp ../vterm.el $out
           '';
         };
-        emacs-mac = (prev.emacsGit.override {
+        emacs-mac = (prev.emacsUnstable.override {
           srcRepo = true;
           nativeComp = true;
           withSQLite3 = true;
           # withXwidgets = true;
         }).overrideAttrs (o: rec {
-          version = "30.0.50";
+          version = "29.0.90";
           src = emacs-src;
           buildInputs = o.buildInputs ++ [ prev.darwin.apple_sdk.frameworks.WebKit ];
           configureFlags = o.configureFlags ++ [

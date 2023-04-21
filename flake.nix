@@ -2,6 +2,7 @@
   description = "mattsawyer77's environment";
   inputs = {
     unstable.url = "github:nixos/nixpkgs/master";
+    nixpkgs-emacs.url = "github:nixos/nixpkgs/master";
     darwin = {
       url = "github:LnL7/nix-darwin";
       inputs.nixpkgs.follows = "unstable";
@@ -16,6 +17,7 @@
       # url = "github:nix-community/emacs-overlay/72f135581fa189c5c3829bb668fcaf456850d9de";
       # emacs-overlay:stable:emacsUnstable from 2023-04-13:
       url = "github:nix-community/emacs-overlay/e28c8932e5023d19dfb4ce260c88b9557f40e89b";
+      inputs.nixpkgs.follows = "nixpkgs-emacs";
     };
     neovim-nightly-overlay = {
       url = "github:nix-community/neovim-nightly-overlay";

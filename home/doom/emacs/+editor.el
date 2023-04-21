@@ -97,11 +97,15 @@
 
 ;; use tree-sitter for syntax highlighting for modes that don't have native tree-sitter support
 (after! tree-sitter
+  ;; (setf tree-sitter-major-mode-language-alist
+  ;;       (cl-remove 'go-mode tree-sitter-major-mode-language-alist :key #'car))
   (require 'tree-sitter-langs)
-  ;; (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
+  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
   ;; (setq-default tree-sitter-hl-use-font-lock-keywords nil)
   (add-hook! go-mode
     (setq-local tree-sitter-hl-use-font-lock-keywords t)
+    (tree-sitter-mode 1)
+    ;; (go-ts-mode)
     ;; (add-function :before-while (local 'tree-sitter-hl-face-mapping-function)
     ;;               (lambda (capture-name)
     ;;                 (string= capture-name "type"))
@@ -289,6 +293,7 @@
   ;;     (flycheck-posframe-mode 1))
   ;;   )
   )
+(add-hook! markdown-mode (gfm-mode 1))
 (unless (display-graphic-p)
   (after! git-gutter
     (setq git-gutter:modified-sign "▕")
@@ -314,11 +319,12 @@
 
 ;; (add-hook! rustic-mode #'tree-sitter-mode)
 (add-hook! (rustic-mode rust-ts-mode)
+           (flycheck-select-checker 'rustic-clippy)
            (lsp)
            ;; (lsp-toggle-signature-auto-activate)
            (+word-wrap-mode)
            (flycheck-posframe-mode -1)
-           (flycheck-mode -1)
+           ;; (flycheck-mode -1)
            ;; (tree-sitter-hl-mode 1)
            )
 (add-hook! lsp-ui-mode
@@ -493,6 +499,10 @@
   (setq lsp-nix-nil-formatter ["nixpkgs-fmt"])
 )
 
+(after! (flycheck rustic)
+  (push 'rustic-clippy flycheck-checkers)
+  )
+
 (after! org
   (cond ((equal (system-name) "SEA-ML-00059144")
          (setq org-agenda-files '("/Users/sawyer/Documents/OneDrive - F5 Networks/notes")))
@@ -602,12 +612,12 @@
 ;;     )
 (add-hook! (yaml-mode yaml-ts-mode) (+lsp-optimization-mode -1))
 
-(after! org-pandoc-import
-  ;; automatically convert markdown to org (and back) on-the-fly
-  (org-pandoc-import-transient-mode 1)
-  (add-hook! markdown-mode
-    (org-pandoc-import-transient-mode 1))
-  )
+;; (after! org-pandoc-import
+;;   ;; automatically convert markdown to org (and back) on-the-fly
+;;   (org-pandoc-import-transient-mode 1)
+;;   (add-hook! markdown-mode
+;;     (org-pandoc-import-transient-mode 1))
+;;   )
 
 (after! magit
   (setq auto-revert-check-vc-info t)
@@ -809,3 +819,6 @@
         '((consult-imenu grid)
           ))
   )
+
+(after! mermaid-mode
+  (setq mermaid-flags "--puppeteerConfigFile ~/.config/puppeteerConfigFile.json"))
