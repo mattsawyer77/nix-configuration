@@ -116,7 +116,7 @@
 ;; don't use tree-sitter for go until one or both of the following are fixed:
 ;; https://github.com/dominikh/go-mode.el/issues/396
 ;; https://github.com/dominikh/go-mode.el/issues/401
-(add-hook! go-ts-mode #'go-mode)
+;; (add-hook! go-ts-mode #'go-mode)
 ;; until then, use native tree-sitter for major modes that work well with it:
 ;; (add-hook! rustic-mode #'rust-ts-mode)
 ;; (add-hook! c++-mode #'c++-ts-mode)
@@ -231,9 +231,9 @@
         ((dimensions (cddr (frame-monitor-attribute 'geometry (selected-frame)))))
       (if (> (/ (float (car dimensions)) (car (cdr dimensions))) 2)
           ;; wide aspect ratio
-          (setq treemacs-width 70)
+          (setq treemacs-width 60)
         ;; normal aspect ratio
-        (setq treemacs-width 50)
+        (setq treemacs-width 40)
         ))
     )
   (textsize-mode 1)
@@ -480,8 +480,8 @@
   (setq lsp-ui-doc-show-with-mouse t)
   (setq lsp-lens-enable t)
   (setq lsp-headerline-breadcrumb-enable t)
-  (setq lsp-ui-sideline-enable t)
-  (setq lsp-ui-sideline-show-hover t)
+  (setq lsp-ui-sideline-enable nil)
+  (setq lsp-ui-sideline-show-hover nil)
   (setq lsp-ui-sideline-show-code-actions nil)
   (setq lsp-ui-sideline-show-diagnostics nil)
   (setq lsp-modeline-code-actions-enable t)

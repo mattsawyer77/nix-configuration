@@ -44,8 +44,13 @@
   outputs = { self, nixpkgs, darwin, flake-utils, home-manager, ... }@inputs: {
     # mac
     darwinConfigurations =
-      let fontConfig = { monospaceFamily = "PragmataPro Liga"; };
-      in {
+      let
+        fontConfig = {
+          # monospaceFamily = "PragmataPro Liga";
+          monospaceFamily = "JetBrains Mono";
+        };
+      in
+      {
         mmbpm1 =
           let username = "matt";
           in darwin.lib.darwinSystem {

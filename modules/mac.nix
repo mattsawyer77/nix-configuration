@@ -5,7 +5,6 @@
 , emacs-overlay
 , emacs-src
 , emacs-vterm-src
-, neovim-nightly-overlay
 , ...
 }:
 
@@ -34,16 +33,16 @@ let
     # wireshark # broken as of 2022-04-18
     # zenith
   ];
-  haskell-packages = with pkgs; [
-    cabal-install
-    ghc
-    ghcid
-    haskell-language-server
-    # hls-wrapper-nix
-    # implicit-hie
-    stack
-    # stack2nix
-  ];
+  # haskell-packages = with pkgs; [
+  #   cabal-install
+  #   ghc
+  #   ghcid
+  #   haskell-language-server
+  #   # hls-wrapper-nix
+  #   # implicit-hie
+  #   stack
+  #   # stack2nix
+  # ];
 in
 {
   environment.systemPackages = with pkgs;
@@ -119,16 +118,17 @@ in
           src = emacs-src;
           buildInputs = o.buildInputs ++ [ prev.darwin.apple_sdk.frameworks.WebKit ];
           configureFlags = o.configureFlags ++ [
-            "--with-modules"
             "--without-gpm"
             "--without-dbus"
             "--without-mailutils"
-            "--with-toolkit-scroll-bars"
             "--without-pop"
+            "--with-modules"
+            "--with-toolkit-scroll-bars"
           ];
           patches = [
             ../patches/fix-window-role.patch
-            # ./patches/system-appearance.patch
+            ../patches/system-appearance.patch
+            ../patches/round-undecorated-frame.patch
           ];
           postPatch = o.postPatch + ''
             substituteInPlace lisp/loadup.el \
