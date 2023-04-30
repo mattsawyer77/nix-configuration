@@ -98,43 +98,64 @@ find-proto-import-path() {
 #   done
 # }
 
+# generate-protoc-import-dir-locals() {
+#   local root_dir=$(git rev-parse --show-toplevel)
+#   repo_name=$(echo "$root_dir" | pcregrep -o '[^/]+/?$')
+#   repo_proto_dirs=($(fd --no-ignore-vcs '\.proto$' "$root_dir" -x dirname | grep -v vendor | sort -u))
+#   declare -a absolute_proto_roots
+#   absolute_proto_roots=(
+#     ${HOME}/.local/share/protobuf-extras
+#     ${HOME}/.local/share/protobuf-extras/protobuf
+#     ${root_dir}/proto
+#     ${root_dir}/schema
+#     ${root_dir}/schema/vendor
+#     ${root_dir}/schema/vendor/github.com/gogo/googleapis
+#   )
+#   declare -a found_proto_roots
+#   for dir in $absolute_proto_roots; do
+#     if [[ -d "$dir" ]]; then
+#       found_proto_roots+="$dir"
+#     fi
+#   done
+#   echo "generating .dir-locals.el for each directory recursively from ${root_dir}..."
+#   for repo_proto_dir in $repo_proto_dirs; do
+#     (cd $repo_proto_dir && \
+#       declare -a rel_proto_roots && \
+#       for dir in $found_proto_roots; do
+#         rel_proto_root=$(realpath --relative-to=. "$dir") && \
+#           rel_proto_roots+="\"$rel_proto_root\""
+#       done && \
+#       echo " - generating ${repo_proto_dir}/.dir-locals.el" && \
+#       cat >"${repo_proto_dir}/.dir-locals.el" <<EOF
+# ((protobuf-mode .
+#   ((flycheck-protoc-import-path .
+#     (
+# $rel_proto_roots
+#     )))))
+# EOF
+#     )
+#   done
+# }
+
 generate-protoc-import-dir-locals() {
-  local root_dir=$(git rev-parse --show-toplevel)
-  repo_name=$(echo "$root_dir" | pcregrep -o '[^/]+/?$')
-  repo_proto_dirs=($(fd --no-ignore-vcs '\.proto$' "$root_dir" -x dirname | grep -v vendor | sort -u))
-  declare -a absolute_proto_roots
-  absolute_proto_roots=(
-    ${HOME}/.local/share/protobuf-extras
-    ${HOME}/.local/share/protobuf-extras/protobuf
-    ${root_dir}/proto
-    ${root_dir}/schema
-    ${root_dir}/schema/vendor
-    ${root_dir}/schema/vendor/github.com/gogo/googleapis
-  )
-  declare -a found_proto_roots
-  for dir in $absolute_proto_roots; do
+  local username=$(whoami)
+  local repo_dir=$(git rev-parse --show-toplevel)
+  declare -a rel_proto_roots
+  for subdir in proto schema _extschema/schema/proto _extschema/*/schema; do
+    dir="${repo_dir}/${subdir}"
     if [[ -d "$dir" ]]; then
-      found_proto_roots+="$dir"
+      rel_proto_roots+="$dir"
     fi
   done
-  echo "generating .dir-locals.el for each directory recursively from ${root_dir}..."
-  for repo_proto_dir in $repo_proto_dirs; do
-    (cd $repo_proto_dir && \
-      declare -a rel_proto_roots && \
-      for dir in $found_proto_roots; do
-        rel_proto_root=$(realpath --relative-to=. "$dir") && \
-          rel_proto_roots+="\"$rel_proto_root\""
-      done && \
-      echo " - generating ${repo_proto_dir}/.dir-locals.el" && \
-      cat >"${repo_proto_dir}/.dir-locals.el" <<EOF
+  cat >"${repo_dir}/.dir-locals.el" <<EOF
 ((protobuf-mode .
   ((flycheck-protoc-import-path .
-    (
-$rel_proto_roots
-    )))))
+  (
+    "/Users/${username}/.local/share/protobuf-extras"
+    "/Users/${username}/.local/share/protobuf-extras/protobuf"
+    $(printf '"%s"\n    ' "$rel_proto_roots[@]")
+  )))))
 EOF
-    )
-  done
 }
 
 ssm() {

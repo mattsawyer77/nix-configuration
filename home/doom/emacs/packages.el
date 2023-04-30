@@ -22,12 +22,13 @@
 ;;   (unpin! tree-sitter-langs)
 ;;   (package! tree-sitter-langs)
 ;;   )
-(package! treesit-auto)
+;; (package! treesit-auto)
 (package! uuidgen)
 (package! dap-mode)
 ;; protobuf-mode repo contains way more than just the emacs package, and changes frequently
 ;; though protobuf-mode.el changes very seldom
 (package! protobuf-mode :pin "a05c57d43c914eccbebf1cbcc74aa8abba76aa93")
+
 (package! org-pandoc-import
   :recipe (:host github
            :repo "tecosaur/org-pandoc-import"
@@ -58,6 +59,11 @@
 (package! impatient-showdown)
 (package! jsonnet-mode)
 (package! mermaid-mode)
+(package! ob-mermaid)
+(package! evil-ts
+  :recipe (:host github
+           :repo "foxfriday/evil-ts"
+           :branch "main"))
 (package! vertico-posframe
     :recipe (:host github :repo "tumashu/vertico-posframe"))
 

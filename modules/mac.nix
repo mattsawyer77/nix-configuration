@@ -5,7 +5,6 @@
 , emacs-overlay
 , emacs-src
 , emacs-vterm-src
-, neovim-nightly-overlay
 , ...
 }:
 
@@ -34,16 +33,16 @@ let
     # wireshark # broken as of 2022-04-18
     # zenith
   ];
-  haskell-packages = with pkgs; [
-    cabal-install
-    ghc
-    ghcid
-    haskell-language-server
-    # hls-wrapper-nix
-    # implicit-hie
-    stack
-    # stack2nix
-  ];
+  # haskell-packages = with pkgs; [
+  #   cabal-install
+  #   ghc
+  #   ghcid
+  #   haskell-language-server
+  #   # hls-wrapper-nix
+  #   # implicit-hie
+  #   stack
+  #   # stack2nix
+  # ];
 in
 {
   environment.systemPackages = with pkgs;

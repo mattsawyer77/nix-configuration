@@ -13,22 +13,46 @@
                '(tool-bar-lines . 0)
                '(menu-bar-lines . 0)
                )))
-;; (when (and IS-MAC (display-graphic-p))
-;;   (menu-bar-mode))
+
+(when IS-MAC
+  (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
+  (add-to-list 'default-frame-alist '(ns-appearance . dark)))
 
 (defface sawyer/mono-face
   `((t :inherit default
      ;; :family "Input" :weight normal
-     :family "PragmataPro Liga" :weight normal
-     ;; :family "JetBrains Mono" :weight thin
+     ;; :family "PragmataPro Liga" :weight normal
+     :family "JetBrains Mono"
      ;; :family "Iosevka Extended" :weight extra-light
+     ;; :weight thin
+     ;; :weight extra-light ;; (a.k.a. ultra-light)
+     ;; :weight semi-light ;; (a.k.a. demi-light)
+     :weight thin
+     ;; :weight normal ;; (a.k.a. regular a.k.a. book)
+     ;; :weight medium
+     ;; :weight semi-bold ;; (a.k.a. demi-bold)
+     ;; :weight bold
+     ;; :weight ultra-bold ;; (a.k.a. extra-bold)
+     ;; :weight heavy ;; (a.k.a. black),
+     ;; :weight ultra-heavy
      ))
   "font spec for all monospace text")
 
 (defface sawyer/variable-face
   `((t :inherit default
        :family "IBM Plex Sans"
-       :weight bold
+       ;; :family "Fira Sans"
+       ;; :weight thin
+       ;; :weight extra-light ;; (a.k.a. ultra-light)
+       ;; :weight semi-light ;; (a.k.a. demi-light)
+       ;; :weight light
+       :weight normal ;; (a.k.a. regular a.k.a. book)
+       ;; :weight medium
+       ;; :weight semi-bold ;; (a.k.a. demi-bold)
+       ;; :weight bold
+       ;; :weight ultra-bold ;; (a.k.a. extra-bold)
+       ;; :weight heavy ;; (a.k.a. black),
+       ;; :weight ultra-heavy
        ))
   "font spec for all variable-width text")
 
@@ -36,7 +60,7 @@
 (defface code-face
   `((t :inherit sawyer/mono-face
        :height 1.2
-       :weight normal
+       :weight thin
     ))
   "code-face")
 ;; TODO: figure out how to make the family dynamic
@@ -72,13 +96,13 @@
   (font-spec
    :family (face-attribute 'sawyer/mono-face :family)
    :size sawyer/baseline-font-size
-   :weight 'normal
+   :weight 'thin
    ))
 (setq doom-variable-pitch-font
   (font-spec
    :family (face-attribute 'sawyer/variable-face :family)
    :size 15
-   :weight 'medium
+   :weight 'thin
    ))
 
 ;; disable solaire mode on GUI
@@ -109,24 +133,24 @@
     `(doom-dashboard-menu-title :inherit font-lock-keyword-face :height 1.0)
     `(doom-dashboard-menu-desc :inherit font-lock-builtin-face :height 1.0)
     `(doom-dashboard-loaded :inherit font-lock-docface :height 1.0)
-    `(tooltip :background ,(doom-lighten 'bg 0.1) :family ,(face-attribute 'sawyer/variable-face :family) :weight bold)
-    `(font-lock-type-face :weight bold)
-    `(font-lock-function-name-face :weight bold)
+    `(tooltip :background ,(doom-lighten 'bg 0.1) :family ,(face-attribute 'sawyer/variable-face :family) :weight normal)
+    `(font-lock-type-face :weight normal)
+    `(font-lock-function-name-face :weight normal)
     `(font-lock-string-face :background ,(doom-lighten 'bg 0.05))
     `(line-number :slant normal)
     `(line-number-current-line :slant normal)
-    `(mode-line :family ,(face-attribute 'sawyer/variable-face :family) :weight bold)
+    `(mode-line :family ,(face-attribute 'sawyer/variable-face :family) :weight normal)
     `(mode-line-inactive :family ,(face-attribute 'sawyer/variable-face :family) :weight normal)
-    `(doom-modeline-bar :family ,(face-attribute 'sawyer/variable-face :family) :background ,(doom-lighten 'bg 0.1) :weight bold)
-    `(doom-modeline-buffer-file :family ,(face-attribute 'sawyer/variable-face :family) :weight bold)
-    `(doom-modeline-buffer-path :family ,(face-attribute 'sawyer/variable-face :family) :weight bold)
-    `(doom-modeline-buffer-project-root :family ,(face-attribute 'sawyer/variable-face :family) :weight bold)
-    `(font-lock-type-face :weight bold)
-    `(font-lock-function-name-face :weight bold)
-    `(font-lock-builtin-face :weight bold) ;; Font Lock mode face used to highlight builtins.
-    `(font-lock-keyword-face :weight bold) ;; Font Lock mode face used to highlight keywords.
-    `(font-lock-constant-face :weight bold) ;; Font Lock mode face used to highlight constants and labels.
-    `(font-lock-preprocessor-face :weight bold) ;; Font Lock mode face used to highlight preprocessor directives.
+    `(doom-modeline-bar :family ,(face-attribute 'sawyer/variable-face :family) :background ,(doom-lighten 'bg 0.1) :weight normal)
+    `(doom-modeline-buffer-file :family ,(face-attribute 'sawyer/variable-face :family) :weight normal)
+    `(doom-modeline-buffer-path :family ,(face-attribute 'sawyer/variable-face :family) :weight normal)
+    `(doom-modeline-buffer-project-root :family ,(face-attribute 'sawyer/variable-face :family) :weight normal)
+    `(font-lock-type-face :weight normal)
+    `(font-lock-function-name-face :weight normal)
+    `(font-lock-builtin-face :weight normal) ;; Font Lock mode face used to highlight builtins.
+    `(font-lock-keyword-face :weight normal) ;; Font Lock mode face used to highlight keywords.
+    `(font-lock-constant-face :weight normal) ;; Font Lock mode face used to highlight constants and labels.
+    `(font-lock-preprocessor-face :weight normal) ;; Font Lock mode face used to highlight preprocessor directives.
     `(line-number :slant normal)
     `(line-number-current-line :slant normal)
     `(border :background ,(doom-darken 'bg 0.1))
@@ -134,12 +158,12 @@
     `(fringe :background ,(doom-darken 'bg 0.0))
     `(window-divider :background ,(doom-darken 'bg 0.1))
     `(header-line :background ,(doom-color 'bg))
-    `(ediff-fine-diff-A :background ,(doom-blend 'red 'bg 0.3) :weight bold)
-    `(ediff-even-diff-A :background ,(doom-blend 'red 'bg 0.2) :weight bold)
-    `(ediff-odd-diff-A :background ,(doom-blend 'red 'bg 0.2) :weight bold)
-    `(ediff-fine-diff-B :background ,(doom-blend 'green 'bg 0.3) :weight bold)
-    `(ediff-even-diff-B :background ,(doom-blend 'geren 'bg 0.2) :weight bold)
-    `(ediff-odd-diff-B :background ,(doom-blend 'geren 'bg 0.2) :weight bold)
+    `(ediff-fine-diff-A :background ,(doom-blend 'red 'bg 0.3) :weight normal)
+    `(ediff-even-diff-A :background ,(doom-blend 'red 'bg 0.2) :weight normal)
+    `(ediff-odd-diff-A :background ,(doom-blend 'red 'bg 0.2) :weight normal)
+    `(ediff-fine-diff-B :background ,(doom-blend 'green 'bg 0.3) :weight normal)
+    `(ediff-even-diff-B :background ,(doom-blend 'geren 'bg 0.2) :weight normal)
+    `(ediff-odd-diff-B :background ,(doom-blend 'geren 'bg 0.2) :weight normal)
     ;; `(nav-flash-face :foreground ,(doom-color 'fg) :background ,(doom-color 'bg) :box (:line-width 1 :color "#444444"))
     )
   )
@@ -302,7 +326,7 @@
     :foreground ,(doom-darken (doom-color 'cyan) 0.3)
     :background ,(doom-darken (doom-color 'cyan) 0.6)
     :height 1.0)
-  `(treemacs-root-face :inherit nil :foreground ,(doom-color 'fg), :background ,(doom-darken 'bg 0.2))
+  `(treemacs-root-face :inherit nil :foreground ,(doom-color 'fg))
   `(doom-themes-treemacs-file-face :inherit nil :foreground ,(doom-color 'red))
   `(treemacs-git-untracked-face :foreground ,(doom-color 'grey))
   `(treemacs-git-modified-face :foreground ,(doom-color 'blue))
@@ -314,6 +338,7 @@
   `(evil-ex-search
     :background ,(doom-lighten (doom-color 'blue) 0.2)
     :foreground "black")
+  `(font-lock-comment-face :foreground ,(doom-blend (doom-color 'cyan) "#555555" 0.3))
   )
 
 (custom-theme-set-faces! '(doom-monokai-octagon doom-monokai-spectrum)
@@ -376,7 +401,7 @@
   `(line-number-current-line
     :foreground ,(doom-lighten (doom-color 'bg) 0.4))
   `(font-lock-string-face :foreground ,(doom-blend (doom-color 'cyan) (doom-color 'fg) 0.5))
-  `(treemacs-root-face :foreground ,(doom-color 'red) :background ,(doom-darken (doom-color 'bg) 0.4))
+  `(treemacs-root-face :foreground ,(doom-color 'red))
   `(ediff-fine-diff-A :background ,(doom-blend 'red 'bg 0.3) :weight bold)
   `(ediff-even-diff-A :background ,(doom-blend 'red 'bg 0.2) :weight bold)
   `(ediff-odd-diff-A :background ,(doom-blend 'red 'bg 0.2) :weight bold)
@@ -476,11 +501,11 @@
   (custom-set-faces!
     `(treemacs-root-face
       :inherit nil
-      :height 1.2
-      :weight medium
+      :height 1.3
+      :weight thin
       :slant normal
       :family ,(face-attribute 'sawyer/variable-face :family)
-      :background ,(doom-color 'bg)
+      :background ,(face-attribute 'internal-border :background)
       )
     `(lsp-treemacs-file-error :family ,(face-attribute 'sawyer/variable-face :family))
     `(lsp-treemacs-file-hint :family ,(face-attribute 'sawyer/variable-face :family))
@@ -765,6 +790,13 @@
     `(tree-sitter-hl-face:number :inherit highlight-numbers-number)
     ;; `(tree-sitter-hl-face:type :inherit font-lock-type-face)
     )
+  (custom-theme-set-faces! 'doom-monokai-pro
+    `(tree-sitter-hl-face:variable :foreground ,(doom-lighten (doom-color 'cyan) 0.5))
+    `(tree-sitter-hl-face:punctuation :foreground ,(doom-darken (doom-color 'orange) 0.2))
+    `(tree-sitter-hl-face:punctuation.bracket :foreground ,(doom-darken (doom-color 'orange) 0.2))
+    `(tree-sitter-hl-face:punctuation.special :foreground ,(doom-darken (doom-color 'orange) 0.2))
+    `(tree-sitter-hl-face:punctuation.delimiter :foreground ,(doom-darken (doom-color 'orange) 0.2))
+    )
   )
 
 ;; (after! ccls
@@ -924,24 +956,24 @@
   (custom-set-faces!
    `(centaur-tabs-default
      :family ,(face-attribute 'sawyer/variable-face :family)
-     :weight medium)
+     :weight normal)
    `(centaur-tabs-selected
      :family ,(face-attribute 'sawyer/variable-face :family)
      :foreground ,(doom-color 'fg)
      :background ,(doom-color 'bg)
-     :weight medium)
+     :weight normal)
    `(centaur-tabs-unselected
      :family ,(face-attribute 'sawyer/variable-face :family)
      :foreground ,(face-attribute font-lock-comment-face :foreground)
-     :weight medium)
+     :weight normal)
    `(centaur-tabs-unselected-modified
      :family ,(face-attribute 'sawyer/variable-face :family)
      :foreground ,(doom-blend (doom-color 'red) (doom-color 'grey) 0.5)
-     :weight medium)
+     :weight normal)
    `(centaur-tabs-selected-modified
      :family ,(face-attribute 'sawyer/variable-face :family)
      :foreground ,(doom-color 'red)
-     :weight medium))
+     :weight normal))
   (centaur-tabs-change-fonts (face-attribute 'sawyer/variable-face :family) 1.0)
   (centaur-tabs-headline-match)
   )

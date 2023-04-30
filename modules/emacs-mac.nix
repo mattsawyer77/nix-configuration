@@ -37,16 +37,17 @@
     src = emacs-src;
     buildInputs = o.buildInputs ++ [ prev.darwin.apple_sdk.frameworks.WebKit ];
     configureFlags = o.configureFlags ++ [
-      "--with-modules"
       "--without-gpm"
       "--without-dbus"
       "--without-mailutils"
-      "--with-toolkit-scroll-bars"
       "--without-pop"
+      "--with-modules"
+      "--with-toolkit-scroll-bars"
     ];
     patches = [
       ../patches/fix-window-role.patch
-      # ./patches/system-appearance.patch
+      ../patches/system-appearance.patch
+      ../patches/round-undecorated-frame.patch
     ];
     postPatch = o.postPatch + ''
       substituteInPlace lisp/loadup.el \
