@@ -27,7 +27,7 @@
      ;; :weight thin
      ;; :weight extra-light ;; (a.k.a. ultra-light)
      ;; :weight semi-light ;; (a.k.a. demi-light)
-     :weight thin
+     :weight light
      ;; :weight normal ;; (a.k.a. regular a.k.a. book)
      ;; :weight medium
      ;; :weight semi-bold ;; (a.k.a. demi-bold)
@@ -53,13 +53,14 @@
        ;; :weight ultra-bold ;; (a.k.a. extra-bold)
        ;; :weight heavy ;; (a.k.a. black),
        ;; :weight ultra-heavy
+       :size 20
        ))
   "font spec for all variable-width text")
 
 ;; TODO can height be defined with a var?
 (defface code-face
   `((t :inherit sawyer/mono-face
-       :height 1.2
+       :height 1.1
        :weight thin
     ))
   "code-face")
@@ -101,8 +102,8 @@
 (setq doom-variable-pitch-font
   (font-spec
    :family (face-attribute 'sawyer/variable-face :family)
-   :size 15
-   :weight 'thin
+   :size 20
+   :weight 'normal
    ))
 
 ;; disable solaire mode on GUI
@@ -502,7 +503,7 @@
     `(treemacs-root-face
       :inherit nil
       :height 1.3
-      :weight thin
+      :weight light
       :slant normal
       :family ,(face-attribute 'sawyer/variable-face :family)
       :background ,(face-attribute 'internal-border :background)
@@ -796,6 +797,9 @@
     `(tree-sitter-hl-face:punctuation.bracket :foreground ,(doom-darken (doom-color 'orange) 0.2))
     `(tree-sitter-hl-face:punctuation.special :foreground ,(doom-darken (doom-color 'orange) 0.2))
     `(tree-sitter-hl-face:punctuation.delimiter :foreground ,(doom-darken (doom-color 'orange) 0.2))
+    `(treemacs-git-ignored-face :foreground ,(doom-color 'magenta))
+    `(treemacs-git-untracked-face :foreground ,(doom-color 'grey))
+    `(treemacs-git-modified-face :foreground ,(doom-color 'cyan))
     )
   )
 
@@ -874,22 +878,19 @@
   (setq-default +zen-text-scale 1)
   (setq-default writeroom-width 100))
 
+;; NOTE: to get the current monitor's dimensions:
+;; (textsize--monitor-size-mm (selected-frame))
 (when (display-graphic-p)
   (after! textsize
     (setq textsize-default-points sawyer/baseline-font-size)
-    (setq textsize-pixel-pitch-thresholds
-          ;; 15" MBP:             0.171875
-          ;; 24" 4K (full res):   0.174
-          ;; 24" 4K (downscaled): 0.207
-          ;; 34" superwide:       0.233
-          ;; 16" MBP:             0.199
-          '((0 . 4)
-            (0.12 . 1.9)
-            (0.17 . 2.5)
-            (0.174 . 0.6)
-            (0.18 . -3.5)
-            (0.199 . -1)
-            (0.207 . -4)
+    ;; use monitor size instead of pixel pitch
+    (setq textsize-pixel-pitch-thresholds nil)
+    ;; NOTE: the following alist must be sorted by the key (mm size)
+    (setq textsize-monitor-size-thresholds
+          '(
+            (344 . -0.5) ;; 16" MBP
+            (530 . -3)   ;; 24" 4K (full-res)
+            (801 . -0.7) ;; 34" superwide
             ))
     )
   (add-hook! after-init #'textsize-mode)

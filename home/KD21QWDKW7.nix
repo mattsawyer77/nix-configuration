@@ -78,7 +78,7 @@ let
     libcxx
     libgccjit
     libiconv
-    libressl
+    # libressl
     libsndfile
     libssh2
     libtool
