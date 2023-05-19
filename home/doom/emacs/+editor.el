@@ -49,6 +49,8 @@
 ;; mermaid
 (add-to-list 'auto-mode-alist '("\\\.mmd$" . mermaid-mode))
 (add-to-list 'auto-mode-alist '("\\\.mermaid$" . mermaid-mode))
+;; markdown
+(add-to-list 'auto-mode-alist '("\\\.md$" . gfm-mode))
 
 (after! evil
   ;; prevent paste from its default behavior of replacing the clipboard register with the replaced contents
@@ -293,7 +295,6 @@
   ;;     (flycheck-posframe-mode 1))
   ;;   )
   )
-(add-hook! markdown-mode (gfm-mode 1))
 (unless (display-graphic-p)
   (after! git-gutter
     (setq git-gutter:modified-sign "▕")
@@ -391,56 +392,57 @@
 
   ;; borrowed from https://github.com/emacs-lsp/lsp-ui/issues/184#issuecomment-1161554461
   ;; to fix issues with lsp-ui-sideline alignment caused by having the default font scaled up
-  (defun lsp-ui-sideline--window-width ()
-    (- (window-max-chars-per-line)
-       (lsp-ui-sideline--margin-width)
-       (or (and (>= emacs-major-version 27)
-                ;; We still need this number when calculating available space
-                ;; even with emacs >= 27
-                (lsp-ui-util-line-number-display-width))
-           0)))
+  ;; NOTE: working but might crash emacs
+  ;; (defun lsp-ui-sideline--window-width ()
+  ;;   (- (window-max-chars-per-line)
+  ;;      (lsp-ui-sideline--margin-width)
+  ;;      (or (and (>= emacs-major-version 27)
+  ;;               ;; We still need this number when calculating available space
+  ;;               ;; even with emacs >= 27
+  ;;               (lsp-ui-util-line-number-display-width))
+  ;;          0)))
 
-  (defun lsp-ui-sideline--display-all-info (list-infos tag bol eol)
-    (when (and (lsp-ui-sideline--valid-tag-p tag 'line)
-               (not (lsp-ui-sideline--stop-p)))
-      (let ((inhibit-modification-hooks t)
-            (win-width (lsp-ui-sideline--window-width))
-            ;; sort by bounds
-            (list-infos (--sort (< (caadr it) (caadr other)) list-infos)))
-        (lsp-ui-sideline--delete-kind 'info)
-        (--each list-infos
-          (-let (((symbol bounds info) it))
-            (lsp-ui-sideline--push-info win-width symbol bounds info bol eol))))))
+  ;; (defun lsp-ui-sideline--display-all-info (list-infos tag bol eol)
+  ;;   (when (and (lsp-ui-sideline--valid-tag-p tag 'line)
+  ;;              (not (lsp-ui-sideline--stop-p)))
+  ;;     (let ((inhibit-modification-hooks t)
+  ;;           (win-width (lsp-ui-sideline--window-width))
+  ;;           ;; sort by bounds
+  ;;           (list-infos (--sort (< (caadr it) (caadr other)) list-infos)))
+  ;;       (lsp-ui-sideline--delete-kind 'info)
+  ;;       (--each list-infos
+  ;;         (-let (((symbol bounds info) it))
+  ;;           (lsp-ui-sideline--push-info win-width symbol bounds info bol eol))))))
 
-  ;; borrowed from https://github.com/emacs-lsp/lsp-ui/issues/441#issue-611772813
-  ;; to make lsp-ui-peek appear in a childframe/posframe
-  (defun lsp-ui-peek--peek-display (src1 src2)
-    (-let* ((win-width (frame-width))
-            (lsp-ui-peek-list-width (/ (frame-width) 2))
-            (string (-some--> (-zip-fill "" src1 src2)
-                      (--map (lsp-ui-peek--adjust win-width it) it)
-                      (-map-indexed 'lsp-ui-peek--make-line it)
-                      (-concat it (lsp-ui-peek--make-footer))))
-            )
-      (setq lsp-ui-peek--buffer (get-buffer-create " *lsp-peek--buffer*"))
-      (posframe-show lsp-ui-peek--buffer
-                     :string (mapconcat 'identity string "")
-                     :min-width (frame-width)
-                     :poshandler #'posframe-poshandler-frame-center)))
+  ;; ;; borrowed from https://github.com/emacs-lsp/lsp-ui/issues/441#issue-611772813
+  ;; ;; to make lsp-ui-peek appear in a childframe/posframe
+  ;; (defun lsp-ui-peek--peek-display (src1 src2)
+  ;;   (-let* ((win-width (frame-width))
+  ;;           (lsp-ui-peek-list-width (/ (frame-width) 2))
+  ;;           (string (-some--> (-zip-fill "" src1 src2)
+  ;;                     (--map (lsp-ui-peek--adjust win-width it) it)
+  ;;                     (-map-indexed 'lsp-ui-peek--make-line it)
+  ;;                     (-concat it (lsp-ui-peek--make-footer))))
+  ;;           )
+  ;;     (setq lsp-ui-peek--buffer (get-buffer-create " *lsp-peek--buffer*"))
+  ;;     (posframe-show lsp-ui-peek--buffer
+  ;;                    :string (mapconcat 'identity string "")
+  ;;                    :min-width (frame-width)
+  ;;                    :poshandler #'posframe-poshandler-frame-center)))
 
-  (defun lsp-ui-peek--peek-destroy ()
-    (when (bufferp lsp-ui-peek--buffer)
-      (posframe-delete lsp-ui-peek--buffer))
-    (setq lsp-ui-peek--buffer nil
-          lsp-ui-peek--last-xref nil)
-    (set-window-start (get-buffer-window) lsp-ui-peek--win-start))
+  ;; (defun lsp-ui-peek--peek-destroy ()
+  ;;   (when (bufferp lsp-ui-peek--buffer)
+  ;;     (posframe-delete lsp-ui-peek--buffer))
+  ;;   (setq lsp-ui-peek--buffer nil
+  ;;         lsp-ui-peek--last-xref nil)
+  ;;   (set-window-start (get-buffer-window) lsp-ui-peek--win-start))
 
-  (advice-add #'lsp-ui-peek--peek-new :override #'lsp-ui-peek--peek-display)
-  (advice-add #'lsp-ui-peek--peek-hide :override #'lsp-ui-peek--peek-destroy)
+  ;; (advice-add #'lsp-ui-peek--peek-new :override #'lsp-ui-peek--peek-display)
+  ;; (advice-add #'lsp-ui-peek--peek-hide :override #'lsp-ui-peek--peek-destroy)
 
-  (defun lsp-ui-sideline--align (&rest lengths)
-    (list (* (window-font-width)
-             (+ (apply '+ lengths) (if (display-graphic-p) 1 2)))))
+  ;; (defun lsp-ui-sideline--align (&rest lengths)
+  ;;   (list (* (window-font-width)
+  ;;            (+ (apply '+ lengths) (if (display-graphic-p) 1 2)))))
   ;; end of lsp-ui-sideline patches
 
   (setq lsp-response-timeout 30)
@@ -471,7 +473,7 @@
   (setq lsp-headerline-breadcrumb-enable 't)
   (setq lsp-headerline-breadcrumb-segments '(path-up-to-project symbols))
   (setq lsp-enable-symbol-highlighting nil)
-  (setq lsp-ui-peek-enable t)
+  (setq lsp-ui-peek-enable nil)
   (setq lsp-ui-doc-enable t)
   (setq lsp-ui-doc-position 'at-point)
   (setq lsp-ui-doc-border (doom-lighten 'bg 0.1))
@@ -794,6 +796,7 @@
   ;; (setq impatient-showdown--default-preview-template )
   ;; display markdown background color.
   (setq impatient-showdown-markdown-background-color "#f8f8f8")
+  (setq impatient-mode-delay 1.0) ;; seconds
   )
 
 ;; (after! consult

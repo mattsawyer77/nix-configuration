@@ -97,7 +97,8 @@
        ;;ein               ; tame Jupyter notebooks with emacs
        (eval +overlay)     ; run code, run (also, repls)
        (lookup +dictionary +offline)             ; navigate your code and its documentation
-       (lsp +peek)
+       ;; (lsp +peek)
+       lsp
        ;;(lsp +eglot)
        ; (magit +forge)             ; a git porcelain for Emacs
        magit             ; a git porcelain for Emacs
