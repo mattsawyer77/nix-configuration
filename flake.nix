@@ -14,11 +14,9 @@
     # flake-utils.url = "github:numtide/flake-utils";
     emacs-overlay = {
       # emacs-overlay:stable:emacsUnstable from 2023-05-15:
-      url = "github:nix-community/emacs-overlay/e4cc7646293b591244f9e1cacdab53170084846b";
-      # emacs-overlay:stable:emacsUnstable from 2023-04-21:
-      # url = "github:nix-community/emacs-overlay/02eea1bf04605ef02eba5363d3cd578170f2b610";
-      # emacs-overlay:stable:emacsUnstable from 2023-04-13:
-      # url = "github:nix-community/emacs-overlay/e28c8932e5023d19dfb4ce260c88b9557f40e89b";
+      # url = "github:nix-community/emacs-overlay/e4cc7646293b591244f9e1cacdab53170084846b";
+      # emacs-overlay:stable:emacsUnstable from 2023-05-31:
+      url = "github:nix-community/emacs-overlay/f0fb4a32a96e9fb9be4713ed530f8ae461f37552";
       inputs.nixpkgs.follows = "nixpkgs-emacs";
     };
     neovim-nightly-overlay = {
