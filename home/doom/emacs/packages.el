@@ -12,7 +12,7 @@
 (package! evil-nerd-commenter)
 (package! highlight-indent-guides)
 (package! treemacs-persp)
-(package! flycheck-posframe)
+;; (package! flycheck-posframe)
 ;; (when EMACS29+
 ;; (package! evil-textobj-tree-sitter)
   ;; )
@@ -25,9 +25,13 @@
 ;; (package! treesit-auto)
 (package! uuidgen)
 (package! dap-mode)
-;; protobuf-mode repo contains way more than just the emacs package, and changes frequently
-;; though protobuf-mode.el changes very seldom
-(package! protobuf-mode :pin "a05c57d43c914eccbebf1cbcc74aa8abba76aa93")
+;; protobuf-mode repo contains way more than just the emacs package, including annoying git submodules,
+;; and changes frequently, though protobuf-mode.el changes very seldom
+(package! protobuf-mode
+  :recipe (:host github
+                 :repo "protocolbuffers/protobuf"
+                 :nonrecursive t
+                 :files ("editors/protobuf-mode.el")))
 
 (package! org-pandoc-import
   :recipe (:host github
@@ -64,7 +68,7 @@
   :recipe (:host github
            :repo "foxfriday/evil-ts"
            :branch "main"))
-(package! vertico-posframe
-    :recipe (:host github :repo "tumashu/vertico-posframe"))
+;; (package! vertico-posframe
+;;     :recipe (:host github :repo "tumashu/vertico-posframe"))
 
 (disable-packages! hl-line)

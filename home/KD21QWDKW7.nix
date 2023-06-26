@@ -78,7 +78,7 @@ let
     libcxx
     libgccjit
     libiconv
-    libressl
+    # libressl
     libsndfile
     libssh2
     libtool
@@ -380,12 +380,12 @@ in
     enableSyntaxHighlighting = true;
     defaultKeymap = "viins";
     history = {
-      size = 100000;
-      save = 5000;
-      ignoreDups = true;
-      ignoreSpace = true;
       expireDuplicatesFirst = true;
       extended = true;
+      ignoreDups = true;
+      ignoreSpace = true;
+      save = 100000;
+      size = 20000000;
     };
     shellAliases = {
       ssh = "TERM=xterm-256color ssh";
