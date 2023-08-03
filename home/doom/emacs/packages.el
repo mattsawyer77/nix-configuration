@@ -2,10 +2,10 @@
 
 ;; (unpin! lsp-mode)
 ;; (unpin! lsp-ui)
-(unpin! rustic)
-(unpin! consult-lsp)
+;; (unpin! rustic)
+;; (unpin! consult-lsp)
 ;; (unpin! treemacs)
-(unpin! better-jumper)
+;; (unpin! better-jumper)
 (package! adoc-mode)
 (package! doom-modeline)
 (package! prettier-js)
@@ -27,6 +27,7 @@
 (package! dap-mode)
 ;; protobuf-mode repo contains way more than just the emacs package, including annoying git submodules,
 ;; and changes frequently, though protobuf-mode.el changes very seldom
+(unpin! protobuf-mode)
 (package! protobuf-mode
   :recipe (:host github
                  :repo "protocolbuffers/protobuf"

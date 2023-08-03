@@ -141,7 +141,7 @@ generate-protoc-import-dir-locals() {
   local username=$(whoami)
   local repo_dir=$(git rev-parse --show-toplevel)
   declare -a rel_proto_roots
-  for subdir in proto schema _extschema/schema/proto _extschema/*/schema; do
+  for subdir in $(find * \( -wholename proto -o -wholename schema -o -wholename '_excschema/schema/proto' -o -wholename '_extschema/*/schema' \)); do
     dir="${repo_dir}/${subdir}"
     if [[ -d "$dir" ]]; then
       rel_proto_roots+="$dir"
@@ -609,31 +609,38 @@ vegactl() {
   fi
 }
 
-env-api-gw-hostname() {
+env-site-fqdn() {
   if [ ! -v 1 ]; then
     echo >&2 "must specify environment (demo1, crt, staging, prod)"
     return 1
   fi
   local environment="$1"
+  local site="${2:-gc01}"
   case $environment in
     demo1)
-      api_gw_hostname="gc01.int.ves.io"
+      site_fqdn="${site}.int.ves.io"
       ;;
     crt)
-      api_gw_hostname="gc01.int.ves.io"
+      site_fqdn="${site}.int.ves.io"
       ;;
     staging)
-      api_gw_hostname="gc1-iad-01.int.volterra.us"
+      if [[ "$site" == "gc01" ]]; then
+        site=gc1-iad-01
+      fi
+      site_fqdn="${site}.int.volterra.us"
       ;;
     prod)
-      api_gw_hostname="gc01-cle.int.ves.io"
+      if [[ "$site" == "gc01" ]]; then
+        site=gc01-cle
+      fi
+      site_fqdn="${site}.int.ves.io"
       ;;
     *)
       echo >&2 "unknown environment $environment"
       return 1
       ;;
   esac
-  echo "$api_gw_hostname"
+  echo "$site_fqdn"
 }
 
 env-compass-hostname() {
@@ -663,32 +670,45 @@ env-compass-hostname() {
   echo "$compass_hostname"
 }
 
+# for reference, the following was sometimes used instead of /ves.io.stdlib/introspect/read/pprof_profile, not sure of the exact implications
+# url="https://${compass_hostname}/introspection/${site_fqdn}/${service}/debug/pprof/${pprof_type}?debug=1&seconds=${sample_time}"
 profile-service() {
-  usage="usage:\nprofile_service service_name [environment] [pprof_type] [sample_time]"
+  usage="usage:\nprofile_service service_name [environment] [site] [pprof_type] [sample_time]"
   if [ ! -v 1 ]; then
     echo >&2 "must specify service to profile"
     echo >&2 "$usage"
-    set +x
     return 1
   fi
   local service="$1"
   local environment="${2:-demo1}"
-  local pprof_type="${3:-profile}"
-  local sample_time="${4:-30}"
-  local api_gw_hostname=$(env-api-gw-hostname "$environment")
+  local site="${3:-gc01}"
+  local pprof_type="${4:-cpu}"
+  local valid_profile=false
+  for t in cpu block mutex goroutine heap allocs; do
+    if [[ "$pprof_type" == "$t" ]]; then
+      valid_profile=true
+    fi
+  done
+  if [[ "$valid_profile" == "false" ]]; then
+    echo >&2 "invalid pprof profile type, valid types are cpu, block, mutex, goroutine, heap, or allocs"
+    return 1
+  fi
+  local sample_time="${5:-30}"
+  local site_fqdn=$(env-site-fqdn "$environment" "$site")
   local compass_hostname=$(env-compass-hostname "$environment")
-  output_filename="${service}.${environment}.${pprof_type}.$(date --iso-8601=seconds).pprof"
-  url="https://${compass_hostname}/introspection/${api_gw_hostname}/${service}/debug/pprof/${pprof_type}?debug=1"
-  echo "starting profile of $service on $environment (url: $url)..."
+  output_filename_base="${service}-${site}.${environment}.${pprof_type}.$(date --iso-8601=seconds)"
+  url="https://${compass_hostname}/introspection/${site_fqdn}/${service}/ves.io.stdlib/introspect/read/pprof_profile?name=${pprof_type}&debug_mode=1&seconds=${sample_time}"
+  echo "starting profile of $service on $environment (url: $url) for ${sample_time}s..."
   curl \
     --insecure \
     --fail-with-body \
     --no-progress-meter \
     --cert-type P12 \
     --cert "$HOME/.ves-internal/${environment}/usercerts.p12:volterra" \
-    -o "$output_filename" \
+    -o "${output_filename_base}.json" \
     "$url" \
-    && echo "profile saved at $output_filename"
+      && cat "${output_filename_base}.json" | jq -r '.contents' | base64 --decode > "${output_filename_base}.pprof" \
+      && echo "profile saved at $output_filename"
 }
 
 # kv set image statefulset/streak streak=gcr.io/volterraio/streak@sha256:37be0ca9476b754ed144da6678a414748825e733dfd0345fa3fc1924a559d42a
@@ -790,11 +810,11 @@ sic() {
     return 1
   fi
   local environment="$1"
-  local site=$(env-api-gw-hostname "$environment")
-  local compass_hostname=$(env-compass-hostname "$environment")
   shift
   local service=$1
   shift
+  local site=$(env-site-fqdn "$environment" "$service")
+  local compass_hostname=$(env-compass-hostname "$environment")
   if echo "$service" | grep -E '.+/.+' >/dev/null; then
     site="$(echo $service | cut -d'/' -f1)"
     service="$(echo $service | cut -d'/' -f2)"
@@ -851,9 +871,9 @@ sic() {
 
 get-latest-ce-version() {
   local environment="${1:-demo1}"
-  local api_gw_hostname=$(env-api-gw-hostname "$environment")
+  local site_fqdn=$(env-site-fqdn "$environment")
   local compass_hostname=$(env-compass-hostname "$environment")
-  curl "https://${compass_hostname}/introspection/${api_gw_hostname}/maurice/ves.io.stdlib/introspect/read/object/ves.io.pikachu.version.Object?response_format=1&page_start=0&page_limit=1000" \
+  curl "https://${compass_hostname}/introspection/${site_fqdn}/maurice/ves.io.stdlib/introspect/read/object/ves.io.pikachu.version.Object?response_format=1&page_start=0&page_limit=1000" \
     -H 'pragma: no-cache' \
     -H 'content-type: application/json' \
     -H 'accept: application/json' \
@@ -950,9 +970,9 @@ site-public-ips() {
     shift
   fi
   local compass_hostname=$(env-compass-hostname "$environment")
-  local api_gw_hostname=$(env-api-gw-hostname "$environment")
+  local site_fqdn=$(env-site-fqdn "$environment")
   site="$1"
-  tf_params_objects=$(curl "https://${compass_hostname}/introspection/${api_gw_hostname}/vulpix/ves.io.stdlib/introspect/read/object/ves.io.vulpix.terraform_parameters.Object?response_format=1&page_start=0&page_limit=2000" \
+  tf_params_objects=$(curl "https://${compass_hostname}/introspection/${site_fqdn}/vulpix/ves.io.stdlib/introspect/read/object/ves.io.vulpix.terraform_parameters.Object?response_format=1&page_start=0&page_limit=2000" \
     -H 'content-type: application/json' \
     -H 'accept: application/json' \
     -H "authority: $compass_hostname" \
@@ -974,7 +994,7 @@ site-public-ips() {
     echo >&2 "could not find terraform parameters for site $site"
     return 1
   fi
-  tf_status=$(curl "https://${compass_hostname}/introspection/${api_gw_hostname}/streak/ves.io.streak/introspect/read/status-objects" \
+  tf_status=$(curl "https://${compass_hostname}/introspection/${site_fqdn}/streak/ves.io.streak/introspect/read/status-objects" \
     -H 'content-type: application/json' \
     -H 'accept: application/json' \
     -H 'authority: compass-lma.staging.volterra.us' \
@@ -1183,4 +1203,46 @@ png2icns() {
   iconutil --convert icns ${temp_dir} -o "$icns_file" \
     && echo "converted $png_file to $icns_file"
   rm -R ${temp_dir}
+}
+
+# addr="http://localhost:3100"
+#                         Server address. Can also be set using LOKI_ADDR
+#                         env var.
+# --username=""           Username for HTTP basic auth. Can also be set
+#                         using LOKI_USERNAME env var.
+# --password=""           Password for HTTP basic auth. Can also be set
+#                         using LOKI_PASSWORD env var.
+# --ca-cert=""            Path to the server Certificate Authority. Can also
+#                         be set using LOKI_CA_CERT_PATH env var.
+# --tls-skip-verify       Server certificate TLS skip verify. Can also be
+#                         set using LOKI_TLS_SKIP_VERIFY env var.
+# --cert=""               Path to the client certificate. Can also be set
+#                         using LOKI_CLIENT_CERT_PATH env var.
+# --key=""                Path to the client certificate key. Can also be
+#                         set using LOKI_CLIENT_KEY_PATH env var.
+# https://compass-lma.staging.volterra.us/analytics/api/datasources/proxy/2/loki/api/v1/label
+# LOKI_ADDR="${compass_hostname}/analytics/api/datasources/proxy/2"
+# LOKI_HTTP_PROXY_URL="${compass_hostname}/analytics/api/datasources/proxy/2" \
+loki() {
+  usage="usage: loki environment logcli-args\n  where\n    environment is one of demo1, crt, staging, prod, etc.\n    logcli-args are arguments to logcli (see logcli --help for more info)"
+  if [[ $# -lt 2 ]]; then
+    echo >&1 "$usage"
+    return 1
+  fi
+  local environment="$1"
+  shift
+  if [[ $# -lt 1 ]]; then
+    echo >&1 "$usage"
+    return 1
+  fi
+  local compass_hostname=$(env-compass-hostname "$environment")
+  if [[ $? -ne 0 ]]; then
+    return 1
+  fi
+  LOKI_CA_CERT=${HOME}/.ves-internal/${environment}/cacerts/server_ca_with_compass.crt \
+    LOKI_CLIENT_CERT_PATH=${HOME}/.ves-internal/${environment}/usercerts.crt \
+    LOKI_CLIENT_KEY_PATH=${HOME}/.ves-internal/${environment}/usercerts.key \
+    LOKI_TLS_SKIP_VERIFY=1 \
+    LOKI_ADDR="https://${compass_hostname}/analytics/api/datasources/proxy/2" \
+    logcli $@
 }

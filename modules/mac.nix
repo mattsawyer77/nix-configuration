@@ -110,7 +110,6 @@ in
         };
         emacs-mac = (prev.emacsUnstable.override {
           srcRepo = true;
-          nativeComp = true;
           withSQLite3 = true;
           # withXwidgets = true;
         }).overrideAttrs (o: rec {

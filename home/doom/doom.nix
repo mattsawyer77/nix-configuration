@@ -15,8 +15,9 @@
       echo 'doom is not yet installed, activation should occur via home.file."doom.d"'
       exit 0
     fi
-    $DRY_RUN_CMD $DOOM purge --force --pager cat \
-      && $DRY_RUN_CMD $DOOM sync --force --pager cat \
+    set -Eeuo pipefail
+    $DRY_RUN_CMD $DOOM purge --pager cat \
+      && $DRY_RUN_CMD $DOOM sync --pager cat \
       && set +x \
       && $DRY_RUN_CMD echo "doom emacs synced" \
       && $DRY_RUN_CMD find ${doomDir} -name custom.el -exec rm -f "{}" \;
@@ -35,7 +36,7 @@
       export TERM=alacritty
       if [[ ! -d "$EMACS_DIR" ]]; then
         $DRY_RUN_CMD git clone https://github.com/hlissner/doom-emacs.git $EMACS_DIR
-        $DRY_RUN_CMD $EMACS_DIR/bin/doom install --force --pager cat
+        $DRY_RUN_CMD $EMACS_DIR/bin/doom install --pager cat
       fi
       if [[ ! -f "$EMACS_DIR/.local/black-hole.png" ]]; then
         $DRY_RUN_CMD cp $(readlink ~/.doom.d/black-hole.png) ~/.emacs.d/.local

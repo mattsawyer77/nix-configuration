@@ -90,13 +90,15 @@
       };
     };
   }; # settings
-  languages = [{
-    name = "go";
-    indent = {
-      tab-width = 2;
-      unit = "  ";
-    };
-  }]; # languages
+  languages = {
+    language = [{
+      name = "go";
+      indent = {
+        tab-width = 2;
+        unit = "  ";
+      };
+    }];
+  }; # languages
   themes = {
     edge = (builtins.fromJSON (builtins.readFile ./themes/edge.json));
     everforest = (builtins.fromJSON (builtins.readFile ./themes/everforest.json));

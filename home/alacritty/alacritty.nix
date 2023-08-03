@@ -81,19 +81,19 @@ in
       # Normal (roman) font face
       normal = {
         # family = "JetBrains Mono";
-        style = "Thin";
+        # style = "Thin";
         # family = "Iosevka Extended";
         family = fontConfig.monospaceFamily;
-        # style = "Regular";
+        style = "Regular";
       };
       bold = {
         family = fontConfig.monospaceFamily;
         # family = "Iosevka Extended";
         # family = "Input";
-        # style = "Bold";
-        style = "Medium";
+        style = "Bold";
+        # style = "Medium";
       };
-      size = 20.0;
+      size = 23.0;
       # Offset is the extra space around each character. `offset.y` can be thought of
       # as modifying the line spacing, and `offset.x` as modifying the letter spacing.
       offset = {

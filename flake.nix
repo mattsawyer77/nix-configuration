@@ -40,14 +40,19 @@
       url = "github:reckenrode/mkalias";
       inputs.nixpkgs.follows = "unstable";
     };
+    # for loki's logcli
+    loki = {
+      url = "github:grafana/loki";
+      inputs.nixpkgs.follows = "unstable";
+    };
   };
   outputs = { self, nixpkgs, darwin, flake-utils, home-manager, ... }@inputs: {
     # mac
     darwinConfigurations =
       let
         fontConfig = {
-          # monospaceFamily = "PragmataPro Liga";
-          monospaceFamily = "JetBrains Mono";
+          monospaceFamily = "PragmataPro Liga";
+          # monospaceFamily = "JetBrains Mono";
         };
       in
       {

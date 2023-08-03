@@ -38,7 +38,7 @@ let
     }
     {
       name = "mouse";
-      value = "off";
+      value = "on";
       flags = [ "global" ];
     }
     {
