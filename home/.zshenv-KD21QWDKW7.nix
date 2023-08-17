@@ -968,6 +968,8 @@ site-public-ips() {
   if [ $# -eq 2 ]; then
     environment="$1"
     shift
+  else
+    environment=demo1
   fi
   local compass_hostname=$(env-compass-hostname "$environment")
   local site_fqdn=$(env-site-fqdn "$environment")
@@ -1001,7 +1003,6 @@ site-public-ips() {
     --data-binary '{"status_object_type":"ves.io.schema.views.terraform_parameters.StatusObject","config_object_uids":["'"$tf_params_id"'"]}' \
     --compressed \
     --insecure \
-    --insecure \
     --fail \
     --silent \
     --cert-type P12 \
@@ -1015,7 +1016,7 @@ site-public-ips() {
     | jq -r '.config_status_map|to_entries[].value.items[].status_object_bytes.apply_status.tf_output' | grep master_public_ip_address | pcregrep -o '([\d\.]+)$')
   if [[ -z "$master_ips" ]]; then
     # check for multi-node
-    master_ips=$(printf '%s\n' "$tf_status" | grep -A3 master_public_ip_address | pcregrep -o '\d+\.\d+\.\d+\.\d+')
+    master_ips=$(printf '%s\n' "$tf_status" | grep -A3 master_public_ip_address | pcregrep -o '\d+\.\d+\.\d+\.\d+' | pcregrep -v '^(10\.|192.168\.|172\.16\.)')
   fi
   if [[ -z "$master_ips" ]]; then
     echo >&2 "could not find public IPs for site $site, terraform apply status:"
@@ -1245,4 +1246,96 @@ loki() {
     LOKI_TLS_SKIP_VERIFY=1 \
     LOKI_ADDR="https://${compass_hostname}/analytics/api/datasources/proxy/2" \
     logcli $@
+}
+
+setup-ce() {
+  local environment
+  local site
+  local usage="usage:\nsetup-ce [environment] site-name"
+  if [ ! -v 1 ]; then
+    echo >&2 "must specify site"
+    echo >&2 "$usage"
+    return 1
+  fi
+  if [ $# -eq 2 ]; then
+    environment="$1"
+    shift
+  else
+    environment=demo1
+  fi
+  local compass_hostname=$(env-compass-hostname "$environment")
+  local site_fqdn=$(env-site-fqdn "$environment")
+  site="$1"
+  # check that ssh works
+  echo "checking public IPs for ${site}..."
+  export IFS=$'\n'
+  public_ips=($(site-public-ips $environment $site))
+  for ip in $public_ips; do
+    echo "testing ssh to ${site} at ${ip}..."
+    if ! ssh -nq -i ~/.ves-internal/$environment/id_rsa "vesop@${ip}" >/dev/null; then
+      echo >&2 "ssh to $ip failed"
+      return 1
+    fi
+    for file in ~/onedrive/ce-files/*; do
+      echo "copying $(basename ${file}) to ${site} at ${ip}..."
+      if ! scp -q -i "~/.ves-internal/$environment/id_rsa" "$file" "vesop@${ip}:"; then
+        echo >&2 "scp of $file to $ip failed"
+        return 1
+      fi
+    done
+    echo "installing remote files..."
+    ssh -q -i "~/.ves-internal/$environment/id_rsa" "vesop@${ip}" -o RemoteCommand="sudo cp -v plog /opt/bin/" || return 1
+    ssh -q -i "~/.ves-internal/$environment/id_rsa" "vesop@${ip}" -o RemoteCommand="sudo cp -v .vimrc /root" || return 1
+    ssh -q -i "~/.ves-internal/$environment/id_rsa" "vesop@${ip}" -o RemoteCommand="sudo cp -v .bashrc /root" || return 1
+  done
+  echo "CE $site setup successfully"
+}
+
+# -subj "/CN=example.com" -addext "subjectAltName=DNS:example.com,DNS:www.example.net,IP:10.0.0.1"
+# print -R ${(pj|,|)domains}
+# TODO: support ECDSA
+generate-tls-cert() {
+  local usage="usage:\ngenerate-tls-cert expiration-days domains...\n  (note: the first domain will be used as the CN and any subsequent domains will be used as SANs)"
+  if [[ $# -lt 2 ]]; then
+    echo >&2 "error: must specify expiration-days and at least one domain"
+    echo >&2 $usage
+    return 1
+  fi
+  local days="$1"
+  shift
+  local cn="$1"
+  local subject="/CN=${cn}"
+  shift
+  local sans=''
+  if [[ -n "$1" ]]; then
+    sans="subjectAltName="
+    while [[ $# -gt 0 ]]; do
+      sans="${sans}DNS:${1}"
+      shift
+      if [[ -n "$1" ]]; then
+        sans="${sans},"
+      fi
+    done
+  fi
+  local keyfile="${cn}.key"
+  local crtfile="${cn}.crt"
+  rm -rf "$keyfile" || :
+  rm -rf "$crtfile" || :
+  (\
+    if [[ -n "$sans" ]]; then
+      openssl req -x509 -newkey rsa:4096 -sha256 -days "$days" -nodes \
+        -keyout "$keyfile" -out "$crtfile" -subj "$subject" \
+        -addext "$sans"
+    else
+      openssl req -x509 -newkey rsa:4096 -sha256 -days "$days" -nodes \
+        -keyout "$keyfile" -out "$crtfile" -subj "$subject"
+    fi) \
+  && certhash=$(openssl x509 -noout -modulus -in "$crtfile" | openssl md5) \
+  && keyhash=$(openssl rsa -noout -modulus -in "$keyfile" | openssl md5) \
+  && (\
+    if [[ "$certhash" != "$keyhash" ]]; then
+      echo >&2 "error: certificate hash does not match key hash"
+      return 1
+    fi) \
+      && echo "certificate generated successfully:\n - certificate: $crtfile\n - key: $keyfile"
 }

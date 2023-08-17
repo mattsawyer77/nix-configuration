@@ -108,10 +108,9 @@ in
             cp ../vterm.el $out
           '';
         };
-        emacs-mac = (prev.emacsUnstable.override {
+        emacs-mac = (prev.emacs-unstable.override {
           srcRepo = true;
           withSQLite3 = true;
-          # withXwidgets = true;
         }).overrideAttrs (o: rec {
           version = "29.0.90";
           src = emacs-src;

@@ -52,7 +52,7 @@
         :nv "#" #'evilnc-comment-or-uncomment-lines)
   )
 
-(after! (evil projectile consult)
+(after! (general evil projectile consult)
   (map! :map general-override-mode-map
         :nv "g d" #'+lookup/definition
         :nv "g t" #'+lookup/type-definition
