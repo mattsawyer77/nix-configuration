@@ -35,8 +35,10 @@ let
     dockutil
     dos2unix
     editorconfig-core-c
-    emacs-mac
-    emacs-vterm
+    emacsPackages.vterm
+    emacs29-macport
+    # emacs-mac
+    # emacs-vterm
     # envsubst # conflicts with gettext which is required for home-manager
     eternal-terminal
     exa
@@ -196,6 +198,8 @@ let
     LESS = "-F -i -M -R -X --incsearch --mouse --wheel-lines 3";
     SAML2AWS_USER_AGENT =
       "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.00) Gecko/20100101 Firefox/82.0";
+    # workaround vterm looking for glibtool instead of libtool
+    LIBTOOL = "libtool";
   };
   extraPaths = [
     (homeDirectory + "/" + localBinPath)

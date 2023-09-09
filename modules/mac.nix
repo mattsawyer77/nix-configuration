@@ -2,9 +2,9 @@
 , pkgs
 , lib
 , nil
-, emacs-overlay
-, emacs-src
-, emacs-vterm-src
+  # , emacs-overlay
+  # , emacs-src
+  # , emacs-vterm-src
 , ...
 }:
 
@@ -70,10 +70,10 @@ in
       #   in self;
     };
     overlays = [
-      emacs-overlay.overlay
-      (import ./emacs-mac.nix {
-        inherit config pkgs lib emacs-overlay emacs-src emacs-vterm-src;
-      })
+      # emacs-overlay.overlay
+      # (import ./emacs-mac.nix {
+      #   inherit config pkgs lib emacs-overlay emacs-src emacs-vterm-src;
+      # })
       (import ./neovim.nix)
       nil.overlays.nil
       (import ./golangci-lint.nix)
