@@ -213,3 +213,6 @@ EOF
   done
 }
 
+refresh-env() {
+  __HM_SESS_VARS_SOURCED='' source /etc/profiles/per-user/matt/etc/profile.d/hm-session-vars.sh
+}
