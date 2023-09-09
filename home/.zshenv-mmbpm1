@@ -16,6 +16,23 @@ else
   export VISUAL=nvim
 fi
 
+nix-config-check() {
+  local flake_name=$(hostname | tr '[:upper:]' '[:lower:]' | sd '\.local$' '')
+  darwin-rebuild check --flake ~/workspaces/nix-configuration#${flake_name}
+}
+
+nix-config-switch() {
+  local flake_name=$(hostname | tr '[:upper:]' '[:lower:]' | sd '\.local$' '')
+  sudo echo -n \
+    && darwin-rebuild switch --flake ~/workspaces/nix-configuration#${flake_name}
+}
+
+nix-config-update() {
+  local flake_name=$(hostname | tr '[:upper:]' '[:lower:]' | sd '\.local$' '')
+  (cd ~/workspaces/nix-configuration \
+    && nix flake update)
+}
+
 launchctl-restart() {
   if [[ -v 1 ]]; then
     pattern="$1"
