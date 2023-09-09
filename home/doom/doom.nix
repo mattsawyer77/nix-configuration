@@ -15,7 +15,7 @@
       echo 'doom is not yet installed, activation should occur via home.file."doom.d"'
       exit 0
     fi
-    $DRY_RUN_CMD $DOOM purge --force --pager cat \
+    ($DRY_RUN_CMD $DOOM purge --force --pager cat || :) \
       && $DRY_RUN_CMD $DOOM sync --force --pager cat \
       && set +x \
       && $DRY_RUN_CMD echo "doom emacs synced" \
