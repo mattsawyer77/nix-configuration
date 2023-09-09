@@ -7,6 +7,7 @@
 ;; (unpin! treemacs)
 (unpin! better-jumper)
 (package! adoc-mode)
+(unpin! doom-modeline)
 (package! doom-modeline)
 (package! prettier-js)
 (package! evil-nerd-commenter)

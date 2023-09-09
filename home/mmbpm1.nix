@@ -96,6 +96,7 @@ let
     # mutagen # broken as of 2022-05-13
     ncurses
     neovim # customized in ./neovim.nix overlay
+    nerdfonts
     netcat
     netperf
     # nim
@@ -256,6 +257,7 @@ in
       target = ".config/karabiner/karabiner.json";
     };
   };
+  fonts.fontconfig.enable = true;
   programs.git = {
     aliases = {
       lpg =
