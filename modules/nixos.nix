@@ -188,7 +188,8 @@ with lib;
         };
         emacs-nixos = (prev.emacsGit.override {
           srcRepo = true;
-          nativeComp = true;
+          # deprecated?
+          # withNativeCompilation = true;
           withSQLite3 = true;
         }).overrideAttrs (o: rec {
           version = "30.0.50";
