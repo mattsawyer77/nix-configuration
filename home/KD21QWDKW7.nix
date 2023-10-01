@@ -35,11 +35,11 @@ let
     dockutil
     dos2unix
     editorconfig-core-c
-    emacs-mac
-    emacs-vterm
+    emacs29-macport
+    # emacs-vterm
     # envsubst # conflicts with gettext which is required for home-manager
     eternal-terminal
-    exa
+    eza
     fd
     findutils
     fontconfig
@@ -88,6 +88,7 @@ let
     # llvm
     # llvmPackages_12.lldb
     # llvm_12
+    lua-language-server
     luajit
     # most
     msgpack
@@ -96,6 +97,7 @@ let
     # mutagen # broken as of 2022-05-13
     ncurses
     neovim # customized in ./neovim.nix overlay
+    nerdfonts
     netcat
     netperf
     # nim
@@ -134,7 +136,7 @@ let
     # redis
     ripgrep
     rnix-lsp
-    rust-analyzer
+    # rust-analyzer
     rustup
     # scons
     sd
@@ -208,6 +210,7 @@ let
   };
 in
 {
+  imports = [ ./wezterm ];
   home = {
     homeDirectory = homeDirectory;
     packages = homePackages;
@@ -242,7 +245,8 @@ in
       done
       set +x
     '';
-    activation.doom = doomConfig.activation;
+    # disabled since doom emacs sync isn't working well
+    # activation.doom = doomConfig.activation;
     file."${doomDirectory}" = doomConfig.userConfigDir;
     # for git, $EDITOR/$VISUAL can't be set to reference a shell function, so deploy the script as follows
     file."em.zsh" = {
@@ -412,7 +416,7 @@ in
         "openssl rand -hex 6 | sed 's/(..)/1:/g; s/.$//' | xargs sudo ifconfig $(route -n get default | grep interface: | cut -d':' -f2 | awk '{print $1}') ether";
       k = "kubectl";
       kv = "kubectl -n ves-system";
-      l = "exa -alF";
+      l = "eza -alF";
       ts = "tmux new-session -n main -s";
       ta = "tmux attach -t";
       tl = "tmux list-sessions";

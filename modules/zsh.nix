@@ -2,7 +2,7 @@
 
 {
   environment.shellAliases = {
-    ssh = "TERM=xterm-256color ssh";
+    # ssh = "TERM=xterm-256color ssh";
     socks4proxy = "ssh -D 8888 -f -C -q -N";
     randomizeMacAddress =
       "openssl rand -hex 6 | sed 's/(..)/1:/g; s/.$//' | xargs sudo ifconfig $(route -n get default | grep interface: | cut -d':' -f2 | awk '{print $1}') ether";
@@ -42,7 +42,6 @@
     setopt HIST_REDUCE_BLANKS
     setopt HIST_IGNORE_SPACE
 
-    alias ssh='TERM=xterm-256color ssh'
     alias socks4proxy='ssh -D 8888 -f -C -q -N'
     alias k='kubectl'
     alias l='exa -alF'

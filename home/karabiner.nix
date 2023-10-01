@@ -25,6 +25,7 @@ in {
                 bundle_identifiers = [
                   "^org\\.alacritty"
                   "^io\\.alacritty"
+                  "^com\\.github\\.wez\\.wezterm"
                   "^org\\.gnu\\.emacs"
                   "^org\\.gnu\\.Emacs"
                   "com.jetbrains.goland"

@@ -7,8 +7,8 @@
 ;; (unpin! treemacs)
 ;; (unpin! better-jumper)
 (package! adoc-mode)
-(unpin! doom-modeline)
-(package! doom-modeline)
+;; (unpin! doom-modeline)
+;; (package! doom-modeline)
 (package! prettier-js)
 (package! evil-nerd-commenter)
 (package! highlight-indent-guides)
@@ -16,7 +16,7 @@
 ;; (package! flycheck-posframe)
 ;; (when EMACS29+
 ;; (package! evil-textobj-tree-sitter)
-  ;; )
+;; )
 ;; (unless EMACS29+
 ;; (unpin! tree-sitter)
 ;; (package! tree-sitter)
@@ -31,9 +31,9 @@
 (unpin! protobuf-mode)
 (package! protobuf-mode
   :recipe (:host github
-                 :repo "protocolbuffers/protobuf"
-                 :nonrecursive t
-                 :files ("editors/protobuf-mode.el")))
+           :repo "protocolbuffers/protobuf"
+           :nonrecursive t
+           :files ("editors/protobuf-mode.el")))
 
 (package! org-pandoc-import
   :recipe (:host github
@@ -72,5 +72,10 @@
            :branch "main"))
 ;; (package! vertico-posframe
 ;;     :recipe (:host github :repo "tumashu/vertico-posframe"))
+(package! autothemer)
+(package! kanagawa-theme
+  :recipe (:host github
+           :repo "mattsawyer77/kanagawa-theme"
+           :branch "main"))
 
 (disable-packages! hl-line)

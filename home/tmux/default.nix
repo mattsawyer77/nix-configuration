@@ -146,13 +146,13 @@ let
     }
     {
       name = "default-terminal";
-      value = "alacritty";
+      value = "tmux-256color";
       flags = [ "global" ];
     }
     {
       # 24-bit color
       name = "terminal-overrides";
-      value = ",alacritty:RGB";
+      value = ",xterm-256color:Tc";
       flags = [ "global" "append" ];
     }
   ] ++ optionOverrides;
