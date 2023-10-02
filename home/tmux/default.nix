@@ -220,25 +220,39 @@ let
 
 in
 {
-  enable = true;
-  package = pkgs.tmux;
-  plugins = with pkgs.tmuxPlugins; [
-    resurrect
+  home.packages = with pkgs; [
+    tmux
+    tmuxPlugins.resurrect
   ];
-  baseIndex = 1;
-  clock24 = true;
-  disableConfirmationPrompt = true;
-  historyLimit = 50000;
-  keyMode = "vi";
-  prefix = "C-space";
-  shortcut = "space"; # ??
-  sensibleOnTop = false;
-  shell = "${pkgs.zsh}/bin/zsh";
-  extraConfig = ''
-    ${mapKeyUnbinds unbindKeys}
-    ${mapKeyBinds "bind -n" rootKeys}
-    ${mapKeyBinds "bind" prefixKeys}
-    ${clipboardSettings}
-    ${mapOptions extraConfigOptions}
-  '';
+  programs.tmux = {
+    enable = true;
+    package = pkgs.tmux;
+    plugins = with pkgs.tmuxPlugins; [
+      resurrect
+    ];
+    baseIndex = 1;
+    clock24 = true;
+    disableConfirmationPrompt = true;
+    historyLimit = 50000;
+    keyMode = "vi";
+    prefix = "C-space";
+    shortcut = "space"; # ??
+    sensibleOnTop = false;
+    shell = "${pkgs.zsh}/bin/zsh";
+    extraConfig = ''
+      ${mapKeyUnbinds unbindKeys}
+      ${mapKeyBinds "bind -n" rootKeys}
+      ${mapKeyBinds "bind" prefixKeys}
+      ${clipboardSettings}
+      set-environment LESS '-F -i -M -R -X --incsearch'
+      ${mapOptions extraConfigOptions}
+    '';
+  };
+  programs.zsh = {
+    shellAliases = {
+      ts = "tmux new-session -n main -s";
+      ta = "tmux attach -t";
+      tl = "tmux list-sessions";
+    };
+  };
 }

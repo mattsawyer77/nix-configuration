@@ -353,6 +353,11 @@
   (setq-default js2-basic-offset 2)
   )
 
+(after! lsp-mode
+  ;; lsp-terraform is broken and breaks other lsp clients,
+  ;; see https://github.com/emacs-lsp/lsp-mode/issues/3577
+  (delete 'lsp-terraform lsp-client-packages)
+  )
 
 (after! (lsp-mode lsp-ui)
   ;; borrowed from https://github.com/emacs-lsp/lsp-ui/issues/184#issuecomment-1162406920

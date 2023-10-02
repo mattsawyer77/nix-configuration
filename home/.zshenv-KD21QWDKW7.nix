@@ -213,6 +213,10 @@ skopeo-acr-login() {
       --password-stdin
 }
 
+acr-login() {
+  az login --tenant ves.f5.com && az acr login --name volterra && skopeo-acr-login
+}
+
 skopeo-inspect() {
   local url
   if echo "$url" | grep '^docker://' >/dev/null; then

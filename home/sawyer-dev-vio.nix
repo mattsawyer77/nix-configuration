@@ -160,7 +160,7 @@ let
     LANG = "en_US.UTF-8";
     LANGUAGE = "en_US.UTF-8";
     LC_ALL = "en_US.UTF-8";
-    LESS = "-F -i -M -R -X --incsearch --mouse --wheel-lines 3";
+    LESS = "-F -i -M -R -X --incsearch";
     SAML2AWS_USER_AGENT = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.00) Gecko/20100101 Firefox/82.0";
     # not working (causes the terminal to freeze):
     # SKIM_TMUX_OPTS = "--color=current_bg:24 --height=40%";
