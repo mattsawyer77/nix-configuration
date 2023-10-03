@@ -68,7 +68,7 @@ in
       doomDir = doomDirectory;
     })
     (import ./git {
-      inherit pkgs;
+      inherit pkgs lib;
       defaultEmail = "m.sawyer@f5.com";
       defaultUser = "Matt Sawyer";
     })

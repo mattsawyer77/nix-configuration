@@ -1,8 +1,13 @@
-{ pkgs, defaultEmail, defaultUser, ... }: {
+{ pkgs, lib, defaultEmail, defaultUser, ... }: {
   home.packages = with pkgs; [
     delta
     gitFull
   ];
+  # some tools need to docker-mount ~/.gitconfig and can't handle symlinks or XDG-style ~/.config/git/config
+  home.activation.gitconfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    echo "copying .gitconfig to $HOME"
+    cp -afvL ~/.config/git/config ~/.gitconfig
+  '';
   programs.git = {
     package = pkgs.gitFull;
     enable = true;
