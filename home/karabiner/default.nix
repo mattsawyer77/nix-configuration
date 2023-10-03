@@ -182,6 +182,36 @@ let
               type = "basic";
             }];
           }
+          {
+            description =
+              "map ctrl+space to tab search in Firefox";
+            manipulators = [{
+              conditions = [{
+                type = "frontmost_application_if";
+                bundle_identifiers = [ "^org\\.mozilla\\." ];
+              }];
+              from = {
+                modifiers = { mandatory = [ "left_control" ]; };
+                key_code = "spacebar";
+              };
+              to = [
+                {
+                  modifiers = [ "left_command" ];
+                  key_code = "l";
+                }
+                {
+                  # % + a space activates "tab search" in the search bar
+                  modifiers = [ "right_shift" ];
+                  key_code = "5";
+                }
+                {
+                  modifiers = [];
+                  key_code = "spacebar";
+                }
+              ];
+              type = "basic";
+            }];
+          }
         ];
       };
       devices = [
