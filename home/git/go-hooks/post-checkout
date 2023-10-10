@@ -1,0 +1,35 @@
+#!/usr/bin/env zsh
+
+# Looks for changes to go files or go.mod, and automates running go mod tidy and/or go mod vendor.
+
+# Exit early if this was only a file checkout, not a branch change ($3 == 1)
+[[ $3 == 0 ]] && exit 0
+
+set -eEuo pipefail
+
+oldRef=$1
+newRef=$2
+
+# Exit early if the local branch is behind the remote
+LOCAL=$(git rev-parse @ || :)
+REMOTE=$(git rev-parse @{u} 2> /dev/null || :)
+BASE=$(git merge-base @ @{u} 2> /dev/null || :)
+
+if [[ "$LOCAL" != "$REMOTE" && "$LOCAL" = "$BASE" ]]; then
+  echo "behind origin -- not running go post-checkout hook."
+  exit 0
+fi
+
+function changed {
+  git diff --name-only HEAD@{2} HEAD | grep "$1" >/dev/null 2>&1
+}
+
+if changed '\.go$'; then
+  echo "go files changed, running go mod tidy..."
+  go mod tidy
+fi
+
+if changed 'go.mod'; then
+  echo "go.mod changed, running go mod vendor..."
+  go mod vendor
+fi

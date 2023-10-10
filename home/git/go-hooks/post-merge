@@ -1,0 +1,19 @@
+#!/usr/bin/env zsh
+
+set -eEuo pipefail
+
+# Looks for changes to go files or go.mod, and automates running go mod tidy and/or go mod vendor.
+
+function changed {
+  git diff --name-only HEAD@{2} HEAD | grep "$1" >/dev/null 2>&1
+}
+
+if changed '\.go$'; then
+  echo "go files changed, running go mod tidy"
+  go mod tidy
+fi
+
+if changed 'go.mod'; then
+  echo "go.mod changed, running go mod vendor"
+  go mod vendor
+fi
