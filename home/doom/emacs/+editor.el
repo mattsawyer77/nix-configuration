@@ -810,3 +810,5 @@
 
 (after! mermaid-mode
   (setq mermaid-flags "--puppeteerConfigFile ~/.config/puppeteerConfigFile.json"))
+
+(after! git-auto-commit-mode (setq gac-automatically-push-p t))
