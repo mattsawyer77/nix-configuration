@@ -4,6 +4,7 @@ return {
   color_scheme = "Kanagawa (Gogh)",
   hide_tab_bar_if_only_one_tab = true,
   line_height = 1.2,
+  freetype_load_flags = 'NO_HINTING',
   window_padding = {
     left = "5pt",
     right = "5pt",
