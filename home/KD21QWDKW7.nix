@@ -9,6 +9,10 @@ let
   # to update/regenerate, run node2nix -i <(echo '["bash-language-server", "prettier", "typescript-formatter"]') --nodejs-18
   # then copy the resulting files into ./npm-packages
   npmPackages = import ./npm-packages { inherit pkgs; };
+  # enable `gsed` alias which calls gnused for compatibility with homebrew
+  gsed = pkgs.writeShellScriptBin "gsed" ''exec ${pkgs.gnused}/bin/sed "$@"'';
+  # enable `glibtool` alias which calls libtool for compatibility with homebrew
+  glibtool = pkgs.writeShellScriptBin "glibtool" ''exec ${pkgs.libtool}/bin/libtool "$@"'';
   homePackages = (with pkgs; [
     aws-iam-authenticator
     awscli
@@ -35,6 +39,11 @@ let
     terraform-ls
     tflint
   ])
+  # wrappers for homebrew compatibility
+  ++ [
+    glibtool
+    gsed
+  ]
   # npm packages setup via node2nix
   ++ (builtins.attrValues npmPackages)
   # flakes outside nixpkgs (that don't have overlays)
