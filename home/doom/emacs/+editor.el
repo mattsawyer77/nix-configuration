@@ -195,12 +195,15 @@
   (setq uniquify-buffer-name-style 'forward))
 
 (after! treemacs
+  (require 'treemacs-projectile)
   (treemacs-follow-mode 1)
   (treemacs-project-follow-mode 1)
   (treemacs-git-mode 'deferred)
   (setq-default treemacs--width-is-locked nil)
   (setq treemacs-position 'left)
-  (setq treemacs-width 40))
+  (setq treemacs-width 40)
+  (setq treemacs-project-follow-cleanup t)
+  )
 
 
 (after! (textsize treemacs)
