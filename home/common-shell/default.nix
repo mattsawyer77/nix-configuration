@@ -41,8 +41,10 @@
         l = "eza -alF";
       };
       initExtra = ''
+        zstyle ':completion:*:*:*:default' menu yes select search
         command -v kubectl >/dev/null && source <(kubectl completion zsh)
         command -v zoxide >/dev/null && eval "$(zoxide init zsh)"
+        command -v az >/dev/null && source ${pkgs.azure-cli}/share/bash-completion/completions/az.bash
         printf '\e]2;'$(hostname)'\a'
       '';
     };
