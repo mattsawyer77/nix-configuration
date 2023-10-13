@@ -1399,3 +1399,32 @@ generate-tls-cert() {
     fi) \
       && echo "certificate generated successfully:\n - certificate: $crtfile\n - key: $keyfile"
 }
+
+# kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+k8s-dnsutils() {
+  ns=${NS:-ves-system}
+  if kubectl -n "$ns" get pod dnsutils >/dev/null 2>&1; then
+    echo >&2 "error: dnsutils pod already running"
+    return 1
+  fi
+  kubectl -n "$ns" apply -f <(cat<<EOF
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dnsutils
+  namespace: ${ns}
+spec:
+  containers:
+  - name: dnsutils
+    image: registry.k8s.io/e2e-test-images/jessie-dnsutils:1.3
+    command:
+      - sleep
+      - "infinity"
+    imagePullPolicy: IfNotPresent
+  restartPolicy: Always
+EOF
+) \
+  && kubectl -n "$ns" wait --for=condition=Ready pod/dnsutils \
+  && kubectl -n "$ns" exec -it dnsutils -c dnsutils -- bash
+  kubectl -n "$ns" delete pod dnsutils
+}
