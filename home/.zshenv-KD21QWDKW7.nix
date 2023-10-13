@@ -233,6 +233,47 @@ acr-login() {
   az login --tenant ves.f5.com && az acr login --name volterra && skopeo-acr-login
 }
 
+# find an image with the given tag name (i.e. name is equal to the git commit hash or branch name)
+acr-find-tag() {
+  local repo=$1
+  if [[ -z "$repo" ]]; then
+    echo >&2 "error: must specify repo and git ref to search for"
+    return 1
+  fi
+  shift
+  local name=$1
+  if [[ -z "$name" ]]; then
+    echo >&2 "error: must specify git ref to search for"
+    return 1
+  fi
+  shift
+  # try to transform branch name to pattern used to publish to ACR
+  name=$(echo "$name" | sd '\W' '-' | sd '\-$' '' | tr '[:upper:]' '[:lower:]')
+  az acr repository show-tags --name volterra --repository "ves.io/${repo}" --detail --orderby time_desc --query "[?contains(name,'${name}')]" $@
+}
+
+# find an image with the given tag name (i.e. name is equal to the git commit hash or branch name)
+acr-find-digest() {
+  local repo=$1
+  if [[ -z "$repo" ]]; then
+    echo >&2 "error: must specify repo and git ref to search for"
+    return 1
+  fi
+  shift
+  local digest=$1
+  if [[ -z "$digest" ]]; then
+    echo >&2 "error: must specify image digest to search for"
+    return 1
+  fi
+  shift
+  digest=$(echo "$digest" | pcregrep -o 'sha256:[0-9a-f]{40}')
+  if [[ -z "$digest" ]]; then
+    echo >&2 "error: invalid digest"
+    return 1
+  fi
+  az acr repository show-tags --name volterra --repository "ves.io/${repo}" --detail --orderby time_desc --query "[?digest=='${digest}']" $@
+}
+
 skopeo-inspect() {
   local url
   if echo "$url" | grep '^docker://' >/dev/null; then
