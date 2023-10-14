@@ -1428,3 +1428,55 @@ EOF
   && kubectl -n "$ns" exec -it dnsutils -c dnsutils -- bash
   kubectl -n "$ns" delete pod dnsutils
 }
+
+# find pipelines that failed due to the given test failing
+gitlab-test-failures() {
+  local project_id=${PROJECT_ID:-5509942}
+  local job_name=${JOB}
+  if [[ -z "$job_name" ]]; then
+    echo >&2 "error: JOB is required"
+    return 1
+  fi
+  local test_name=${TEST_NAME}
+  if [[ -z "$test_name" ]]; then
+    echo >&2 "error: TEST_NAME is required"
+    return 1
+  fi
+  local per_page=${PER_PAGE:-100}
+  local pages=${PAGES:-1}
+  local max_results=${MAX_RESULTS:-1}
+  local found_results=0
+  local curl_metadata_out_file=$(mktemp)
+  export IFS=$'\n'
+  while true; do
+    results=$(curl -Ssv --globoff --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" "https://gitlab.com/api/v4/projects/${PROJECT_ID}/jobs?scope[]=failed&per_page=${PER_PAGE}&page=${page}" 2>$curl_metadata_out_file)
+    if [[ $? -ne 0 ]]; then
+      echo 2>&1 "failed to get jobs"
+      rm -f $curl_metadata_out_file
+      return 1
+    fi
+    failed_job_ids=($(printf '%s\n' "$results" | jq 'map(select(.name=="unittest-client"))[]|.id'))
+    for job_id in $failed_job_ids; do
+      job_log=$(curl -Ss --location --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" "https://gitlab.com/api/v4/projects/${PROJECT_ID}/jobs/${job_id}/trace")
+      failed_tests=($(printf '%s\n' "$job_log" | pcregrep -o 'FAIL:\s*Test[\w_]+' | sd '^.*(Test.*)' '$1' | sort -u))
+      echo >&2 "\njob ID: $job_id found failed tests: $failed_tests"
+      for failed_test in $failed_tests; do
+        if [[ $failed_test == "$test_name" ]]; then
+          (( found_results += 1 ))
+          printf '%s\n' "$job_log"
+        fi
+      done
+    done
+    if [[ $found_results -eq $max_results ]]; then
+      break
+    fi
+    # get next page from response headers
+    next_page=$(pcregrep 'x-next-page: \d+' $curl_metadata_out_file | pcregrep -o '\d+')
+    if [[ -n "$next_page" ]] && [[ "$next_page" -le "$pages" ]]; then
+      page=$next_page
+    else
+      break
+    fi
+  done
+  rm -f $curl_metadata_out_file
+}
