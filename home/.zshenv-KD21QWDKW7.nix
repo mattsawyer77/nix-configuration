@@ -675,22 +675,28 @@ env-site-fqdn() {
     return 1
   fi
   local environment="$1"
-  local site="${2:-gc01}"
+  local site="${2:-gc}"
   case $environment in
     demo1)
+      if [[ "$site" == "gc" ]]; then
+        site=gc01
+      fi
       site_fqdn="${site}.int.ves.io"
       ;;
     crt)
+      if [[ "$site" == "gc" ]]; then
+        site=gc01
+      fi
       site_fqdn="${site}.int.ves.io"
       ;;
     staging)
-      if [[ "$site" == "gc01" ]]; then
+      if [[ "$site" == "gc" ]]; then
         site=gc1-iad-01
       fi
       site_fqdn="${site}.int.volterra.us"
       ;;
     prod)
-      if [[ "$site" == "gc01" ]]; then
+      if [[ "$site" == "gc" ]]; then
         site=gc01-cle
       fi
       site_fqdn="${site}.int.ves.io"
@@ -855,25 +861,24 @@ introspect() {
   fi
 }
 
-# Service Introspection C(LI)
-# https://compass-lma.demo1.volterra.us/introspection/gc01.int.ves.io/maurice/ves.io.stdlib/introspect/read/object/ves.io.maurice.site.Object?response_format=1&tenant_filter=compass&page_start=0&page_limit=1000
-# https://compass-lma.demo1.volterra.us/introspection/gc01.int.ves.io/maurice/ves.io.stdlib/introspect/read/object/ves.io.maurice.site.Object/3395c300-35c3-4e31-b733-c10607ab780e
-# https://compass-lma.demo1.volterra.us/introspection/sawyer-osm-gcp-m.testcorp-hagrmdbk.tenant.int.ves.io/piku/ves.io.stdlib/introspect/read/object/ves.io.piku.oper.bgp_state.Object?response_format=1&page_start=0&page_limit=1000
+# Service Introspection C(LI) [sic]
 sic() {
-  local usage="sic <environment> <service> <object type> [<object UID>] [--tenant <tenantname>]\nwhere environment is one of demo1, crt, staging, or prod"
-  if ! command -v ijq >/dev/null; then
-    echo >&2 "error: this requires ijq to be installed"
+  if ! command -v jq >/dev/null; then
+    echo >&2 "sic requires jq to be installed"
     return 1
   fi
-  if [[ $# -lt 3 ]]; then
+  local usage="sic <environment> <site> <service> <object type> [<object UID>] [--tenant <tenantname>]\nwhere:\n\tenvironment is one of demo1, crt, staging, or prod\n\tsite can be a site name (or 'gc', which will be transformed to the environment's gc site name automatically)"
+  if [[ $# -lt 4 ]]; then
     echo >&2 $usage
     return 1
   fi
   local environment="$1"
   shift
+  local site=$1
+  shift
   local service=$1
   shift
-  local site=$(env-site-fqdn "$environment" "$service")
+  local site_fqdn=$(env-site-fqdn "$environment" "$site")
   local compass_hostname=$(env-compass-hostname "$environment")
   if echo "$service" | grep -E '.+/.+' >/dev/null; then
     site="$(echo $service | cut -d'/' -f1)"
@@ -894,9 +899,9 @@ sic() {
   local url=''
   local initial_jq_query='.'
   if [[ -n "$uid" ]]; then
-    url="https://${compass_hostname}/introspection/${site}/${service}/ves.io.stdlib/introspect/read/object/${object_type}/${uid}"
+    url="https://${compass_hostname}/introspection/${site_fqdn}/${service}/ves.io.stdlib/introspect/read/object/${object_type}/${uid}"
   else
-    url="https://${compass_hostname}/introspection/${site}/${service}/ves.io.stdlib/introspect/read/object/${object_type}?response_format=1&page_start=0&page_limit=1000"
+    url="https://${compass_hostname}/introspection/${site_fqdn}/${service}/ves.io.stdlib/introspect/read/object/${object_type}?response_format=1&page_start=0&page_limit=1000"
     if [[ -n "$tenant" ]]; then
       url="${url}&tenant_filter=${tenant}"
     fi
@@ -917,8 +922,9 @@ sic() {
         fi
         echo >&2 "$err"
         return 1
+      else
+        printf '%s\n' "$response" | jq -r '.get_responses|to_entries|map(.value.object|del(."@type"))'
       fi
-      printf '%s\n' "$response" | jq "$initial_jq_query" | ijq -r
     else
       echo >&2 "failed to query url: $url"
       return 1
