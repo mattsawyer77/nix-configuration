@@ -6,7 +6,9 @@
   # some tools need to docker-mount ~/.gitconfig and can't handle symlinks or XDG-style ~/.config/git/config
   home.activation.gitconfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     echo "copying .gitconfig to $HOME"
+    rm -rf ~/.gitconfig
     cp -afvL ~/.config/git/config ~/.gitconfig
+    chmod 400 ~/.gitconfig
   '';
   programs.git = {
     package = pkgs.gitFull;
@@ -25,6 +27,7 @@
     delta = {
       enable = true;
       options = {
+        tabs = "2";
         paging = "always";
         line-numbers = "true";
         navigate = "true";
@@ -48,6 +51,9 @@
         "ssh://git@gitlab.com/" = {
           insteadOf = "https://gitlab.com/";
         };
+      };
+      safe = {
+        directory = "*";
       };
     };
   };
