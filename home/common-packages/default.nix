@@ -63,7 +63,7 @@
     neovim # customized in ./neovim.nix overlay
     nerdfonts
     netcat
-    netperf
+    # netperf # broken as of 2023-11-27
     # nim
     # nimlsp
     nil
@@ -77,7 +77,7 @@
     node2nix
     nodejs
     oniguruma
-    opam
+    # opam # broken as of 2023-11-27
     openapi-generator-cli
     pandoc
     pcre

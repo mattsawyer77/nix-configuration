@@ -862,7 +862,8 @@ introspect() {
 }
 
 # Service Introspection C(LI) [sic]
-sic() {
+# moved to a rust-based project, keeping here for reference temporarily
+sic-old() {
   if ! command -v jq >/dev/null; then
     echo >&2 "sic requires jq to be installed"
     return 1

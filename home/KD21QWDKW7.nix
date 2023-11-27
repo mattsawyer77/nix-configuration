@@ -1,4 +1,4 @@
-{ lib, pkgs, username, fontConfig, mkalias, ... }:
+{ config, lib, pkgs, username, fontConfig, mkalias, ... }:
 
 let
   homeDirectory = "/Users/" + username;
@@ -77,7 +77,7 @@ in
       doomDir = doomDirectory;
     })
     (import ./git {
-      inherit pkgs lib;
+      inherit config pkgs lib;
       defaultEmail = "m.sawyer@f5.com";
       defaultUser = "Matt Sawyer";
     })
@@ -100,9 +100,9 @@ in
       $DRY_RUN_CMD chown ${username} ~/Applications
       $DRY_RUN_CMD chmod u+w ~/Applications
 
-      for app in ~/Applications/*.app; do
-        $DRY_RUN_CMD rm -f "$app"
-      done
+      # for app in ~/Applications/*.app; do
+      #   $DRY_RUN_CMD rm -f "$app"
+      # done
 
       find ~/Applications/Home\ Manager\ Apps/* -maxdepth 0 -mindepth 0 -wholename '*.app' -exec readlink '{}' + |
         while read app; do

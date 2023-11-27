@@ -166,52 +166,55 @@ let
               type = "basic";
             }];
           }
-          {
-            description = "Safari customization";
-            manipulators = [{
-              conditions = [{
-                bundle_identifiers = [ "^org\\.apple\\.safari" ];
-                type = "frontmost_application_if";
-              }];
-              description = "prevent esc from from exiting full screen";
-              from = { key_code = "escape"; };
-              to = [{
-                key_code = "escape";
-                modifiers = [ "shift" ];
-              }];
-              type = "basic";
-            }];
-          }
-          {
-            description =
-              "map ctrl+space to tab search in Firefox";
-            manipulators = [{
-              conditions = [{
-                type = "frontmost_application_if";
-                bundle_identifiers = [ "^org\\.mozilla\\." ];
-              }];
-              from = {
-                modifiers = { mandatory = [ "left_control" ]; };
-                key_code = "spacebar";
-              };
-              to = [
-                {
-                  modifiers = [ "left_command" ];
-                  key_code = "l";
-                }
-                {
-                  # % + a space activates "tab search" in the search bar
-                  modifiers = [ "right_shift" ];
-                  key_code = "5";
-                }
-                {
-                  modifiers = [];
-                  key_code = "spacebar";
-                }
-              ];
-              type = "basic";
-            }];
-          }
+          # XXX: the following doesn't work anymore, have to edit the option in Firefox about:config
+          # {
+          #   description = "Safari customization";
+          #   manipulators = [{
+          #     conditions = [{
+          #       bundle_identifiers = [ "^org\\.apple\\.safari" ];
+          #       type = "frontmost_application_if";
+          #     }];
+          #     description = "prevent esc from from exiting full screen";
+          #     from = { key_code = "escape"; };
+          #     to = [{
+          #       key_code = "escape";
+          #       modifiers = [ "shift" ];
+          #     }];
+          #     type = "basic";
+          #   }];
+          # }
+
+          # XXX: Firefox's native tab search is flaky
+          # {
+          #   description =
+          #     "map ctrl+space to tab search in Firefox";
+          #   manipulators = [{
+          #     conditions = [{
+          #       type = "frontmost_application_if";
+          #       bundle_identifiers = [ "^org\\.mozilla\\." ];
+          #     }];
+          #     from = {
+          #       modifiers = { mandatory = [ "left_control" ]; };
+          #       key_code = "spacebar";
+          #     };
+          #     to = [
+          #       {
+          #         modifiers = [ "left_command" ];
+          #         key_code = "l";
+          #       }
+          #       {
+          #         # % + a space activates "tab search" in the search bar
+          #         modifiers = [ "right_shift" ];
+          #         key_code = "5";
+          #       }
+          #       {
+          #         modifiers = [];
+          #         key_code = "spacebar";
+          #       }
+          #     ];
+          #     type = "basic";
+          #   }];
+          # }
         ];
       };
       devices = [
