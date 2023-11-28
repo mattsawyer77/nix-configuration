@@ -174,10 +174,82 @@
     )
   )
 
-(when (fboundp 'pixel-scroll-precision-mode)
-  (add-hook! (prog-mode go-template-mode)
-    (pixel-scroll-precision-mode 1)
-    ))
+(when (and (display-graphic-p) IS-MAC (fboundp 'pixel-scroll-precision-mode))
+  ;; taken from https://maximzuriel.nl/physics-and-code/emacs-mac-smooth-scroll/article
+  (setq scroll-margin 0
+        scroll-conservatively 101)
+
+  (global-set-key (kbd "<wheel-down>") #'pixel-scroll-precision)
+  (global-set-key (kbd "<wheel-up>") #'pixel-scroll-precision)
+
+  (pixel-scroll-precision-mode +1)
+
+  (with-eval-after-load 'pixel-scroll
+    (defun pixel-scroll-precision (event)
+      "Scroll the display vertically by pixels according to EVENT.
+Move the display up or down by the pixel deltas in EVENT to
+scroll the display according to the user's turning the mouse
+wheel."
+      (interactive "e")
+      (let ((window (mwheel-event-window event))
+            (current-window (selected-window)))
+        (when (framep window)
+          (setq window (frame-selected-window window)))
+        (if (and (nth 3 event))
+            (let ((delta
+                   (* -1
+                      (let ((dy (plist-get (nth 3 event) :scrolling-delta-y))
+                            pending-events)
+                        ;; Coalesce vertical mouse wheel events.
+                        (while (setq event (read-event nil nil 1e-5))
+                          (if (and (memq (event-basic-type event)
+                                         '(wheel-up wheel-down))
+                                   (eq window
+                                       (if mouse-wheel-follow-mouse
+                                           (posn-window (event-start event)))))
+                              (setq dy
+                                    (+ dy (plist-get (nth 3 event) :scrolling-delta-y)))
+                            (push event pending-events)))
+                        (if pending-events
+                            (setq unread-command-events (nconc (nreverse pending-events)
+                                                               unread-command-events)))
+                        (round (- dy))))))
+              (unless (zerop delta)
+                (if (> (abs delta) (window-text-height window t))
+                    (mwheel-scroll event nil)
+                  (with-selected-window window
+                    (if (or (and pixel-scroll-precision-interpolate-mice
+                                 (eq (device-class last-event-frame
+                                                   last-event-device)
+                                     'mouse))
+                            (and pixel-scroll-precision-large-scroll-height
+                                 (> (abs delta)
+                                    pixel-scroll-precision-large-scroll-height)
+                                 (let* ((kin-state (pixel-scroll-kinetic-state))
+                                        (ring (aref kin-state 0))
+                                        (time (aref kin-state 1)))
+                                   (or (null time)
+                                       (> (- (float-time) time) 1.0)
+                                       (and (consp ring)
+                                            (ring-empty-p ring))))))
+                        (progn
+                          (let ((kin-state (pixel-scroll-kinetic-state)))
+                            (aset kin-state 0 (make-ring 30))
+                            (aset kin-state 1 nil))
+                          (pixel-scroll-precision-interpolate delta current-window))
+                      (condition-case nil
+                          (progn
+                            (if (< delta 0)
+	                        (pixel-scroll-precision-scroll-down (- delta))
+                              (pixel-scroll-precision-scroll-up delta))
+                            (pixel-scroll-accumulate-velocity delta))
+                        ;; Do not ding at buffer limits.  Show a message instead.
+                        (beginning-of-buffer
+                         (message (error-message-string '(beginning-of-buffer))))
+                        (end-of-buffer
+                         (message (error-message-string '(end-of-buffer))))))))))
+          (mwheel-scroll event nil)))))
+  )
 
 (after! undo-tree
   (setq undo-tree-auto-save-history t)
