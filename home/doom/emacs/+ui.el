@@ -96,6 +96,34 @@
 
 (setq doom-tokyo-night-brighter-comments t)
 (setq doom-feather-brighter-comments t)
+(defun sawyer/kanagawa-setup ()
+  "setup faces for kanagawa, since it is not a doom theme"
+  (when (-contains? custom-enabled-themes 'kanagawa)
+    (set-face-attribute 'font-lock-string-face nil :background "#2A2A37")
+    (setq org-modern-todo-faces
+          '(
+            ("TODO" sawyer/kanagawa/org-todo-face)
+            ("STRT" sawyer/kanagawa/org-todo-start-face)
+            ("WAIT" sawyer/kanagawa/org-todo-wait-face)
+            ("HOLD" sawyer/kanagawa/org-todo-hold-face)
+            ("IDEA" sawyer/kanagawa/org-todo-idea-face)
+            ("DONE" sawyer/kanagawa/org-todo-done-face)
+            ("YES"  sawyer/kanagawa/org-todo-yes-face)
+            ("NO"   sawyer/kanagawa/org-todo-no-face)
+            ("KILL" sawyer/kanagawa/org-todo-kill-face)))))
+(after! kanagawa-theme
+  ;; TODO: query colors from the theme somehow
+  (defface sawyer/kanagawa/org-todo-face       `((t :inherit org-code-face :weight bold :background "#7E9CD8" :foreground "#223249")) "font spec for org todo labels")
+  (defface sawyer/kanagawa/org-todo-start-face `((t :inherit org-code-face :weight bold :background "#98BB6C" :foreground "#223249")) "font spec for org todo start labels")
+  (defface sawyer/kanagawa/org-todo-wait-face  `((t :inherit org-code-face :weight bold :background "#E6C384" :foreground "#49443C")) "font spec for org todo wait labels")
+  (defface sawyer/kanagawa/org-todo-hold-face  `((t :inherit org-code-face :weight bold :background "#E6C384" :foreground "#49443C")) "font spec for org todo hold labels")
+  (defface sawyer/kanagawa/org-todo-idea-face  `((t :inherit org-code-face :weight bold :background "#6A9589" :foreground "#223249")) "font spec for org todo idea labels")
+  (defface sawyer/kanagawa/org-todo-done-face  `((t :inherit org-code-face :weight bold :background "#54546D" :foreground "#223249")) "font spec for org todo done labels")
+  (defface sawyer/kanagawa/org-todo-yes-face   `((t :inherit org-code-face :weight bold :background "#98BB6C" :foreground "#223249")) "font spec for org todo yes labels")
+  (defface sawyer/kanagawa/org-todo-no-face    `((t :inherit org-code-face :weight bold :background "#E82424" :foreground "#43242B")) "font spec for org todo no labels")
+  (defface sawyer/kanagawa/org-todo-kill-face  `((t :inherit org-code-face :weight bold :background "#FF9E3B" :foreground "#43242B")) "font spec for org todo kill labels")
+  (sawyer/kanagawa-setup)
+  (add-hook! doom-load-theme #'sawyer/kanagawa-setup))
 
 (defun sawyer/light-switch ()
   "toggle between light and dark themes"
@@ -909,27 +937,33 @@
   (defface sawyer/org-todo-yes-face   `((t :inherit org-code-face :weight bold :background ,(doom-color 'green) :foreground ,(doom-color 'bg))) "font spec for org todo yes labels")
   (defface sawyer/org-todo-no-face    `((t :inherit org-code-face :weight bold :background ,(doom-color 'red) :foreground ,(doom-color 'bg))) "font spec for org todo no labels")
   (defface sawyer/org-todo-kill-face  `((t :inherit org-code-face :weight bold :background ,(doom-color 'grey) :foreground ,(doom-color 'bg))) "font spec for org todo kill labels")
+  (defun sawyer/doom-org-modern-setup ()
+    "setup org-modern-todo faces for doom-themes"
+    ;; if we have loaded a doom-* theme, we can use doom-color to set org-todo colors
+    (when (cl-find-if (lambda (theme) (eq (string-match-p "doom-" (symbol-name theme)) 0)) custom-enabled-themes)
+      (setq org-modern-todo-faces
+            '(
+              ("TODO" sawyer/org-todo-face)
+              ("STRT" sawyer/org-todo-start-face)
+              ("WAIT" sawyer/org-todo-wait-face)
+              ("HOLD" sawyer/org-todo-hold-face)
+              ("IDEA" sawyer/org-todo-idea-face)
+              ("DONE" sawyer/org-todo-done-face)
+              ("YES" sawyer/org-todo-yes-face)
+              ("NO" sawyer/org-todo-no-face)
+              ("KILL" sawyer/org-todo-kill-face)))))
+  (sawyer/doom-org-modern-setup)
+  (add-hook! doom-load-theme #'sawyer/doom-org-modern-setup))
+
+(after! org-modern
+  ;; table styles are still kinda messed up: https://github.com/minad/org-modern/issues/5
+  (setq org-modern-table nil)
   (custom-set-faces!
     `(org-modern-date-active :inherit org-modern-done :family ,(face-attribute 'sawyer/mono-face :family))
     `(org-modern-date-inactive :inherit org-modern-done :family ,(face-attribute 'sawyer/mono-face :family)))
-
-  ;; table styles are still kinda messed up: https://github.com/minad/org-modern/issues/5
-  (setq org-modern-table nil)
-  (setq org-modern-todo-faces
-        '(
-          ("TODO" sawyer/org-todo-face)
-          ("STRT" sawyer/org-todo-start-face)
-          ("WAIT" sawyer/org-todo-wait-face)
-          ("HOLD" sawyer/org-todo-hold-face)
-          ("IDEA" sawyer/org-todo-idea-face)
-          ("DONE" sawyer/org-todo-done-face)
-          ("YES" sawyer/org-todo-yes-face)
-          ("NO" sawyer/org-todo-no-face)
-          ("KILL" sawyer/org-todo-kill-face)
-          ))
+  (add-hook! org-mode #'org-modern-mode)
+  (add-hook! org-agenda-finalize #'org-modern-agenda)
   )
-(add-hook! org-mode #'org-modern-mode)
-(add-hook! org-agenda-finalize #'org-modern-agenda)
 
 ;; borrow org styles for markdown
 ;; (after! (org markdown-mode)
@@ -1002,3 +1036,5 @@
 ;;     `(adoc-align-face :family ,(face-attribute 'sawyer/mono-face :family))
 ;;     `(adoc-gen-face :foreground ,(face-attribute 'adoc-gen-face :foreground) :family ,(face-attribute 'sawyer/variable-face :family)))
 ;;   )
+
+(load-theme sawyer/dark-theme 't)
