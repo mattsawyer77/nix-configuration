@@ -9,219 +9,81 @@ let
   # to update/regenerate, run node2nix -i <(echo '["bash-language-server", "prettier", "typescript-formatter"]') --nodejs-18
   # then copy the resulting files into ./npm-packages
   npmPackages = import ./npm-packages { inherit pkgs; };
+  # enable `gsed` alias which calls gnused for compatibility with homebrew
+  gsed = pkgs.writeShellScriptBin "gsed" ''exec ${pkgs.gnused}/bin/sed "$@"'';
+  # enable `glibtool` alias which calls libtool for compatibility with homebrew
+  glibtool = pkgs.writeShellScriptBin "glibtool" ''exec ${pkgs.libtool}/bin/libtool "$@"'';
   homePackages = (with pkgs; [
-    alacritty
-    automake
     aws-iam-authenticator
     awscli
     azure-cli
-    bash
-    bat
-    bat-extras.batman
-    bottom # app command is `btm`
-    cachix
-    cask
     ccls
     certigo
-    cmake
-    coreutils
     # curlFull # nixpkgs curl builds with openssl 3 which breaks legacy PKCS12 cert auth
-    deadcode
-    delta
     delve
-    # diff-so-fancy
-    direnv
-    discord
-    dockutil
-    dos2unix
-    editorconfig-core-c
-    emacsPackages.vterm
-    emacs29-macport
-    # emacs-mac
-    # emacs-vterm
     # envsubst # conflicts with gettext which is required for home-manager
-    eternal-terminal
-    eza
-    fd
-    findutils
-    fzf
     # gdb # broken as of 2023-01-20
-    gdbm
-    gettext
-    ghostscript
-    glib
-    # gmp6
-    gnumake
-    gnupg
-    gnuplot
     gnused
-    go
     golangci-lint # customized in golangci-lint.nix overlay since it's broken in nixpkgs right now
     (google-cloud-sdk.withExtraComponents
       [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
-    gocyclo
     golint
-    gopls
-    graphviz
-    grpcurl
-    gvproxy
-    harfbuzzFull
-    helix
-    html-tidy
-    htop
-    httrack
-    ijq
-    isync
-    jansson
-    jq
-    kubectl
-    less
-    libcxx
-    libgccjit
-    libiconv
-    libressl
-    libsndfile
-    libssh2
-    libtool
-    libvterm-neovim
-    libxml2
     lilypond-with-fonts
     # lima
-    # llvm
-    # llvmPackages_12.lldb
-    # llvm_12
-    luajit
-    # most
-    msgpack
-    # mu
-    # multitail
-    # mutagen # broken as of 2022-05-13
-    ncurses
-    neovim # customized in ./neovim.nix overlay
-    nerdfonts
-    netcat
-    netperf
-    # nim
-    # nimlsp
-    nil
-    ninja
-    nix-direnv
-    # nix-linter # broken as of 2023-01-04
-    nix-prefetch
-    nix-prefetch-git
-    nix-zsh-completions
-    nixd
-    nixpkgs-fmt
-    nmap
-    node2nix
-    nodejs
-    oniguruma
-    opam
-    openapi-generator-cli
-    openfortivpn
     openldap
-    # openssl
-    pandoc
-    pcre
-    pcre2
-    # pdfminer
-    pkg-config
-    plantuml
     # podman # broken as of 2022-05-12
-    # protobuf
-    prototool
-    python3
-    python310Packages.grip
-    pywal
-    readline
-    reattach-to-user-namespace
-    # redis
-    ripgrep
-    rnix-lsp
-    rust-analyzer
-    rustup
     # scons
-    sd
-    shared-mime-info
-    shellcheck
-    shfmt
-    skhd
-    skim
-    skopeo
-    starship
-    sqlite
-    taglib
-    taplo
-    terraform
-    terraform-ls
-    tflint
-    tmux
-    tmuxPlugins.resurrect
-    tokei
-    tree
-    # trivy # broken as of 2022-05-24
-    # ttfautohint
-    unixtools.watch
-    upx
-    # vmtouch
-    wget
-    xsv
-    yabai
-    yaml-language-server
-    yarn
-    yj
-    youtube-dl
-    yq-go
-    zlib
-    zoxide
-    zsh
-    zsh-autosuggestions
-    zsh-syntax-highlighting
-    zsh-z
-    zstd
   ])
+  # wrappers for homebrew compatibility
+  ++ [
+    glibtool
+    gsed
+  ]
   # npm packages setup via node2nix
   ++ (builtins.attrValues npmPackages)
   # flakes outside nixpkgs (that don't have overlays)
   # TODO: how to make this more idiomatic without specifying the system arch
   ++ [ mkaliasPackage ];
   envVars = {
-    COLORTERM = "truecolor";
-    EDITOR = "em";
-    VISUAL = "em";
-    GOPATH = (homeDirectory + "/" + goPathSuffix);
     USE_GKE_GCLOUD_AUTH_PLUGIN = "True";
-    LC_ALL = "en_US.UTF-8";
-    LANG = "en_US.UTF-8";
-    LANGUAGE = "en_US.UTF-8";
-    GO111MODULE = "on";
-    BAT_THEME = "1337";
-    LESS = "-F -i -M -R -X --incsearch";
     SAML2AWS_USER_AGENT =
       "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.00) Gecko/20100101 Firefox/82.0";
-    # workaround vterm looking for glibtool instead of libtool
-    LIBTOOL = "libtool";
   };
   extraPaths = [
     (homeDirectory + "/" + localBinPath)
     (homeDirectory + "/.cargo/bin")
     (homeDirectory + "/" + goPathSuffix + "/bin")
   ];
-  doomConfig = import ./doom/doom.nix {
-    inherit config pkgs lib homeDirectory username envVars;
-    homeDir = homeDirectory;
-    doomDir = doomDirectory;
-  };
 in
 {
+  imports = [
+    ./common-packages
+    (import ./common-shell {
+      inherit pkgs homeDirectory goPathSuffix;
+    })
+    ./wezterm
+    (import ./tmux {
+      inherit pkgs;
+      optionOverrides = [ ];
+    })
+    ./karabiner
+    (import ./doom {
+      inherit pkgs localBinPath username envVars;
+      doomDir = doomDirectory;
+    })
+    (import ./git {
+      inherit config pkgs lib;
+      defaultEmail = "m.sawyer@f5.com";
+      defaultUser = "Matt Sawyer";
+    })
+    ./helix
+  ];
   home = {
     homeDirectory = homeDirectory;
     packages = homePackages;
     stateVersion = "22.11";
     # append these extra dirs to the nix-generated path
     sessionPath = extraPaths;
-    # make packages available to file.onChange and activation scripts
-    extraActivationPath = homePackages;
     sessionVariables = envVars;
     # setup application aliases and add them to the Dock
     activation.setupAliases = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
@@ -234,7 +96,7 @@ in
       $DRY_RUN_CMD chmod u+w ~/Applications
 
       # for app in ~/Applications/*.app; do
-      #   $DRY_RUN_CMD rm -f "$app" 2>
+      #   $DRY_RUN_CMD rm -f "$app"
       # done
 
       find ~/Applications/Home\ Manager\ Apps/* -maxdepth 0 -mindepth 0 -wholename '*.app' -exec readlink '{}' + |
@@ -248,172 +110,9 @@ in
       done
       set +x
     '';
-    activation.doom = doomConfig.activation;
-    file."${doomDirectory}" = doomConfig.userConfigDir;
-    # for git, $EDITOR/$VISUAL can't be set to reference a shell function, so deploy the script as follows
-    file."em.zsh" = {
-      executable = true;
-      source = ./scripts/em.zsh;
-      target = localBinPath + "/em";
-    };
-    # install karabiner config (note: this may make the Karabiner Elements app unable to make config changes)
-    file."karabiner.json" = {
-      text = builtins.toJSON (import ./karabiner.nix);
-      target = ".config/karabiner/karabiner.json";
-    };
-  };
-  fonts.fontconfig.enable = true;
-  programs.git = {
-    aliases = {
-      lpg =
-        "log --oneline --graph --format='%C(yellow)%H %<(15)%C(blue)%ci %<(20,trunc)%C(green)%aN %C(reset)%<(100,trunc)%s'";
-      lp =
-        "log --oneline --format='%C(yellow)%H %C(blue)%ci %C(green)%an %C(reset)%<(100,trunc)%s'";
-      lt =
-        "log --tags --simplify-by-decoration --format='%C(green)%H %<(15)%C(yellow)%ci %<(20,trunc)%C(cyan)%aN %C(reset)%<(100,trunc)%d%n   %s'";
-      st = "status -s";
-    };
-    delta = {
-      enable = true;
-      options = {
-        paging = "always";
-        line-numbers = "true";
-        navigate = "true";
-        syntax-theme = "zenburn";
-        width = "1";
-        minus-style = ''syntax "#450a15"'';
-        minus-emph-style = ''syntax "#600818"'';
-        plus-style = ''syntax "#0b4820"'';
-        plus-emph-style = ''syntax "#175c2e"'';
-        hunk-header-style = "syntax bold";
-        hunk-header-decoration-style = "omit";
-        file-style = "yellow italic";
-        file-decoration-style = "yellow ul";
-        line-numbers-zero-style = "#4b5263";
-        line-numbers-left-format = ''"{nm:^4} "'';
-        line-numbers-right-format = ''"{np:^4} "'';
-      };
-    };
   };
   programs.home-manager.enable = true;
-  programs.alacritty = import ./alacritty/alacritty.nix { inherit fontConfig; };
-  programs.direnv.enable = true;
-  programs.helix = import ./helix/helix.nix { };
-  programs.skim = {
-    enable = true;
-    enableZshIntegration = true;
-  };
-  programs.starship = { enable = true; };
-  programs.tmux = import ./tmux {
-    inherit pkgs lib;
-    optionOverrides = [ ];
-  };
-  programs.zellij = {
-    enable = false;
-    settings = {
-      default_mode = "locked";
-      pane_frames = false;
-      scroll_buffer_size = 50000;
-      keybinds =
-        let
-          ctrlQToLocked = {
-            key = [{ Ctrl = "l"; }];
-            action = [{ SwitchToMode = "locked"; }];
-          };
-          ctrlQToNormal = {
-            key = [{ Ctrl = "l"; }];
-            action = [{ SwitchToMode = "normal"; }];
-          };
-        in
-        {
-          unbind = [{ Ctrl = "g"; }];
-          locked = [ ctrlQToNormal ];
-          normal = [ ctrlQToLocked ];
-          move = [ ctrlQToLocked ];
-          resize = [ ctrlQToLocked ];
-          pane = [ ctrlQToLocked ];
-          scroll = [ ctrlQToLocked ];
-          entersearch = [ ctrlQToLocked ];
-          search = [ ctrlQToLocked ];
-          renametab = [ ctrlQToLocked ];
-          renamepane = [ ctrlQToLocked ];
-          session = [ ctrlQToLocked ];
-          tab = [
-            ctrlQToLocked
-            {
-              key = [{ Char = "n"; }];
-              action = [{ NewTab = { }; } { SwitchToMode = "renametab"; }];
-            }
-          ];
-          # tab = [
-          #   { unbind = { Char = "n"; }; }
-          #   ctrlQToLocked
-          #   {
-          #     key = [{ Char = "n"; }];
-          #     action = [ { NewTab = { }; } { SwitchToMode = "renametab"; } ];
-          #   }
-          # ];
-        };
-      theme = "tokyo-night";
-      themes.dracula =
-        builtins.fromJSON (builtins.readFile ./zellij/themes/dracula.json);
-      themes.gruvbox-dark =
-        builtins.fromJSON (builtins.readFile ./zellij/themes/gruvbox-dark.json);
-      themes.gruvbox-light = builtins.fromJSON
-        (builtins.readFile ./zellij/themes/gruvbox-light.json);
-      themes.molokai-dark =
-        builtins.fromJSON (builtins.readFile ./zellij/themes/molokai-dark.json);
-      themes.nord =
-        builtins.fromJSON (builtins.readFile ./zellij/themes/nord.json);
-      themes.one-half-dark = builtins.fromJSON
-        (builtins.readFile ./zellij/themes/one-half-dark.json);
-      themes.solarized-dark = builtins.fromJSON
-        (builtins.readFile ./zellij/themes/solarized-dark.json);
-      themes.solarized-light = builtins.fromJSON
-        (builtins.readFile ./zellij/themes/solarized-light.json);
-      themes.tokyo-night-light = builtins.fromJSON
-        (builtins.readFile ./zellij/themes/tokyo-night-light.json);
-      themes.tokyo-night-storm = builtins.fromJSON
-        (builtins.readFile ./zellij/themes/tokyo-night-storm.json);
-      themes.tokyo-night =
-        builtins.fromJSON (builtins.readFile ./zellij/themes/tokyo-night.json);
-    };
-  };
-  programs.zoxide = { enable = true; };
   programs.zsh = {
-    enable = true;
-    enableAutosuggestions = true;
-    enableCompletion = true;
-    syntaxHighlighting.enable = true;
-    defaultKeymap = "viins";
-    history = {
-      size = 100000;
-      save = 5000;
-      ignoreDups = true;
-      ignoreSpace = true;
-      expireDuplicatesFirst = true;
-      extended = true;
-    };
-    shellAliases = {
-      ssh = "TERM=xterm-256color ssh";
-      socks4proxy = "ssh -D 8888 -f -C -q -N";
-      randomizeMacAddress =
-        "openssl rand -hex 6 | sed 's/(..)/1:/g; s/.$//' | xargs sudo ifconfig $(route -n get default | grep interface: | cut -d':' -f2 | awk '{print $1}') ether";
-      k = "kubectl";
-      kv = "kubectl -n ves-system";
-      l = "eza -alF";
-      ts = "tmux new-session -n main -s";
-      ta = "tmux attach -t";
-      tl = "tmux list-sessions";
-      doom = "~/.emacs.d/bin/doom";
-      zs = "zellij --layout compact --session";
-      za = "zellij attach";
-      zl = "zellij list-sessions";
-    };
-    envExtra = builtins.readFile ./.zshenv-KD21QWDKW7.nix;
-    initExtra = ''
-      source <(kubectl completion zsh)
-      printf '\e]2;'$(hostname)'\a'
-    '';
+    envExtra = builtins.readFile ./.zshenv-mmbpm1;
   };
 }
