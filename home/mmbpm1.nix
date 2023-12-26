@@ -44,7 +44,6 @@ let
     eza
     fd
     findutils
-    fontconfig
     fzf
     # gdb # broken as of 2023-01-20
     gdbm
@@ -86,6 +85,7 @@ let
     libtool
     libvterm-neovim
     libxml2
+    lilypond-with-fonts
     # lima
     # llvm
     # llvmPackages_12.lldb
