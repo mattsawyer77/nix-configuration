@@ -39,7 +39,7 @@ let
     emacs-vterm
     # envsubst # conflicts with gettext which is required for home-manager
     eternal-terminal
-    exa
+    eza
     fd
     findutils
     fontconfig
@@ -412,7 +412,7 @@ in
         "openssl rand -hex 6 | sed 's/(..)/1:/g; s/.$//' | xargs sudo ifconfig $(route -n get default | grep interface: | cut -d':' -f2 | awk '{print $1}') ether";
       k = "kubectl";
       kv = "kubectl -n ves-system";
-      l = "exa -alF";
+      l = "eza -alF";
       ts = "tmux new-session -n main -s";
       ta = "tmux attach -t";
       tl = "tmux list-sessions";

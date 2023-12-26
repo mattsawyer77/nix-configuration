@@ -52,8 +52,7 @@
 
 (defface sawyer/variable-face
   `((t :inherit default
-       ;; :family "IBM Plex Sans"
-       :family "Inter"
+       :family "IBM Plex Sans"
        ;; :family "Fira Sans"
        ;; :weight thin
        ;; :weight extra-light ;; (a.k.a. ultra-light)
