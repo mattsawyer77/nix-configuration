@@ -2,7 +2,7 @@
 
 {
   environment.shellAliases = {
-    ssh = "TERM=xterm-256color ssh";
+    # ssh = "TERM=xterm-256color ssh";
     socks4proxy = "ssh -D 8888 -f -C -q -N";
     randomizeMacAddress =
       "openssl rand -hex 6 | sed 's/(..)/1:/g; s/.$//' | xargs sudo ifconfig $(route -n get default | grep interface: | cut -d':' -f2 | awk '{print $1}') ether";
@@ -11,8 +11,6 @@
     ts = "tmux new-session -n main -s";
     ta = "tmux attach -t";
     tl = "tmux list-sessions";
-    em = "em.zsh";
-    doom = "~/.emacs.d/bin/doom";
   };
   programs.zsh.promptInit = ''
     eval $(starship init zsh)
@@ -42,7 +40,6 @@
     setopt HIST_REDUCE_BLANKS
     setopt HIST_IGNORE_SPACE
 
-    alias ssh='TERM=xterm-256color ssh'
     alias socks4proxy='ssh -D 8888 -f -C -q -N'
     alias k='kubectl'
     alias l='eza -alF'
@@ -73,7 +70,6 @@
     export GOPATH="$HOME/gocode"
     export GO111MODULE="on"
     export BAT_THEME="1337"
-    export LESS="-F -i -M -R -X --incsearch --mouse --wheel-lines 3";
     export FZF_DEFAULT_OPTS="--info=inline --layout=default --tac --no-sort"
     export FZF_CTRL_R_OPTS="--sort"
     export SAML2AWS_USER_AGENT="Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.00) Gecko/20100101 Firefox/82.0"

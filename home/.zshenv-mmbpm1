@@ -6,7 +6,7 @@ export GOPATH="$HOME/gocode"
 export LANG="en_US.UTF-8"
 export LANGUAGE="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
-export LESS="-F -i -M -R -X --incsearch --mouse --wheel-lines 3";
+export LESS="-F -i -M -R -X --incsearch";
 
 if command -v em.zsh >/dev/null; then
   export EDITOR=em.zsh

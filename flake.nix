@@ -2,7 +2,6 @@
   description = "mattsawyer77's environment";
   inputs = {
     unstable.url = "github:nixos/nixpkgs/master";
-    nixpkgs-emacs.url = "github:nixos/nixpkgs/master";
     darwin = {
       url = "github:LnL7/nix-darwin";
       inputs.nixpkgs.follows = "unstable";
@@ -12,25 +11,26 @@
       inputs.nixpkgs.follows = "unstable";
     };
     # flake-utils.url = "github:numtide/flake-utils";
-    emacs-overlay = {
-      # master commit from 2023-08-16:
-      url = "github:nix-community/emacs-overlay/314ea6e0c500c52886d7d375229716e34995e643";
-      # emacs-overlay:stable:emacsUnstable from 2023-05-31:
-      # url = "github:nix-community/emacs-overlay/f0fb4a32a96e9fb9be4713ed530f8ae461f37552";
-      inputs.nixpkgs.follows = "nixpkgs-emacs";
-    };
+    # nixpkgs-emacs.url = "github:nixos/nixpkgs/master";
+    # emacs-overlay = {
+    #   # master commit from 2023-08-16:
+    #   url = "github:nix-community/emacs-overlay/314ea6e0c500c52886d7d375229716e34995e643";
+    #   # emacs-overlay:stable:emacsUnstable from 2023-05-31:
+    #   # url = "github:nix-community/emacs-overlay/f0fb4a32a96e9fb9be4713ed530f8ae461f37552";
+    #   inputs.nixpkgs.follows = "nixpkgs-emacs";
+    # };
+    # emacs-src = {
+    #   url = "github:emacs-mirror/emacs";
+    #   flake = false;
+    # };
+    # # Use latest libvterm to build macOS emacs build
+    # emacs-vterm-src = {
+    #   url = "github:akermu/emacs-libvterm";
+    #   flake = false;
+    # };
     neovim-nightly-overlay = {
       url = "github:nix-community/neovim-nightly-overlay";
       inputs.nixpkgs.follows = "unstable";
-    };
-    emacs-src = {
-      url = "github:emacs-mirror/emacs";
-      flake = false;
-    };
-    # Use latest libvterm to build macOS emacs build
-    emacs-vterm-src = {
-      url = "github:akermu/emacs-libvterm";
-      flake = false;
     };
     nil = {
       url = "github:oxalica/nil";
@@ -138,10 +138,10 @@
               }
               # ./modules/haskell.nix
               ./modules/mac.nix
-              ({ config, pkgs, ... }: import ./modules/tailscale.nix {
-                inherit config pkgs;
-                needFirewall = false;
-              })
+              # ({ config, pkgs, ... }: import ./modules/tailscale.nix {
+              #   inherit config pkgs;
+              #   needFirewall = false;
+              # })
             ];
           }; # KD21QWDKW7
       }; # darwinConfigurations
@@ -154,8 +154,6 @@
         modules = [
           ./hardware/sawyer-dev.nix
           ./modules/nixos.nix
-          # ./modules/tmux.nix
-          # ./modules/zsh.nix
           home-manager.nixosModules.home-manager
           {
             home-manager.useGlobalPkgs = true;
@@ -232,9 +230,9 @@
               LANG = "en_US.UTF-8";
               LANGUAGE = "en_US.UTF-8";
               LC_ALL = "en_US.UTF-8";
-              LESS = "-F -i -M -R -X --incsearch --mouse --wheel-lines 3";
+              LESS = "-F -i -M -R -X --incsearch";
               LESSCHARSET = "utf-8";
-              TERM = "xterm-24bit";
+              TERM = "xterm-256color";
             };
             services.eternal-terminal.enable = true;
             users.users.sawyer = {

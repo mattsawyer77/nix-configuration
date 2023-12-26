@@ -1,8 +1,9 @@
 ;;;  -*- lexical-binding: t; -*-
 
-(setq read-process-output-max (* 4 1024 1024)) ;; 4MB
-(setq native-comp-async-report-warnings-errors nil)
+;; (setq read-process-output-max (* 4 1024 1024)) ;; 4MB
+;; (setq native-comp-async-report-warnings-errors nil)
 (setq doom-modeline-vcs-max-length 30)
+(setq doom-modeline-height 32)
 (setq doom-modeline-persp-name t)
 (setq confirm-kill-emacs nil)
 (setq mac-command-modifier 'super)
@@ -13,11 +14,10 @@
 (setq-default maximum-scroll-margin 0.15)
 (setq-default sh-basic-offset 2)
 
-(when (and (display-graphic-p) IS-MAC)
-  (setq doom-modeline-icon t)
-  (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
-  (add-to-list 'default-frame-alist '(ns-appearance . dark))
-  )
+;; (when (and (display-graphic-p) IS-MAC)
+;; (setq doom-modeline-icon t)
+;; (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
+;; (add-to-list 'default-frame-alist '(ns-appearance . dark)))
 
 ;; (after! doom-nano-modeline
 ;;   (doom-nano-modeline-mode 1)
@@ -57,39 +57,16 @@
   (setq-default evil-kill-on-visual-paste nil)
   (setq evil-kill-on-visual-paste nil))
 
-;; disable format-on-save modes that are problematic or unconfigurable
-;; NOTE: +format-on-save-enabled-modes is a strange variable:
-;; if the list starts with 'not, then it's an exclusion list;
-;; if the list does not start with 'not, then it's an inclusion list
-(if
-    (eq (car +format-on-save-enabled-modes) 'not)
-    (progn
-      ;; list is exclusion -- add yaml-mode, et. al. to the list
-      (setq +format-on-save-enabled-modes (add-to-list '+format-on-save-enabled-modes 'conf-toml-mode t))
-      (setq +format-on-save-enabled-modes (add-to-list '+format-on-save-enabled-modes 'toml-ts-mode t))
-      (setq +format-on-save-enabled-modes (add-to-list '+format-on-save-enabled-modes 'yaml-mode t))
-      (setq +format-on-save-enabled-modes (add-to-list '+format-on-save-enabled-modes 'yaml-ts-mode t))
-      (setq +format-on-save-enabled-modes (add-to-list '+format-on-save-enabled-modes 'cpp-mode t))
-      (setq +format-on-save-enabled-modes (add-to-list '+format-on-save-enabled-modes 'c++-ts-mode t))
-      (setq +format-on-save-enabled-modes (add-to-list '+format-on-save-enabled-modes 'c++-mode t))
-      (setq +format-on-save-enabled-modes (add-to-list '+format-on-save-enabled-modes 'protobuf-mode t))
-      (setq +format-on-save-enabled-modes (add-to-list '+format-on-save-enabled-modes 'shell-script-mode t))
-      (setq +format-on-save-enabled-modes (add-to-list '+format-on-save-enabled-modes 'bash-ts-mode t))
-      )
-  (progn
-    ;; list is inclusion -- remove yaml-mode, et. al. from the list
-    (setq +format-on-save-enabled-modes (delete 'conf-toml-mode +format-on-save-enabled-modes))
-    (setq +format-on-save-enabled-modes (delete 'toml-ts-mode +format-on-save-enabled-modes))
-    (setq +format-on-save-enabled-modes (delete 'yaml-mode +format-on-save-enabled-modes))
-    (setq +format-on-save-enabled-modes (delete 'yaml-ts-mode +format-on-save-enabled-modes))
-    (setq +format-on-save-enabled-modes (delete 'cpp-mode +format-on-save-enabled-modes))
-    (setq +format-on-save-enabled-modes (delete 'c++-ts-mode +format-on-save-enabled-modes))
-    (setq +format-on-save-enabled-modes (delete 'c++-mode +format-on-save-enabled-modes))
-    (setq +format-on-save-enabled-modes (delete 'protobuf-mode +format-on-save-enabled-modes))
-    (setq +format-on-save-enabled-modes (delete 'shell-script-mode +format-on-save-enabled-modes))
-    (setq +format-on-save-enabled-modes (delete 'bash-ts-mode +format-on-save-enabled-modes))
-    )
-  )
+(setq +format-on-save-disabled-modes (add-to-list '+format-on-save-disabled-modes 'conf-toml-mode))
+(setq +format-on-save-disabled-modes (add-to-list '+format-on-save-disabled-modes 'toml-ts-mode))
+(setq +format-on-save-disabled-modes (add-to-list '+format-on-save-disabled-modes 'yaml-mode))
+(setq +format-on-save-disabled-modes (add-to-list '+format-on-save-disabled-modes 'yaml-ts-mode))
+(setq +format-on-save-disabled-modes (add-to-list '+format-on-save-disabled-modes 'cpp-mode))
+(setq +format-on-save-disabled-modes (add-to-list '+format-on-save-disabled-modes 'c++-ts-mode))
+(setq +format-on-save-disabled-modes (add-to-list '+format-on-save-disabled-modes 'c++-mode))
+(setq +format-on-save-disabled-modes (add-to-list '+format-on-save-disabled-modes 'protobuf-mode))
+(setq +format-on-save-disabled-modes (add-to-list '+format-on-save-disabled-modes 'shell-script-mode))
+(setq +format-on-save-disabled-modes (add-to-list '+format-on-save-disabled-modes 'bash-ts-mode))
 
 (after! ws-butler
   ;; prevent ws-butler mode for makefile-mode
@@ -157,10 +134,10 @@
 ;;   )
 
 ;; (after! (go-mode lsp-mode)
-  ;; (require 'dap-go)
-  ;; (dap-go-setup)
-  ;; (setq flycheck-golangci-lint-fast t)
-  ;; )
+;; (require 'dap-go)
+;; (dap-go-setup)
+;; (setq flycheck-golangci-lint-fast t)
+;; )
 
 ;; taplo is broken on macOS, at least.
 ;; https://github.com/tamasfe/taplo/issues/363
@@ -197,10 +174,82 @@
     )
   )
 
-(when (fboundp 'pixel-scroll-precision-mode)
-  (add-hook! (prog-mode go-template-mode)
-    (pixel-scroll-precision-mode 1)
-    ))
+(when (and (display-graphic-p) IS-MAC (fboundp 'pixel-scroll-precision-mode))
+  ;; taken from https://maximzuriel.nl/physics-and-code/emacs-mac-smooth-scroll/article
+  (setq scroll-margin 0
+        scroll-conservatively 101)
+
+  (global-set-key (kbd "<wheel-down>") #'pixel-scroll-precision)
+  (global-set-key (kbd "<wheel-up>") #'pixel-scroll-precision)
+
+  (pixel-scroll-precision-mode +1)
+
+  (with-eval-after-load 'pixel-scroll
+    (defun pixel-scroll-precision (event)
+      "Scroll the display vertically by pixels according to EVENT.
+Move the display up or down by the pixel deltas in EVENT to
+scroll the display according to the user's turning the mouse
+wheel."
+      (interactive "e")
+      (let ((window (mwheel-event-window event))
+            (current-window (selected-window)))
+        (when (framep window)
+          (setq window (frame-selected-window window)))
+        (if (and (nth 3 event))
+            (let ((delta
+                   (* -1
+                      (let ((dy (plist-get (nth 3 event) :scrolling-delta-y))
+                            pending-events)
+                        ;; Coalesce vertical mouse wheel events.
+                        (while (setq event (read-event nil nil 1e-5))
+                          (if (and (memq (event-basic-type event)
+                                         '(wheel-up wheel-down))
+                                   (eq window
+                                       (if mouse-wheel-follow-mouse
+                                           (posn-window (event-start event)))))
+                              (setq dy
+                                    (+ dy (plist-get (nth 3 event) :scrolling-delta-y)))
+                            (push event pending-events)))
+                        (if pending-events
+                            (setq unread-command-events (nconc (nreverse pending-events)
+                                                               unread-command-events)))
+                        (round (- dy))))))
+              (unless (zerop delta)
+                (if (> (abs delta) (window-text-height window t))
+                    (mwheel-scroll event nil)
+                  (with-selected-window window
+                    (if (or (and pixel-scroll-precision-interpolate-mice
+                                 (eq (device-class last-event-frame
+                                                   last-event-device)
+                                     'mouse))
+                            (and pixel-scroll-precision-large-scroll-height
+                                 (> (abs delta)
+                                    pixel-scroll-precision-large-scroll-height)
+                                 (let* ((kin-state (pixel-scroll-kinetic-state))
+                                        (ring (aref kin-state 0))
+                                        (time (aref kin-state 1)))
+                                   (or (null time)
+                                       (> (- (float-time) time) 1.0)
+                                       (and (consp ring)
+                                            (ring-empty-p ring))))))
+                        (progn
+                          (let ((kin-state (pixel-scroll-kinetic-state)))
+                            (aset kin-state 0 (make-ring 30))
+                            (aset kin-state 1 nil))
+                          (pixel-scroll-precision-interpolate delta current-window))
+                      (condition-case nil
+                          (progn
+                            (if (< delta 0)
+	                        (pixel-scroll-precision-scroll-down (- delta))
+                              (pixel-scroll-precision-scroll-up delta))
+                            (pixel-scroll-accumulate-velocity delta))
+                        ;; Do not ding at buffer limits.  Show a message instead.
+                        (beginning-of-buffer
+                         (message (error-message-string '(beginning-of-buffer))))
+                        (end-of-buffer
+                         (message (error-message-string '(end-of-buffer))))))))))
+          (mwheel-scroll event nil)))))
+  )
 
 (after! undo-tree
   (setq undo-tree-auto-save-history t)
@@ -218,12 +267,15 @@
   (setq uniquify-buffer-name-style 'forward))
 
 (after! treemacs
+  (require 'treemacs-projectile)
   (treemacs-follow-mode 1)
   (treemacs-project-follow-mode 1)
   (treemacs-git-mode 'deferred)
   (setq-default treemacs--width-is-locked nil)
   (setq treemacs-position 'left)
-  (setq treemacs-width 40))
+  (setq treemacs-width 40)
+  (setq treemacs-project-follow-cleanup t)
+  )
 
 
 (after! (textsize treemacs)
@@ -313,21 +365,21 @@
   )
 (add-hook! haskell-mode #'lsp)
 (add-hook! haskell-mode
-           (ormolu-format-on-save-mode)
-           (flycheck-posframe-mode -1)
-           )
+  (ormolu-format-on-save-mode)
+  (flycheck-posframe-mode -1)
+  )
 
 
 ;; (add-hook! rustic-mode #'tree-sitter-mode)
 (add-hook! (rustic-mode rust-ts-mode)
-           (flycheck-select-checker 'rustic-clippy)
-           (lsp)
-           ;; (lsp-toggle-signature-auto-activate)
-           (+word-wrap-mode)
-           (flycheck-posframe-mode -1)
-           ;; (flycheck-mode -1)
-           ;; (tree-sitter-hl-mode 1)
-           )
+  (flycheck-select-checker 'rustic-clippy)
+  (lsp)
+  ;; (lsp-toggle-signature-auto-activate)
+  (+word-wrap-mode)
+  (flycheck-posframe-mode -1)
+  ;; (flycheck-mode -1)
+  ;; (tree-sitter-hl-mode 1)
+  )
 (add-hook! lsp-ui-mode
   (when (or (eq major-mode 'rustic-mode) (eq major-mode 'rust-ts-mode))
     (lsp-rust-analyzer-inlay-hints-mode 1)))
@@ -376,6 +428,11 @@
   (setq-default js2-basic-offset 2)
   )
 
+(after! lsp-mode
+  ;; lsp-terraform is broken and breaks other lsp clients,
+  ;; see https://github.com/emacs-lsp/lsp-mode/issues/3577
+  (delete 'lsp-terraform lsp-client-packages)
+  )
 
 (after! (lsp-mode lsp-ui)
   ;; borrowed from https://github.com/emacs-lsp/lsp-ui/issues/184#issuecomment-1162406920
@@ -499,7 +556,7 @@
   ;; (setq lsp-diagnostics-provider :flycheck)
   (setq lsp-rust-analyzer-server-display-inlay-hints t)
   (setq lsp-nix-nil-formatter ["nixpkgs-fmt"])
-)
+  )
 
 (after! (flycheck rustic)
   (push 'rustic-clippy flycheck-checkers)
@@ -513,28 +570,28 @@
         (t
          (setq org-agenda-files '("/Users/sawyer/Library/Mobile Documents/com~apple~CloudDocs/notes"))))
   (setq
-        org-hide-emphasis-markers t
-        org-hide-block-startup nil
-        org-hide-leading-stars t
-        org-hide-macro-markers t
-        org-auto-align-tags nil
-        org-tags-column 0
-        org-catch-invisible-edits 'show-and-error
-        org-special-ctrl-a/e t
-        org-insert-heading-respect-content t
+   org-hide-emphasis-markers t
+   org-hide-block-startup nil
+   org-hide-leading-stars t
+   org-hide-macro-markers t
+   org-auto-align-tags nil
+   org-tags-column 0
+   org-catch-invisible-edits 'show-and-error
+   org-special-ctrl-a/e t
+   org-insert-heading-respect-content t
 
-        ;; Org styling, hide markup etc.
-        org-pretty-entities t
-        org-ellipsis "…"
+   ;; Org styling, hide markup etc.
+   org-pretty-entities t
+   org-ellipsis "…"
 
-        ;; Agenda styling
-        org-agenda-block-separator ?─
-        org-agenda-time-grid
-        '((daily today require-timed)
-          (800 1000 1200 1400 1600 1800 2000)
-          " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
-        org-agenda-current-time-string
-        "⭠ now ─────────────────────────────────────────────────")
+   ;; Agenda styling
+   org-agenda-block-separator ?─
+   org-agenda-time-grid
+   '((daily today require-timed)
+     (800 1000 1200 1400 1600 1800 2000)
+     " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
+   org-agenda-current-time-string
+   "⭠ now ─────────────────────────────────────────────────")
   )
 
 ;; (when-let (dims (doom-store-get 'last-frame-size))
@@ -567,19 +624,19 @@
 (add-hook! makefile-mode #'+word-wrap-mode)
 
 (after! (lsp-mode tramp ccls)
- (lsp-register-client
-  (make-lsp-client
-   ;; :new-connection (lsp-stdio-connection (lambda () (cons ccls-executable ccls-args)))
-   :new-connection (lsp-tramp-connection (lambda () (cons ccls-executable ccls-args)))
-   :remote? t
-   :major-modes '(c++-ts-mode cpp-mode c-mode c++-mode cuda-mode objc-mode)
-   :server-id 'ccls
-   :multi-root nil
-   :notification-handlers
-   (lsp-ht ("$ccls/publishSkippedRanges" #'ccls--publish-skipped-ranges)
-           ("$ccls/publishSemanticHighlight" #'ccls--publish-semantic-highlight))
-   :initialization-options (lambda () ccls-initialization-options)
-   :library-folders-fn ccls-library-folders-fn))
+  (lsp-register-client
+   (make-lsp-client
+    ;; :new-connection (lsp-stdio-connection (lambda () (cons ccls-executable ccls-args)))
+    :new-connection (lsp-tramp-connection (lambda () (cons ccls-executable ccls-args)))
+    :remote? t
+    :major-modes '(c++-ts-mode cpp-mode c-mode c++-mode cuda-mode objc-mode)
+    :server-id 'ccls
+    :multi-root nil
+    :notification-handlers
+    (lsp-ht ("$ccls/publishSkippedRanges" #'ccls--publish-skipped-ranges)
+            ("$ccls/publishSemanticHighlight" #'ccls--publish-semantic-highlight))
+    :initialization-options (lambda () ccls-initialization-options)
+    :library-folders-fn ccls-library-folders-fn))
   (setq ccls-initialization-options '(:index (:comments 2) :completion (:detailedLabel t))))
 
 
@@ -825,3 +882,5 @@
 
 (after! mermaid-mode
   (setq mermaid-flags "--puppeteerConfigFile ~/.config/puppeteerConfigFile.json"))
+
+(after! git-auto-commit-mode (setq gac-automatically-push-p t))

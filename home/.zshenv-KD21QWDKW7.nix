@@ -14,6 +14,22 @@ nix-config-update() {
     && nix flake update)
 }
 
+check-color() {
+  awk 'BEGIN{
+    s="/\\/\\/\\/\\/\\"; s=s s s s s s s s;
+    for (colnum = 0; colnum<77; colnum++) {
+        r = 255-(colnum*255/76);
+        g = (colnum*510/76);
+        b = (colnum*255/76);
+        if (g>255) g = 510-g;
+        printf "\033[48;2;%d;%d;%dm", r,g,b;
+        printf "\033[38;2;%d;%d;%dm", 255-r,255-g,255-b;
+        printf "%s\033[0m", substr(s,colnum+1,1);
+    }
+    printf "\n";
+  }'
+}
+
 launchctl-restart() {
   if [[ -v 1 ]]; then
     pattern="$1"
@@ -211,6 +227,51 @@ skopeo-acr-login() {
     | skopeo login volterra.azurecr.io \
       --username 00000000-0000-0000-0000-000000000000 \
       --password-stdin
+}
+
+acr-login() {
+  az login --tenant ves.f5.com && az acr login --name volterra && skopeo-acr-login
+}
+
+# find an image with the given tag name (i.e. name is equal to the git commit hash or branch name)
+acr-find-tag() {
+  local repo=$1
+  if [[ -z "$repo" ]]; then
+    echo >&2 "error: must specify repo and git ref to search for"
+    return 1
+  fi
+  shift
+  local name=$1
+  if [[ -z "$name" ]]; then
+    echo >&2 "error: must specify git ref to search for"
+    return 1
+  fi
+  shift
+  # try to transform branch name to pattern used to publish to ACR
+  name=$(echo "$name" | sd '\W' '-' | sd '\-$' '' | tr '[:upper:]' '[:lower:]')
+  az acr repository show-tags --name volterra --repository "ves.io/${repo}" --detail --orderby time_desc --query "[?contains(name,'${name}')]" $@
+}
+
+# find an image with the given tag name (i.e. name is equal to the git commit hash or branch name)
+acr-find-digest() {
+  local repo=$1
+  if [[ -z "$repo" ]]; then
+    echo >&2 "error: must specify repo and git ref to search for"
+    return 1
+  fi
+  shift
+  local digest=$1
+  if [[ -z "$digest" ]]; then
+    echo >&2 "error: must specify image digest to search for"
+    return 1
+  fi
+  shift
+  digest=$(echo "$digest" | pcregrep -o 'sha256:[0-9a-f]{40}')
+  if [[ -z "$digest" ]]; then
+    echo >&2 "error: invalid digest"
+    return 1
+  fi
+  az acr repository show-tags --name volterra --repository "ves.io/${repo}" --detail --orderby time_desc --query "[?digest=='${digest}']" $@
 }
 
 skopeo-inspect() {
@@ -415,7 +476,6 @@ docker-shell () {
         --env GOCACHE=${go_cache_dir} \
         --env GOPATH=${GOPATH} \
         --env HOME=${HOME} \
-        --env TERM=xterm-256color \
         --env PS1="${image}:\w> " \
         --env DOCKER_IMAGE="$image" \
         --net host \
@@ -615,22 +675,28 @@ env-site-fqdn() {
     return 1
   fi
   local environment="$1"
-  local site="${2:-gc01}"
+  local site="${2:-gc}"
   case $environment in
     demo1)
+      if [[ "$site" == "gc" ]]; then
+        site=gc01
+      fi
       site_fqdn="${site}.int.ves.io"
       ;;
     crt)
+      if [[ "$site" == "gc" ]]; then
+        site=gc01
+      fi
       site_fqdn="${site}.int.ves.io"
       ;;
     staging)
-      if [[ "$site" == "gc01" ]]; then
+      if [[ "$site" == "gc" ]]; then
         site=gc1-iad-01
       fi
       site_fqdn="${site}.int.volterra.us"
       ;;
     prod)
-      if [[ "$site" == "gc01" ]]; then
+      if [[ "$site" == "gc" ]]; then
         site=gc01-cle
       fi
       site_fqdn="${site}.int.ves.io"
@@ -795,25 +861,25 @@ introspect() {
   fi
 }
 
-# Service Introspection C(LI)
-# https://compass-lma.demo1.volterra.us/introspection/gc01.int.ves.io/maurice/ves.io.stdlib/introspect/read/object/ves.io.maurice.site.Object?response_format=1&tenant_filter=compass&page_start=0&page_limit=1000
-# https://compass-lma.demo1.volterra.us/introspection/gc01.int.ves.io/maurice/ves.io.stdlib/introspect/read/object/ves.io.maurice.site.Object/3395c300-35c3-4e31-b733-c10607ab780e
-# https://compass-lma.demo1.volterra.us/introspection/sawyer-osm-gcp-m.testcorp-hagrmdbk.tenant.int.ves.io/piku/ves.io.stdlib/introspect/read/object/ves.io.piku.oper.bgp_state.Object?response_format=1&page_start=0&page_limit=1000
-sic() {
-  local usage="sic <environment> <service> <object type> [<object UID>] [--tenant <tenantname>]\nwhere environment is one of demo1, crt, staging, or prod"
-  if ! command -v ijq >/dev/null; then
-    echo >&2 "error: this requires ijq to be installed"
+# Service Introspection C(LI) [sic]
+# moved to a rust-based project, keeping here for reference temporarily
+sic-old() {
+  if ! command -v jq >/dev/null; then
+    echo >&2 "sic requires jq to be installed"
     return 1
   fi
-  if [[ $# -lt 3 ]]; then
+  local usage="sic <environment> <site> <service> <object type> [<object UID>] [--tenant <tenantname>]\nwhere:\n\tenvironment is one of demo1, crt, staging, or prod\n\tsite can be a site name (or 'gc', which will be transformed to the environment's gc site name automatically)"
+  if [[ $# -lt 4 ]]; then
     echo >&2 $usage
     return 1
   fi
   local environment="$1"
   shift
+  local site=$1
+  shift
   local service=$1
   shift
-  local site=$(env-site-fqdn "$environment" "$service")
+  local site_fqdn=$(env-site-fqdn "$environment" "$site")
   local compass_hostname=$(env-compass-hostname "$environment")
   if echo "$service" | grep -E '.+/.+' >/dev/null; then
     site="$(echo $service | cut -d'/' -f1)"
@@ -834,9 +900,9 @@ sic() {
   local url=''
   local initial_jq_query='.'
   if [[ -n "$uid" ]]; then
-    url="https://${compass_hostname}/introspection/${site}/${service}/ves.io.stdlib/introspect/read/object/${object_type}/${uid}"
+    url="https://${compass_hostname}/introspection/${site_fqdn}/${service}/ves.io.stdlib/introspect/read/object/${object_type}/${uid}"
   else
-    url="https://${compass_hostname}/introspection/${site}/${service}/ves.io.stdlib/introspect/read/object/${object_type}?response_format=1&page_start=0&page_limit=1000"
+    url="https://${compass_hostname}/introspection/${site_fqdn}/${service}/ves.io.stdlib/introspect/read/object/${object_type}?response_format=1&page_start=0&page_limit=1000"
     if [[ -n "$tenant" ]]; then
       url="${url}&tenant_filter=${tenant}"
     fi
@@ -857,8 +923,9 @@ sic() {
         fi
         echo >&2 "$err"
         return 1
+      else
+        printf '%s\n' "$response" | jq -r '.get_responses|to_entries|map(.value.object|del(."@type"))'
       fi
-      printf '%s\n' "$response" | jq "$initial_jq_query" | ijq -r
     else
       echo >&2 "failed to query url: $url"
       return 1
@@ -1338,4 +1405,85 @@ generate-tls-cert() {
       return 1
     fi) \
       && echo "certificate generated successfully:\n - certificate: $crtfile\n - key: $keyfile"
+}
+
+# kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+k8s-dnsutils() {
+  ns=${NS:-ves-system}
+  if kubectl -n "$ns" get pod dnsutils >/dev/null 2>&1; then
+    echo >&2 "error: dnsutils pod already running"
+    return 1
+  fi
+  kubectl -n "$ns" apply -f <(cat<<EOF
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dnsutils
+  namespace: ${ns}
+spec:
+  containers:
+  - name: dnsutils
+    image: registry.k8s.io/e2e-test-images/jessie-dnsutils:1.3
+    command:
+      - sleep
+      - "infinity"
+    imagePullPolicy: IfNotPresent
+  restartPolicy: Always
+EOF
+) \
+  && kubectl -n "$ns" wait --for=condition=Ready pod/dnsutils \
+  && kubectl -n "$ns" exec -it dnsutils -c dnsutils -- bash
+  kubectl -n "$ns" delete pod dnsutils
+}
+
+# find pipelines that failed due to the given test failing
+gitlab-test-failures() {
+  local project_id=${PROJECT_ID:-5509942}
+  local job_name=${JOB}
+  if [[ -z "$job_name" ]]; then
+    echo >&2 "error: JOB is required"
+    return 1
+  fi
+  local test_name=${TEST_NAME}
+  if [[ -z "$test_name" ]]; then
+    echo >&2 "error: TEST_NAME is required"
+    return 1
+  fi
+  local per_page=${PER_PAGE:-100}
+  local pages=${PAGES:-1}
+  local max_results=${MAX_RESULTS:-1}
+  local found_results=0
+  local curl_metadata_out_file=$(mktemp)
+  export IFS=$'\n'
+  while true; do
+    results=$(curl -Ssv --globoff --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" "https://gitlab.com/api/v4/projects/${PROJECT_ID}/jobs?scope[]=failed&per_page=${PER_PAGE}&page=${page}" 2>$curl_metadata_out_file)
+    if [[ $? -ne 0 ]]; then
+      echo 2>&1 "failed to get jobs"
+      rm -f $curl_metadata_out_file
+      return 1
+    fi
+    failed_job_ids=($(printf '%s\n' "$results" | jq 'map(select(.name=="unittest-client"))[]|.id'))
+    for job_id in $failed_job_ids; do
+      job_log=$(curl -Ss --location --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" "https://gitlab.com/api/v4/projects/${PROJECT_ID}/jobs/${job_id}/trace")
+      failed_tests=($(printf '%s\n' "$job_log" | pcregrep -o 'FAIL:\s*Test[\w_]+' | sd '^.*(Test.*)' '$1' | sort -u))
+      echo >&2 "\njob ID: $job_id found failed tests: $failed_tests"
+      for failed_test in $failed_tests; do
+        if [[ $failed_test == "$test_name" ]]; then
+          (( found_results += 1 ))
+          printf '%s\n' "$job_log"
+        fi
+      done
+    done
+    if [[ $found_results -eq $max_results ]]; then
+      break
+    fi
+    # get next page from response headers
+    next_page=$(pcregrep 'x-next-page: \d+' $curl_metadata_out_file | pcregrep -o '\d+')
+    if [[ -n "$next_page" ]] && [[ "$next_page" -le "$pages" ]]; then
+      page=$next_page
+    else
+      break
+    fi
+  done
+  rm -f $curl_metadata_out_file
 }
