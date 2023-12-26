@@ -110,6 +110,7 @@ let
     nix-prefetch
     nix-prefetch-git
     nix-zsh-completions
+    nixd
     nixpkgs-fmt
     nmap
     node2nix
