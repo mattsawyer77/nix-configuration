@@ -903,6 +903,7 @@
     ;; NOTE: the following alist must be sorted by the key (mm size)
     (setq textsize-monitor-size-thresholds
           '(
+            (286 . -2) ;; 14" MBP
             (344 . -0.5) ;; 16" MBP
             (530 . -2)   ;; 24" 4K (full-res)
             (801 . -0.7) ;; 34" superwide
