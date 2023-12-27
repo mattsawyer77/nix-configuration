@@ -67,41 +67,6 @@
      ;; :weight ultra-heavy
      :size 20
      ))
-       ))
->>>>>>> variant B
-     :family "IBM Plex Sans"
-     ;; :family "Fira Sans"
-     ;; :weight thin
-     ;; :weight extra-light ;; (a.k.a. ultra-light)
-     ;; :weight semi-light ;; (a.k.a. demi-light)
-     ;; :weight light
-     ;; :weight normal ;; (a.k.a. regular a.k.a. book)
-     :weight medium
-     ;; :weight semi-bold ;; (a.k.a. demi-bold)
-     ;; :weight bold
-     ;; :weight ultra-bold ;; (a.k.a. extra-bold)
-     ;; :weight heavy ;; (a.k.a. black),
-     ;; :weight ultra-heavy
-     :size 20
-     ))
-####### Ancestor
-       ;; :family "IBM Plex Sans"
-       :family "Inter"
-       ;; :family "Fira Sans"
-       ;; :weight thin
-       ;; :weight extra-light ;; (a.k.a. ultra-light)
-       ;; :weight semi-light ;; (a.k.a. demi-light)
-       ;; :weight light
-       :weight normal ;; (a.k.a. regular a.k.a. book)
-       ;; :weight medium
-       ;; :weight semi-bold ;; (a.k.a. demi-bold)
-       ;; :weight bold
-       ;; :weight ultra-bold ;; (a.k.a. extra-bold)
-       ;; :weight heavy ;; (a.k.a. black),
-       ;; :weight ultra-heavy
-       :size 20
-       ))
-======= end
   "font spec for all variable-width text")
 
 ;; TODO can height be defined with a var?
