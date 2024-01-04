@@ -230,7 +230,7 @@ skopeo-acr-login() {
 }
 
 acr-login() {
-  az login --tenant ves.f5.com && az acr login --name volterra && skopeo-acr-login
+  az login --tenant ves.f5.com && az acr login -n volterra && skopeo-acr-login
 }
 
 # find an image with the given tag name (i.e. name is equal to the git commit hash or branch name)
