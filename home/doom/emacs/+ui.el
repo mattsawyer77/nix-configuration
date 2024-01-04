@@ -52,8 +52,9 @@
 
 (defface sawyer/variable-face
   `((t :inherit default
-     :family "IBM Plex Sans"
+     ;; :family "IBM Plex Sans"
      ;; :family "Fira Sans"
+     :family "Avenir Next"
      ;; :weight thin
      ;; :weight extra-light ;; (a.k.a. ultra-light)
      ;; :weight semi-light ;; (a.k.a. demi-light)
@@ -91,7 +92,7 @@
   "org-code-face")
 
 (defcustom sawyer/baseline-font-size 20.0 "baseline font point size for doom-font and textsize" :type 'number)
-(defcustom sawyer/dark-theme 'kanagawa "dark theme used for toggling" :type 'string)
+(defcustom sawyer/dark-theme 'doom-horizon "dark theme used for toggling" :type 'string)
 (defcustom sawyer/light-theme 'doom-nord-light "light theme used for toggling" :type 'string)
 
 (setq doom-tokyo-night-brighter-comments t)
@@ -522,13 +523,8 @@
   )
 
 (after! treemacs
+  (setq treemacs-user-mode-line-format nil)
   (setq doom-themes-treemacs-enable-variable-pitch t)
-  ;; (setq treemacs-window-background-color
-  ;;       (cons
-  ;;         ;; background color
-  ;;         (face-attribute 'default :background)
-  ;;         ;; highlight color
-  ;;         (doom-lighten (face-attribute 'default :background) 0.1)))
   (custom-set-faces!
     `(treemacs-root-face
       :inherit nil
@@ -545,27 +541,27 @@
     ;; `(lsp-treemacs-project-root-error :family ,(face-attribute 'sawyer/variable-face :family))
     ;; `(lsp-treemacs-project-root-info :family ,(face-attribute 'sawyer/variable-face :family))
     ;; `(lsp-treemacs-project-root-warn :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-directory-collapsed-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-directory-face :foreground ,(doom-darken 'fg 0.2) :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-file-face :foreground ,(doom-darken 'fg 0.2) :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-fringe-indicator-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-git-added-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-directory-collapsed-face :weight normal :slant normal :height 0.9 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-directory-face :foreground ,(doom-darken 'fg 0.2) :weight normal :slant normal :height 0.9 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-file-face :foreground ,(doom-darken 'fg 0.2) :weight normal :slant normal :height 0.9 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-fringe-indicator-face :weight normal :slant normal :height 0.9 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-git-added-face :weight normal :slant normal :height 0.9 :family ,(face-attribute 'sawyer/variable-face :family))
     `(treemacs-git-commit-diff-face :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-git-conflict-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-git-ignored-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-git-modified-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-git-renamed-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-git-unmodified-face :foreground ,(doom-darken 'fg 0.2) :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-git-untracked-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-git-conflict-face :weight normal :slant normal :height 0.9 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-git-ignored-face :weight normal :slant normal :height 0.9 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-git-modified-face :weight normal :slant normal :height 0.9 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-git-renamed-face :weight normal :slant normal :height 0.9 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-git-unmodified-face :foreground ,(doom-darken 'fg 0.2) :weight normal :slant normal :height 0.9 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-git-untracked-face :weight normal :slant normal :height 0.9 :family ,(face-attribute 'sawyer/variable-face :family))
     `(treemacs-header-button-face :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-help-column-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-help-title-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-help-column-face :weight normal :slant normal :height 0.9 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-help-title-face :weight normal :slant normal :height 0.9 :family ,(face-attribute 'sawyer/variable-face :family))
     `(treemacs-marked-file-face :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-on-failure-pulse-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-on-success-pulse-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-on-failure-pulse-face :weight normal :slant normal :height 0.9 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-on-success-pulse-face :weight normal :slant normal :height 0.9 :family ,(face-attribute 'sawyer/variable-face :family))
     `(treemacs-peek-mode-indicator-face :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-tags-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-term-node-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-tags-face :weight normal :slant normal :height 0.9 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-term-node-face :weight normal :slant normal :height 0.9 :family ,(face-attribute 'sawyer/variable-face :family))
     `(doom-themes-treemacs-root-face :foreground ,(face-attribute 'treemacs-root-face :foreground) :background ,(face-attribute 'default :background))
     )
   )
@@ -918,9 +914,9 @@
     ;; NOTE: the following alist must be sorted by the key (mm size)
     (setq textsize-monitor-size-thresholds
           '(
-            (344 . -1) ;; 16" MBP
+            (344 . -1.5) ;; 16" MBP
             (530 . -2)   ;; 24" 4K (full-res)
-            (801 . -0.7) ;; 34" superwide
+            (801 . -2) ;; 34" superwide
             ))
     )
   (add-hook! after-init #'textsize-mode)
