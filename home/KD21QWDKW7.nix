@@ -11,6 +11,8 @@ let
   npmPackages = import ./npm-packages { inherit pkgs; };
   # enable `gsed` alias which calls gnused for compatibility with homebrew
   gsed = pkgs.writeShellScriptBin "gsed" ''exec ${pkgs.gnused}/bin/sed "$@"'';
+  # enable `gsort` alias which calls sort for compatibility with homebrew
+  gsort = pkgs.writeShellScriptBin "gsort" ''exec ${pkgs.coreutils}/bin/sort "$@"'';
   # enable `glibtool` alias which calls libtool for compatibility with homebrew
   glibtool = pkgs.writeShellScriptBin "glibtool" ''exec ${pkgs.libtool}/bin/libtool "$@"'';
   homePackages = (with pkgs; [
@@ -43,6 +45,7 @@ let
   ++ [
     glibtool
     gsed
+    gsort
   ]
   # npm packages setup via node2nix
   ++ (builtins.attrValues npmPackages)
