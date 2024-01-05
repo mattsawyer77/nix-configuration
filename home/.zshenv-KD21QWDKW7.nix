@@ -428,20 +428,43 @@ gcr-digest() {
   fi
 }
 
+set-acorus-vpn-dns() {
+  sudo networksetup -setdnsservers Wi-Fi 8.8.8.8 1.0.0.1 185.94.141.124 193.16.221.80 54.217.12.125
+}
+
+unset-acorus-vpn-dns() {
+  sudo networksetup -setdnsservers Wi-Fi empty
+}
+
 volterra-vpn() {
+  local server_search=$1
   if ! command -v openfortivpn >/dev/null; then
     echo >&2 "openfortivpn not found."
     return 1
   fi
   local config_file=~/.config/openfortivpn/config
   if [[ -f "$config_file" ]]; then
-    local servers=$(pcregrep -o 'vpnssl-.*acorus.net' "$config_file" 2>/dev/null)
+    local servers=$(pcregrep -o 'vpnssl-.*acorus.net' "$config_file" 2>/dev/null | sort -u)
     if [[ $? -eq 0 ]] && [[ -n "$servers" ]]; then
-      server=$(echo "$servers" \
-        | sort -u \
-        | fzf)
+      if [[ -n "$server_search" ]]; then
+        matching=$(echo "$servers" | grep "$server_search")
+        matches=$(echo "$matching" | wc -l)
+        if [[ "$matches" -eq 1 ]]; then
+          server=$matching
+        elif [[ "$matches" -eq 0 ]]; then
+          echo >&2 "no server matched '$server_search', showing all servers:"
+        else
+          echo >&2 "multiple servers match '$server_search':"
+          server=$(echo "$matching" | sk --header="multiple servers match '$server_search':")
+        fi
+      else
+        server=$(echo "$servers" | sk --header="select a vpn server:")
+      fi
       if [[ -n "$server" ]]; then
-        sudo -E openfortivpn "$server" -c "$config_file"; notify
+        echo >&2 "setting up DNS..."
+        set-acorus-vpn-dns && trap 'unset-acorus-vpn-dns' EXIT
+        echo >&2 "connecting to ${server}..."
+        sudo -E openfortivpn "$server" -c "$config_file" --pppd-accept-remote=0; notify
       else
         echo >&2 "no server selected."
         return 1
