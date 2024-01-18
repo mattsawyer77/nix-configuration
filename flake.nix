@@ -209,7 +209,6 @@
         modules = [
           ./hardware/sawyer-dev-vio.nix
           ./modules/nixos.nix
-          ./modules/tmux.nix
           ./modules/zsh.nix
           ({ pkgs, ... }: {
             system.stateVersion = "22.11";

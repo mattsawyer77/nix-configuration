@@ -41,7 +41,7 @@ with lib;
     envsubst
     etcd
     eternal-terminal
-    exa
+    eza
     fd
     file
     flamegraph

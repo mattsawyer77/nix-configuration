@@ -7,7 +7,7 @@
     randomizeMacAddress =
       "openssl rand -hex 6 | sed 's/(..)/1:/g; s/.$//' | xargs sudo ifconfig $(route -n get default | grep interface: | cut -d':' -f2 | awk '{print $1}') ether";
     k = "kubectl";
-    l = "exa -alF";
+    l = "eza -alF";
     ts = "tmux new-session -n main -s";
     ta = "tmux attach -t";
     tl = "tmux list-sessions";
@@ -42,15 +42,15 @@
 
     alias socks4proxy='ssh -D 8888 -f -C -q -N'
     alias k='kubectl'
-    alias l='exa -alF'
+    alias l='eza -alF'
     alias ts='tmux new-session -n main -s'
     alias ta='tmux attach -t'
     alias tl='tmux list-sessions'
     alias em='em.zsh'
     alias doom='~/.emacs.d/bin/doom'
     alias kv="kubectl -n ves-system"
-    if command -v exa >/dev/null; then
-      alias l='exa -alF'
+    if command -v eza >/dev/null; then
+      alias l='eza -alF'
     else
       alias l='ls -alFG'
     fi

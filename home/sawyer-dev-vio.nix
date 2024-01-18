@@ -38,7 +38,7 @@ let
     envsubst
     etcd
     eternal-terminal
-    exa
+    eza
     fd
     file
     flamegraph
@@ -482,7 +482,7 @@ in
     };
     shellAliases = {
       k = "kubectl";
-      l = "exa -alF";
+      l = "eza -alF";
       ts = "tmux new-session -n main -s";
       ta = "tmux attach -t";
       tl = "tmux list-sessions";

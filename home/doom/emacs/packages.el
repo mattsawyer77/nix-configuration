@@ -70,6 +70,12 @@
   :recipe (:host github
            :repo "foxfriday/evil-ts"
            :branch "main"))
+(package! lilypond-mode
+  :recipe (:repo "https://gitlab.com/lilypond/lilypond.git"
+           :branch "master"
+           :files ("elisp/*.el")
+           ))
+(package! flycheck-lilypond)
 ;; (package! vertico-posframe
 ;;     :recipe (:host github :repo "tumashu/vertico-posframe"))
 (package! autothemer)
