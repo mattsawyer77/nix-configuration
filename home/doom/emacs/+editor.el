@@ -30,6 +30,7 @@
 (add-to-list 'auto-mode-alist '("\\k8s\/templates" . go-template-mode))
 (add-to-list 'auto-mode-alist '("\\kubernetes\/templates" . go-template-mode))
 (add-to-list 'auto-mode-alist '("\\deploy\/k8s.+.tmpl" . go-template-mode))
+(add-to-list 'auto-mode-alist '("\\\.*.yaml.tmpl" . go-template-mode))
 ;; make stack files use yaml mode
 (add-to-list 'auto-mode-alist '("\\stack.yaml" . yaml-ts-mode))
 (add-to-list 'auto-mode-alist '("\\package.yaml" . yaml-ts-mode))
@@ -856,22 +857,22 @@ wheel."
   (setq impatient-mode-delay 1.0) ;; seconds
   )
 
-;; (after! consult
-;;   (consult-customize
-;;    consult-ripgrep consult-git-grep consult-grep
-;;    consult-bookmark consult-recent-file
-;;    +default/search-project
-;;    +default/search-other-project
-;;    +default/search-project-for-symbol-at-point
-;;    +default/search-cwd
-;;    +default/search-other-cwd
-;;    +default/search-notes-for-symbol-at-point
-;;    +default/search-emacsd
-;;    consult--source-recent-file
-;;    consult--source-project-recent-file
-;;    consult--source-bookmark
-;;    :preview-key (list :debounce 0.1 'any))
-;;   )
+(after! consult
+  (consult-customize
+   consult-ripgrep consult-git-grep consult-grep
+   consult-bookmark consult-recent-file
+   +default/search-project
+   +default/search-other-project
+   +default/search-project-for-symbol-at-point
+   +default/search-cwd
+   +default/search-other-cwd
+   +default/search-notes-for-symbol-at-point
+   +default/search-emacsd
+   consult--source-recent-file
+   consult--source-project-recent-file
+   consult--source-bookmark
+   :preview-key (list :debounce 0.1 'any))
+  )
 
 (after! vertico
   (vertico-multiform-mode 1)
