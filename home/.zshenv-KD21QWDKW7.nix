@@ -617,19 +617,36 @@ akarctl() {
   fi
 }
 
+ssh-kubectl() {
+  local host=$1
+  if [[ -v 1 ]]; then
+    host="$1"
+  else
+    echo >&2 "must specify ssh host to connect to"
+    return 1
+  fi
+  shift
+  local kubectl_commands=$@
+  ssh -q $host sudo /opt/bin/kubectl --kubeconfig /root/.kube/config $kubectl_commands
+}
+
 rakarctl() {
-  rakar_pod=$(kubectl -n ves-system get pods -lapp=rakar --no-headers | head -1 | awk '{print $1}')
+  local port=${RAKAR_GRPC_TLS_PORT:-9501}
+  local host
+  if [[ -v 1 ]]; then
+    host="$1"
+  else
+    echo >&2 "must specify ssh host to connect to RE"
+    return 1
+  fi
+  shift
+  rakar_pod=$(ssh-kubectl $host -n ves-system get pods -lapp=rakar --no-headers | head -1 | awk '{print $1}')
   if [[ -z "$rakar_pod" ]]; then
     echo >&2 "could not find rakar pod"
     return 1
   fi
-  service_name=$(kubectl -n ves-system get deploy rakar -o yaml | grep -A1 'name: serviceNames' | grep value | awk '{print $2}' | cut -d',' -f1)
-  if [[ -z "$service_name" ]]; then
-    echo >&2 "could not find rakar common name for cert"
-    return 1
-  fi
-  kubectl -n ves-system exec -it "$rakar_pod" -c rakar -- \
-    rakarctl --server-cn "$service_name" -u "localhost:9501" $@
+  ssh-kubectl $host -n ves-system exec -it "$rakar_pod" -c rakar -- \
+    rakarctl --server-cn "rakar.ves-system.svc.cluster.local" -u "localhost:${port}" $@
 }
 
 nioctl() {
@@ -1509,4 +1526,14 @@ gitlab-test-failures() {
     fi
   done
   rm -f $curl_metadata_out_file
+}
+# given a string, and if a tmux window with that name exists, switch to it
+# otherwise, find the most commonly used working directory that matches, create a new tmux window and switch to that dir
+tz() {
+  if [[ ! -v 1 ]]; then
+    echo >&2 "error: must specify a directory name or fragment for zoxide to query"
+  fi
+  search="$1"
+  dir=$(zoxide query "$search") && \
+    tmux new-window -c "$dir" -n "$search" -S
 }
