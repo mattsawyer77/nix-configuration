@@ -45,6 +45,10 @@
       url = "github:grafana/loki";
       inputs.nixpkgs.follows = "unstable";
     };
+    poetry2nix = {
+      url = "github:nix-community/poetry2nix";
+      inputs.nixpkgs.follows = "unstable";
+    };
   };
   outputs = { self, nixpkgs, darwin, flake-utils, home-manager, ... }@inputs: {
     # mac
@@ -134,6 +138,7 @@
                   import ./home/KD21QWDKW7.nix {
                     inherit config lib pkgs username fontConfig;
                     mkalias = inputs.mkalias;
+                    poetry2nix = inputs.poetry2nix;
                   });
               }
               # ./modules/haskell.nix
