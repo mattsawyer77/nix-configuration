@@ -83,10 +83,14 @@
     pcre
     pcre2
     pkg-config
+    poetry
     protobuf
     prototool
+    pyenv
+    pyright
     python3
     python310Packages.grip
+    python310Packages.xmltodict
     pywal
     readline
     # redis
@@ -108,9 +112,6 @@
     # install Tailscale CLI here, but GUI is installed manually
     tailscale
     taplo
-    terraform
-    terraform-ls
-    tflint
     tokei
     tree
     # trivy # broken as of 2022-05-24
@@ -123,7 +124,7 @@
     yaml-language-server
     yarn
     yj
-    youtube-dl
+    yt-dlp
     yq-go
     zlib
     zoxide

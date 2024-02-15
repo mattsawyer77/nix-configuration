@@ -9,20 +9,40 @@ let
   # to update/regenerate, run node2nix -i <(echo '["bash-language-server", "prettier", "typescript-formatter"]') --nodejs-18
   # then copy the resulting files into ./npm-packages
   npmPackages = import ./npm-packages { inherit pkgs; };
-  # enable `gsed` alias which calls gnused for compatibility with homebrew
-  gsed = pkgs.writeShellScriptBin "gsed" ''exec ${pkgs.gnused}/bin/sed "$@"'';
-  # enable `gsort` alias which calls sort for compatibility with homebrew
-  gsort = pkgs.writeShellScriptBin "gsort" ''exec ${pkgs.coreutils}/bin/sort "$@"'';
-  # enable `glibtool` alias which calls libtool for compatibility with homebrew
-  glibtool = pkgs.writeShellScriptBin "glibtool" ''exec ${pkgs.libtool}/bin/libtool "$@"'';
+  # to update/regenerate, run the following commamd from the home/npm-packages dir:
+  # node2nix -i <(echo '["bash-language-server", "prettier", "typescript-formatter"]') --nodejs-18
+  # XXX: puppeteer doesn't seem to work with external firefox
+  # and cannot seem to download chromium either
+  # configure mermaid/puppeteer not to try to download any browser
+  # npmPackageImport = import ./npm-packages { inherit pkgs; };
+  # mermaidEnvFix = {
+  #   PUPPETEER_PRODUCT="firefox";
+  #   PUPPETEER_SKIP_DOWNLOAD="true";
+  # };
+  # npmPackages = npmPackageImport;
+  # XXX: puppeteer doesn't seem to work with external firefox
+  # // {
+  #   "@mermaid-js/mermaid-cli" = npmPackageImport."@mermaid-js/mermaid-cli".overrideAttrs (_: mermaidEnvFix);
+  #   puppeteer = npmPackageImport.puppeteer.overrideAttrs (_: mermaidEnvFix);
+  # };
+  shellScriptWrappers = [
+    # enable `gsed` alias which calls gnused for compatibility with homebrew
+    (pkgs.writeShellScriptBin "gsed" ''exec ${pkgs.gnused}/bin/sed "$@"'')
+    # enable `gsort` alias which calls sort for compatibility with homebrew
+    (pkgs.writeShellScriptBin "gsort" ''exec ${pkgs.coreutils}/bin/sort "$@"'')
+    # enable `glibtool` alias which calls libtool for compatibility with homebrew
+    (pkgs.writeShellScriptBin "glibtool" ''exec ${pkgs.libtool}/bin/libtool "$@"'')
+  ];
   homePackages = (with pkgs; [
     aws-iam-authenticator
     awscli
     azure-cli
+    bazel
     ccls
     certigo
     # curlFull # nixpkgs curl builds with openssl 3 which breaks legacy PKCS12 cert auth
     delve
+    etcd
     # envsubst # conflicts with gettext which is required for home-manager
     # gdb # broken as of 2023-01-20
     gnused
@@ -34,19 +54,15 @@ let
     # lima
     openfortivpn
     openldap
-    plantuml
+    # plantuml
     # podman # broken as of 2022-05-12
     # scons
-    terraform
-    terraform-ls
-    tflint
+    # terraform
+    # terraform-ls
+    # tflint
   ])
-  # wrappers for homebrew compatibility
-  ++ [
-    glibtool
-    gsed
-    gsort
-  ]
+  # wrappers for homebrew compatibility, etc.
+  ++ shellScriptWrappers
   # npm packages setup via node2nix
   ++ (builtins.attrValues npmPackages)
   # flakes outside nixpkgs (that don't have overlays)

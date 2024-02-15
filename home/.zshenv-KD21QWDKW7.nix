@@ -1534,6 +1534,11 @@ tz() {
     echo >&2 "error: must specify a directory name or fragment for zoxide to query"
   fi
   search="$1"
-  dir=$(zoxide query "$search") && \
-    tmux new-window -c "$dir" -n "$search" -S
+  dir=$(zoxide query "$search" 2>/dev/null)
+  if [[ -z "$dir" ]]; then
+    dir=$HOME
+  fi
+  tmux new-window -c "$dir" -n "$search" -S
+}
+
 }
