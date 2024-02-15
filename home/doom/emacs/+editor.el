@@ -1,6 +1,6 @@
 ;;;  -*- lexical-binding: t; -*-
 
-;; (setq read-process-output-max (* 4 1024 1024)) ;; 4MB
+(setq read-process-output-max (* 2 1024 1024)) ;; 2MB
 ;; (setq native-comp-async-report-warnings-errors nil)
 (setq doom-modeline-vcs-max-length 30)
 (setq doom-modeline-height 32)
@@ -65,7 +65,8 @@
 (setq +format-on-save-disabled-modes (add-to-list '+format-on-save-disabled-modes 'cpp-mode))
 (setq +format-on-save-disabled-modes (add-to-list '+format-on-save-disabled-modes 'c++-ts-mode))
 (setq +format-on-save-disabled-modes (add-to-list '+format-on-save-disabled-modes 'c++-mode))
-(setq +format-on-save-disabled-modes (add-to-list '+format-on-save-disabled-modes 'protobuf-mode))
+;; since aphelia is handling this now, adding to +format-on-save-disabled-modes doesn't work for protobuf-mode
+;; (setq +format-on-save-disabled-modes (add-to-list '+format-on-save-disabled-modes 'protobuf-mode))
 (setq +format-on-save-disabled-modes (add-to-list '+format-on-save-disabled-modes 'shell-script-mode))
 (setq +format-on-save-disabled-modes (add-to-list '+format-on-save-disabled-modes 'bash-ts-mode))
 
@@ -649,6 +650,9 @@ wheel."
 (add-hook! protobuf-mode #'display-line-numbers-mode)
 (add-hook! protobuf-mode #'flycheck-mode)
 (add-hook! protobuf-mode #'+word-wrap-mode)
+
+;; disable autoformat for protobuf-mode
+(add-hook! protobuf-mode (apheleia-mode -1))
 (put 'flycheck-protoc-import-path 'safe-local-variable #'listp)
 
 ;; (after! (yaml-mode lsp-mode)
@@ -778,6 +782,12 @@ wheel."
   :size 0.50
   )
 
+(after! go-guru)
+(set-popup-rule! "^\\*go-guru-output.*"
+  :side 'bottom
+  :size 5
+  )
+
 ;; centaur tabs
 (after! centaur-tabs
   (setq
@@ -881,7 +891,51 @@ wheel."
           ))
   )
 
-(after! mermaid-mode
-  (setq mermaid-flags "--puppeteerConfigFile ~/.config/puppeteerConfigFile.json"))
+;; XXX: ob-mermaid not working with docker-based mermaid, for now, have to do `npm install -g '@mermaid-js/mermaid-cli'`
+;; mermaid-cli:local tagged from "ghcr.io/mermaid-js/mermaid-cli/mermaid-cli:10.8.1-beta.3@sha256:d05922a4f8949eee96d90b7d6dc8c32f8843c02ab244f694d68c23a419e91b77"
+;; (defcustom mermaid-docker-image "mermaid-cli:local"
+;;   "docker image used to execute mermaid CLI (mmdc)"
+;;   :type 'string)
+;; (after! mermaid-mode
+;;   (setq mermaid-mmdc-location "docker")
+;;   (setq mermaid-flags
+;;         (format "run -u %d -v /tmp:/tmp %s" (user-uid) mermaid-docker-image)))
 
 (after! git-auto-commit-mode (setq gac-automatically-push-p t))
+;; from emacs-lsp-booster
+;; https://github.com/blahgeek/emacs-lsp-booster
+(defun lsp-booster--advice-json-parse (old-fn &rest args)
+  "Try to parse bytecode instead of json."
+  (or
+   (when (equal (following-char) ?#)
+     (let ((bytecode (read (current-buffer))))
+       (when (byte-code-function-p bytecode)
+         (funcall bytecode))))
+   (apply old-fn args)))
+(advice-add (if (progn (require 'json)
+                       (fboundp 'json-parse-buffer))
+                'json-parse-buffer
+              'json-read)
+            :around
+            #'lsp-booster--advice-json-parse)
+
+(defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
+  "Prepend emacs-lsp-booster command to lsp CMD."
+  (let ((orig-result (funcall old-fn cmd test?)))
+    (if (and (not test?)                             ;; for check lsp-server-present?
+             (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
+             lsp-use-plists
+             (not (functionp 'json-rpc-connection))  ;; native json-rpc
+             (executable-find "emacs-lsp-booster"))
+        (progn
+          (message "Using emacs-lsp-booster for %s!" orig-result)
+          (cons "emacs-lsp-booster" orig-result))
+      orig-result)))
+
+(after! lsp-mode
+  (let ((emacs-lsp-booster-cmd (executable-find "emacs-lsp-booster")))
+    (if emacs-lsp-booster-cmd
+        (advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
+      (message "could not find emacs-lsp-booster on path, falling back to default (non-boosted) lsp-mode")))
+  )
+;; end of emacs-lsp-booster

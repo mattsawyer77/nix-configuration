@@ -136,7 +136,7 @@
        ;;ocaml             ; an objective camel
        (org +gnuplot +jupyter +pandoc +present +pretty)               ; organize your plain life in plain text
        ;; plantuml          ; diagrams for confusing people more
-       (python +lsp +pyenv)            ; beautiful is better than ugly
+       (python +lsp +pyenv +pyright +tree-sitter)            ; beautiful is better than ugly
        ;;(racket +lsp +xp)            ; a DSL for DSLs
        ;;ruby              ; 1.step {|i| p "Ruby is #{i.even? ? 'love' : 'life'}"}
        (rust +lsp)             ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
