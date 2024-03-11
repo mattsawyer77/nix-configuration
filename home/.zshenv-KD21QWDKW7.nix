@@ -156,13 +156,11 @@ find-proto-import-path() {
 generate-protoc-import-dir-locals() {
   local username=$(whoami)
   local repo_dir=$(git rev-parse --show-toplevel)
+  export IFS=$'\n'
   declare -a rel_proto_roots
-  for subdir in $(find * \( -wholename proto -o -wholename schema -o -wholename '_excschema/schema/proto' -o -wholename '_extschema/*/schema' \)); do
-    dir="${repo_dir}/${subdir}"
-    if [[ -d "$dir" ]]; then
-      rel_proto_roots+="$dir"
-    fi
-  done
+  rel_proto_roots+=($(fd -p -H -t d --no-ignore-vcs --prune '(_extschema|_protoschema)/[^/]+/(schema|proto)' ${repo_dir} | sd '/$' ''))
+  test -d "${repo_dir}/schema" && rel_proto_roots+=("${repo_dir}/schema")
+  test -d "${repo_dir}/proto" && rel_proto_roots+=("${repo_dir}/proto")
   cat >"${repo_dir}/.dir-locals.el" <<EOF
 ((protobuf-mode .
   ((flycheck-protoc-import-path .
