@@ -4,8 +4,8 @@
   programs.helix = {
     enable = true;
     settings = {
-      # theme = "ayu_dark";
-      theme = "mogster";
+      theme = "ayu_dark";
+      # theme = "mogster";
       # theme = "edge";
       # theme = "everforest";
       # theme = "gruvbox";
@@ -57,6 +57,7 @@
         };
       };
       keys.select = {
+        "#" = "toggle_comments";
         "0" = "goto_line_start";
         "$" = [ "goto_line_end" ];
         d = [ "yank_main_selection_to_clipboard" "delete_selection" ];

@@ -32,6 +32,7 @@ let
                     "^org\\.gnu\\.Emacs"
                     "com.jetbrains.goland"
                     "com.microsoft.VSCode"
+                    "dev.zed.Zed"
                   ];
                 }];
                 from = {
@@ -47,10 +48,10 @@ let
               ctrlToCMDKeys);
           }
           {
-            description = "firefox customization";
+            description = "firefox/orion customization";
             manipulators = [{
               conditions = [{
-                bundle_identifiers = [ "^org\\.mozilla\\." ];
+                bundle_identifiers = [ "^org\\.mozilla\\." "^com\\.kagi\\.kagimacOS" ];
                 type = "frontmost_application_if";
               }];
               description = "reload the page with ctrl+r";
