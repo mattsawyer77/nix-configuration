@@ -1,7 +1,13 @@
 # setup zsh and shell-related tools
-{ pkgs, homeDirectory, goPathSuffix, ... }: {
+{ pkgs, homeDirectory, goPathSuffix, ... }:
+
+let
+  zshAutoSuggestStyle = "fg=#337799";
+ in
+{
   home.packages = with pkgs; [
     direnv
+    eza
     nix-direnv
     nix-zsh-completions
     starship
@@ -13,6 +19,17 @@
   ];
   programs = {
     direnv.enable = true;
+    eza = {
+      enable = true;
+      extraOptions = [
+        "--all"
+        "--long"
+        "--classify=auto"
+        "--icons=auto"
+        "--group-directories-first"
+      ];
+    };
+
     skim = {
       enable = true;
       enableZshIntegration = true;
@@ -20,7 +37,9 @@
     starship = { enable = true; };
     zsh = {
       enable = true;
-      enableAutosuggestions = true;
+      autosuggestion.enable = true;
+      # XXX: doesn't seem to work so zshAutoSuggestStyle is being interpolated into ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE below
+      autosuggestion.highlight = zshAutoSuggestStyle;
       enableCompletion = true;
       syntaxHighlighting.enable = true;
       defaultKeymap = "viins";
@@ -38,7 +57,7 @@
           "openssl rand -hex 6 | sed 's/(..)/1:/g; s/.$//' | xargs sudo ifconfig $(route -n get default | grep interface: | cut -d':' -f2 | awk '{print $1}') ether";
         k = "kubectl";
         kv = "kubectl -n ves-system";
-        l = "eza -alF";
+        l = "eza";
       };
       initExtra = ''
         zstyle ':completion:*:*:*:default' menu yes select search
@@ -59,6 +78,10 @@
     GO111MODULE = "on";
     BAT_THEME = "1337";
     LESS = "-F -i -M -R -X --incsearch";
+    PCREGREP_COLOR = "1;32"; # green instead of default red
+    # XXX: autosuggestion.highlight didn't seem to work, so
+    # zshAutoSuggestStyle is being interpolated into ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE below
+    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE = zshAutoSuggestStyle;
   };
   home.file.direnv_cache = {
     target = ".config/direnv/direnvrc";
