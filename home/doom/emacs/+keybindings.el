@@ -92,7 +92,7 @@
       (:localleader
        :nv "-" #'org-cycle-list-bullet))
 
-(map! :after evil-embrace
+(map! :after expand-region
       :v "v" #'er/expand-region
       :v "V" #'er/contract-region)
 
@@ -136,3 +136,9 @@
         :desc "DAP Breakpoint Delete" "d" #'dap-breakpoint-delete
         :desc "DAP Breakpoint Delete All" "D" #'dap-breakpoint-delete
         )))
+
+(map! :after textsize
+      (:map global-map
+       :nv "s-0" #'textsize-reset
+       :nv "s--" #'textsize-decrement
+       :nv "s-=" #'textsize-increment))
