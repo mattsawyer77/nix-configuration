@@ -454,6 +454,11 @@ let
         #   from = { key_code = "caps_lock"; };
         #   to = [{ key_code = "left_control"; }];
         # }
+        {
+          # toggle between light/dark mode
+          from = { key_code = "f9"; };
+          to = [{ shell_command = "osascript -e 'tell app \"System Events\" to tell appearance preferences to set dark mode to not dark mode'"; }];
+        }
       ];
       virtual_hid_keyboard = {
         country_code = 0;
