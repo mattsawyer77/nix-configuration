@@ -89,13 +89,12 @@
     pyenv
     pyright
     python3
-    python310Packages.grip
-    python310Packages.xmltodict
+    python311Packages.grip
+    python311Packages.xmltodict
     pywal
     readline
     # redis
     ripgrep
-    rnix-lsp
     # rust-analyzer
     rustup
     # scons
