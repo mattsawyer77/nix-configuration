@@ -115,6 +115,11 @@
                   home = "/Users/${username}";
                 };
                 nix = {
+                  gc = {
+                    automatic = true;
+                    interval = { Hour = 13; Minute = 0; };
+                    options = "--delete-older-than 2d";
+                  };
                   package = pkgs.nixVersions.stable;
                   extraOptions = ''
                     system = aarch64-darwin
