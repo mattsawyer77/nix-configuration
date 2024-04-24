@@ -690,8 +690,82 @@ notify() {
     fi
     read -r
     tmux set -g message-style "$default_message_style"
-    tmux set-option status "${current_status_setting}" 2>/dev/null || tmux set-option status on
+    tmux set-option status "${current_status_setting}" 2>/dev/null || tmux set status on
   fi
   tput bel
   return $exit_code
 }
+
+nix-config-check() {
+  sudo nixos-rebuild test --flake ~/workspaces/nix-configuration#sawyer-dev-vio
+}
+
+nix-config-switch() {
+  sudo echo -n \
+    && sudo nixos-rebuild switch --flake ~/workspaces/nix-configuration#sawyer-dev-vio
+}
+
+nix-config-update() {
+  (cd ~/workspaces/nix-configuration \
+    && nix flake update)
+}
+
+# workaround for https://github.com/containers/skopeo/issues/1534
+skopeo-acr-login() {
+  az acr login -n volterra --expose-token \
+    | jq -r '.accessToken' \
+    | skopeo login volterra.azurecr.io \
+      --username 00000000-0000-0000-0000-000000000000 \
+      --password-stdin
+}
+
+acr-login() {
+  az login --tenant ves.f5.com && az acr login -n volterra && skopeo-acr-login
+}
+
+# find an image with the given tag name (i.e. name is equal to the git commit hash or branch name)
+acr-find-tag() {
+  local repo=$1
+  if [[ -z "$repo" ]]; then
+    echo >&2 "error: must specify repo and git ref to search for"
+    return 1
+  fi
+  shift
+  local name=$1
+  if [[ -z "$name" ]]; then
+    echo >&2 "error: must specify git ref to search for"
+    return 1
+  fi
+  shift
+  # try to transform branch name to pattern used to publish to ACR
+  name=$(echo "$name" | sd '\W' '-' | sd '\-$' '' | tr '[:upper:]' '[:lower:]')
+  az acr repository show-tags --name volterra --repository "ves.io/${repo}" --detail --orderby time_desc --query "[?contains(name,'${name}')]" $@
+}
+
+skopeo-inspect() {
+  local url
+  if echo "$url" | grep '^docker://' >/dev/null; then
+    url="$1"
+  else
+    url="docker://$1"
+  fi
+  skopeo inspect "$url" \
+    | jq -r '.Labels."commit-sha"'
+}
+
+gc-login() {
+  export USE_GKE_GCLOUD_AUTH_PLUGIN=True
+  kubectl config use-context gke_devtest-293809_us-east4_gc01-int-ves-io
+  k cluster-info 2>/dev/null \
+    || (gcloud auth login --project=devtest-293809 \
+    && gcloud container clusters get-credentials gc01-int-ves-io --region us-east4)
+}
+
+gc-crt-login() {
+  export USE_GKE_GCLOUD_AUTH_PLUGIN=True
+  kubectl config use-context gke_crt-env_us-east4_gc01-crt-int-ves-io
+  k cluster-info 2>/dev/null \
+    || (gcloud auth login --project=crt-env \
+    && gcloud container clusters get-credentials gc01-crt-int-ves-io --region us-east4)
+}
+

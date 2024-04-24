@@ -94,11 +94,58 @@ in
     (import ./common-shell {
       inherit pkgs goPathSuffix homeDirectory;
     })
-    #./tmux
+    (import ./tmux {
+      inherit pkgs lib;
+      optionOverrides = [
+        {
+          name = "window-status-style";
+          value = ''
+            fg="#888899",bg="#151e24"
+          '';
+          flags = [ "global" ];
+        }
+        {
+          name = "window-status-last-style";
+          value = ''
+            fg="#888899",bg="#151e24"
+          '';
+          flags = [ "global" ];
+        }
+        {
+          name = "window-status-current-style";
+          value = ''
+            fg="#ccccdd",bg="#4f4f58"
+          '';
+          flags = [ "global" ];
+        }
+        {
+          name = "status-left";
+          value = ''
+            "#[bg=#439fad]#[fg=#151e24]#{?client_prefix,#[bg=green],} #S "
+          '';
+          flags = [ "global" ];
+        }
+        {
+          name = "status-right";
+          value = ''
+            '#[bg=#202017]#[fg=#585865] %H:%M%Z #(TZ=UTC date +"(%%H:%%MUTC)") '
+          '';
+          flags = [ "global" ];
+        }
+        {
+          name = "update-environment";
+          value = ''
+            "SSH_TTY"
+          '';
+          flags = [ "global" "append" ];
+        }
+      ];
+    })
     (import ./doom {
       inherit pkgs username envVars localBinPath;
       doomDir = doomDirectory;
       emacsPackage = pkgs.emacs-nox;
+      launchDaemon = true;
     })
     (import ./git {
       inherit config pkgs lib;
@@ -145,59 +192,12 @@ in
     defaultOptions = [ "--height 40%" ];
   };
   programs.starship = { enable = true; };
-  #programs.tmux = import ./tmux {
-  #  inherit pkgs lib;
-  #  optionOverrides = [
-  #    {
-  #      name = "window-status-style";
-  #      value = ''
-  #        fg="#888899",bg="#151e24"
-  #      '';
-  #      flags = [ "global" ];
-  #    }
-  #    {
-  #      name = "window-status-last-style";
-  #      value = ''
-  #        fg="#888899",bg="#151e24"
-  #      '';
-  #      flags = [ "global" ];
-  #    }
-  #    {
-  #      name = "window-status-current-style";
-  #      value = ''
-  #        fg="#ccccdd",bg="#4f4f58"
-  #      '';
-  #      flags = [ "global" ];
-  #    }
-  #    {
-  #      name = "status-left";
-  #      value = ''
-  #        "#[bg=#439fad]#[fg=#151e24]#{?client_prefix,#[bg=green],} #S "
-  #      '';
-  #      flags = [ "global" ];
-  #    }
-  #    {
-  #      name = "status-right";
-  #      value = ''
-  #        '#[bg=#202017]#[fg=#585865] %H:%M%Z #(TZ=UTC date +"(%%H:%%MUTC)") '
-  #      '';
-  #      flags = [ "global" ];
-  #    }
-  #    {
-  #      name = "update-environment";
-  #      value = ''
-  #        "SSH_TTY"
-  #      '';
-  #      flags = [ "global" "append" ];
-  #    }
-  #  ];
-  #};
   programs.zoxide = { enable = true; };
   programs.zsh = {
     envExtra = builtins.readFile ./.zshenv-sawyer-dev-vio;
     initExtra = ''
       command -v npm >/dev/null && npm config set prefix ${npmPackagePath} && export PATH=$PATH:$HOME/${npmPackagePath}/bin
-      source <(kubectl completion zsh)
+      # source <(kubectl completion zsh)
       printf '\e]2;'$(hostname)'\a'
     '';
   };

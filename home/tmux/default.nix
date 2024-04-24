@@ -1,4 +1,6 @@
-{ pkgs, optionOverrides, ... }:
+{ pkgs
+, optionOverrides ? []
+, ... }:
 
 let
   optionFlags = {
@@ -130,11 +132,6 @@ let
       value = ''
         '#[bg=#202017]#[fg=#585865] %H:%M%Z #(TZ=UTC date +"(%%H:%%MUTC)") '
       '';
-      flags = [ "global" ];
-    }
-    {
-      name = "default-command";
-      value = ''"reattach-to-user-namespace -l zsh"'';
       flags = [ "global" ];
     }
     {

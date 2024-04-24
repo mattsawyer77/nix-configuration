@@ -1101,4 +1101,13 @@
     )
   )
 
-(load-theme sawyer/dark-theme 't)
+(if (daemonp)
+    (add-hook 'after-make-frame-functions
+              (defun sawyer/theme-init-daemon (frame)
+                (with-selected-frame frame
+                  (load-theme sawyer/dark-theme 't))
+                ;; Run this hook only once.
+                (remove-hook 'after-make-frame-functions
+                             #'sawyer/theme-init-daemon)
+                (fmakunbound 'sawyer/theme-init-daemon)))
+  (load-theme sawyer/dark-theme 't))

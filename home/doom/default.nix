@@ -5,7 +5,9 @@
 , username
 , envVars
 , emacsPackage ? pkgs.emacs
-, ... }:
+, launchDaemon ? false
+, ...
+}:
 let
   userConfigDir = {
     source = ./emacs;
@@ -36,7 +38,7 @@ let
 in
 {
   home.file."${doomDir}" = userConfigDir;
-  home.packages = with pkgs; [ emacsPackage ];
+  home.packages = [ emacsPackage ];
   # make packages available to file.onChange and activation scripts
   home.extraActivationPath = with pkgs; [
     sd
@@ -52,6 +54,14 @@ in
   programs.zsh.shellAliases = {
     doom = "~/.emacs.d/bin/doom";
     em = "em.zsh";
+  };
+  services.emacs = (if launchDaemon then {
+    enable = true;
+    package = emacsPackage;
+    socketActivation.enable = true;
+  } else { });
+  systemd.user.sessionVariables = {
+    COLORTERM = "truecolor";
   };
   # for git, $EDITOR/$VISUAL can't be set to reference a shell function, so deploy the script as follows
   # home.file."em.zsh" = {
