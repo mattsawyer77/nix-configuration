@@ -102,7 +102,6 @@
     shared-mime-info
     shellcheck
     shfmt
-    skhd
     skim
     skopeo
     starship
@@ -133,10 +132,8 @@
     zsh-z
     zstd
   ] ++ (if pkgs.stdenv.isDarwin then [
-    alacritty
     discord
     dockutil
     reattach-to-user-namespace
-    yabai
   ] else [ ]);
 }

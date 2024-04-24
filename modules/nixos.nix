@@ -43,4 +43,5 @@ with lib;
       nil.overlays.nil
     ]; # overlays
   }; # nixpkgs
+  programs.zsh.enable = true;
 }

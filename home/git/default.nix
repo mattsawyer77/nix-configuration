@@ -6,12 +6,12 @@
   # some tools need to docker-mount ~/.gitconfig and can't handle symlinks or XDG-style ~/.config/git/config
   # XXX: not working, as this copies the previous generation of outputs, not the current
   # TODO: move to file.on
-  home.activation.gitconfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    echo "copying .gitconfig to $HOME"
-    rm -rf ~/.gitconfig
-    cp -afvL ~/.config/git/config ~/.gitconfig
-    chmod 400 ~/.gitconfig
-  '';
+  # home.activation.gitconfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+  #   echo "copying .gitconfig to $HOME"
+  #   rm -rf ~/.gitconfig
+  #   cp -afvL ~/.config/git/config ~/.gitconfig
+  #   chmod 400 ~/.gitconfig
+  # '';
   # home.file.".gitconfig" = {
   #   executable = false;
   #   source = "file://${config.home.homeDirectory}/${config.xdg.configFile."git/config".target}";
