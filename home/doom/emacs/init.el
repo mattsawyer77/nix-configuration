@@ -19,6 +19,28 @@
 ;; (prefer-coding-system 'utf-8)
 
 (setq fancy-splash-image "~/.emacs.d/.local/black-hole.png")
+(defun sawyer/set-ascii-splash ()
+  (let* ((banner-raw
+          '("   __    ___ ___      __      ___    ____   "
+            " /'__`\\/' __` __`\\  /'__`\\   /'___\\ /',__\\  "
+            "/\\  __//\\ \\/\\ \\/\\ \\/\\ \\L\\.\\_/\\ \\__//\\__, `\\ "
+            "\\ \\____\\ \\_\\ \\_\\ \\_\\ \\__/.\\_\\ \\____\\/\\____/ "
+            " \\/____/\\/_/\\/_/\\/_/\\/__/\\/_/\\/____/\\/___/  "))
+         ;; not working:
+         ;; (banner (mapcar #'prin1-to-string banner-raw))
+         (banner banner-raw)
+         (longest-line (apply #'max (mapcar #'length banner))))
+    (put-text-property
+     (point)
+     (dolist (line banner (point))
+       (insert (+doom-dashboard--center
+                +doom-dashboard--width
+                (concat line (make-string (max 0 (- longest-line (length line))) 44)))
+               "\n"))
+     'face 'doom-dashboard-banner)))
+
+(setq +doom-dashboard-ascii-banner-fn #'sawyer/set-ascii-splash)
+
 (doom! :input
        ;;bidi              ; (tfel ot) thgir etirw uoy gnipleh
        ;;chinese
