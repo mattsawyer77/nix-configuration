@@ -888,6 +888,7 @@ wheel."
   (vertico-multiform-mode 1)
   (setq vertico-multiform-commands
         '((consult-imenu grid)
+          (consult-line buffer)
           ))
   )
 
@@ -939,3 +940,10 @@ wheel."
       (message "could not find emacs-lsp-booster on path, falling back to default (non-boosted) lsp-mode")))
   )
 ;; end of emacs-lsp-booster
+
+(after! lsp-treemacs
+  (setq lsp-treemacs-error-list-expand-depth 3)
+  )
+
+(after! emacs-eat
+  (setq eat-term-name "xterm-256color"))
