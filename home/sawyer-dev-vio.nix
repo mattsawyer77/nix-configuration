@@ -44,6 +44,9 @@ let
     helix
     htop
     jansson
+    just
+    k3s
+    kluctl
     libsndfile
     msgpack
     ncurses
@@ -58,12 +61,13 @@ let
     sd
     ssm-session-manager-plugin
     valgrind
+    wezterm
     wireshark
     xsel
     yaml-language-server
   ]
   # npm packages setup via node2nix
-  ++ (with npmPackages; [ bash-language-server prettier]);
+  ++ (with npmPackages; [ bash-language-server prettier ]);
 
   envVars = {
     BAT_THEME = "1337";

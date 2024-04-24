@@ -38,7 +38,6 @@
     ijq
     jansson
     jq
-    kubectl
     less
     libcxx
     libgccjit
