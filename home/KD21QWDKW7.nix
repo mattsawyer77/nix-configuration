@@ -51,7 +51,11 @@ let
       [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
     gocyclo
     golint
+    jsonnet
+    jsonnet-language-server
+    just
     # lima
+    mockgen
     openfortivpn
     openldap
     # plantuml
@@ -64,20 +68,28 @@ let
   # wrappers for homebrew compatibility, etc.
   ++ shellScriptWrappers
   # npm packages setup via node2nix
-  ++ (builtins.attrValues npmPackages)
+  # ++ (builtins.attrValues npmPackages)
   # flakes outside nixpkgs (that don't have overlays)
   # TODO: how to make this more idiomatic without specifying the system arch
-  ++ [ mkaliasPackage ];
+  ++ [ mkaliasPackage poetry2nixPackage ];
   envVars = {
+    # ALTERNATE_EDITOR="hx";
+    # can't get emacsclient to work on macOS in the terminal
+    EDITOR="hx";
+    VISUAL="hx";
     USE_GKE_GCLOUD_AUTH_PLUGIN = "True";
     SAML2AWS_USER_AGENT =
       "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.00) Gecko/20100101 Firefox/82.0";
     LSP_USE_PLISTS = "true";
+    # puppeteer seems not to work with firefox
+    # PUPPETEER_PRODUCT="firefox";
+    # PUPPETEER_EXECUTABLE_PATH="/Applications/Firefox.app/Contents/MacOS/firefox-bin";
   };
   extraPaths = [
     (homeDirectory + "/" + localBinPath)
     (homeDirectory + "/.cargo/bin")
     (homeDirectory + "/" + goPathSuffix + "/bin")
+    (homeDirectory + "/" + npmPackagePath + "/bin")
   ];
 in
 {
@@ -93,8 +105,9 @@ in
     })
     ./karabiner
     (import ./doom {
-      inherit pkgs localBinPath username envVars;
+      inherit pkgs username envVars;
       doomDir = doomDirectory;
+      emacsPackage = pkgs.emacs29-macport;
     })
     (import ./git {
       inherit config pkgs lib;
@@ -131,14 +144,19 @@ in
           # from bash (as far as I know), so we use a custom utility called mkalias.
           app_name=$(basename "$app" | sd '\.[^\.]+$' $''')
           $DRY_RUN_CMD ${mkaliasPackage}/bin/mkalias $app ~/Applications/$app_name
-          $DRY_RUN_CMD ${pkgs.dockutil}/bin/dockutil --add "$app" --replacing "$app_name" ~${username}
+          $DRY_RUN_CMD ${pkgs.dockutil}/bin/dockutil --add "$app" --replacing "$app_name" --no-restart ~${username}
       done
+      # only restart the Dock once, instead of per app in the above loop
+      $DRY_RUN_CMD /usr/bin/killall -m Dock
       set +x
     '';
   };
   programs.home-manager.enable = true;
-  programs.alacritty = import ./alacritty/alacritty.nix { inherit fontConfig; };
+  # programs.alacritty = import ./alacritty/alacritty.nix { inherit fontConfig; };
   programs.zsh = {
     envExtra = builtins.readFile ./.zshenv-KD21QWDKW7.nix;
+    initExtra = ''
+      command -v npm >/dev/null && npm config set prefix ${npmPackagePath} && export PATH=$PATH:$HOME/${npmPackagePath}/bin
+    '';
   };
 }

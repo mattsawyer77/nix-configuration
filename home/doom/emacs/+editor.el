@@ -14,7 +14,7 @@
 (setq-default maximum-scroll-margin 0.15)
 (setq-default sh-basic-offset 2)
 
-;; (when (and (display-graphic-p) IS-MAC)
+;; (when (and (display-graphic-p) (featurep :system 'macos))
 ;; (setq doom-modeline-icon t)
 ;; (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
 ;; (add-to-list 'default-frame-alist '(ns-appearance . dark)))
@@ -83,14 +83,14 @@
   (require 'tree-sitter-langs)
   (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
   ;; (setq-default tree-sitter-hl-use-font-lock-keywords nil)
-  (add-hook! go-mode
-    (setq-local tree-sitter-hl-use-font-lock-keywords t)
-    (tree-sitter-mode 1)
-    ;; (go-ts-mode)
-    ;; (add-function :before-while (local 'tree-sitter-hl-face-mapping-function)
-    ;;               (lambda (capture-name)
-    ;;                 (string= capture-name "type"))
-    )
+  ;; (add-hook! go-mode
+  ;; (setq-local tree-sitter-hl-use-font-lock-keywords t)
+  ;; (tree-sitter-mode 1)
+  ;; (go-ts-mode)
+  ;; (add-function :before-while (local 'tree-sitter-hl-face-mapping-function)
+  ;;               (lambda (capture-name)
+  ;;                 (string= capture-name "type"))
+  ;; )
   )
 
 ;; (global-treesit-auto-mode 1)
@@ -129,6 +129,23 @@
         )
   )
 
+(after! (rustic lsp-mode)
+  ;; do not cache the broken result from rust-analyzer
+  (advice-add #'lsp-eldoc-function :after (lambda (&rest _) (setq lsp--hover-saved-bounds nil)))
+  ;; extract and show short signature for rust-analyzer
+  (cl-defmethod lsp-clients-extract-signature-on-hover (contents (_server-id (eql rust-analyzer)))
+    (let* ((value (if lsp-use-plists (plist-get contents :value) (gethash "value" contents)))
+           (groups (--partition-by (s-blank? it) (s-lines (s-trim value))))
+           (sig_group (if (s-equals? "```rust" (car (-third-item groups)))
+                          (-third-item groups)
+                        (car groups)))
+           (sig (--> sig_group
+                     (--drop-while (s-equals? "```rust" it) it)
+                     (--take-while (not (s-equals? "```" it)) it)
+                     (--map (s-trim it) it)
+                     (s-join " " it))))
+      (lsp--render-element (concat "```rust\n" sig "\n```")))))
+
 ;; XXX: not working
 ;; (after! dap-mode
 ;;   (add-hook! 'dap-stopped-hook
@@ -152,11 +169,11 @@
 (add-hook! emacs-lisp-mode #'rainbow-mode)
 (add-hook! emacs-lisp-mode #'flycheck-mode)
 
-(add-hook! (go-mode go-ts-mode)
-  (lsp)
-  (+word-wrap-mode 1))
-(add-hook! go-ts-mode
-  (setq go-ts-mode-indent-offset 2))
+;; (add-hook! (go-mode go-ts-mode)
+;;   (lsp)
+;;   (+word-wrap-mode 1))
+;; (add-hook! go-ts-mode
+;;   (setq go-ts-mode-indent-offset 2))
 
 ;; override LSP's default diagnostic checker and use golangci-lint instead
 ;; (add-hook! lsp-diagnostics-mode
@@ -176,7 +193,7 @@
     )
   )
 
-(when (and (display-graphic-p) IS-MAC (fboundp 'pixel-scroll-precision-mode))
+(when (and (display-graphic-p) (featurep :system 'macos) (fboundp 'pixel-scroll-precision-mode))
   ;; taken from https://maximzuriel.nl/physics-and-code/emacs-mac-smooth-scroll/article
   (setq scroll-margin 0
         scroll-conservatively 101)
@@ -275,7 +292,6 @@ wheel."
   (treemacs-git-mode 'deferred)
   (setq-default treemacs--width-is-locked nil)
   (setq treemacs-position 'left)
-  (setq treemacs-width 40)
   (setq treemacs-project-follow-cleanup t)
   )
 
@@ -374,17 +390,15 @@ wheel."
 
 ;; (add-hook! rustic-mode #'tree-sitter-mode)
 (add-hook! (rustic-mode rust-ts-mode)
-  (flycheck-select-checker 'rustic-clippy)
-  (lsp)
-  ;; (lsp-toggle-signature-auto-activate)
-  (+word-wrap-mode)
-  (flycheck-posframe-mode -1)
-  ;; (flycheck-mode -1)
-  ;; (tree-sitter-hl-mode 1)
-  )
-(add-hook! lsp-ui-mode
-  (when (or (eq major-mode 'rustic-mode) (eq major-mode 'rust-ts-mode))
-    (lsp-rust-analyzer-inlay-hints-mode 1)))
+           ;; (flycheck-select-checker 'rustic-clippy)
+           (lsp)
+           ;; (lsp-toggle-signature-auto-activate)
+           (+word-wrap-mode)
+           ;; (flycheck-posframe-mode -1)
+           ;; (flycheck-mode -1)
+           ;; (tree-sitter-hl-mode 1)
+           (lsp-inlay-hints-mode 1)
+           )
 
 (after! highlight-indent-guides
   (setq highlight-indent-guides-method 'fill)
@@ -556,7 +570,6 @@ wheel."
   (setq lsp-ui-imenu-buffer-position 'left)
   ;; (setq lsp-diagnostics-provider :flymake)
   ;; (setq lsp-diagnostics-provider :flycheck)
-  (setq lsp-rust-analyzer-server-display-inlay-hints t)
   (setq lsp-nix-nil-formatter ["nixpkgs-fmt"])
   )
 

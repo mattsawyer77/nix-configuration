@@ -500,14 +500,16 @@ docker-shell () {
         --env PS1="${image}:\w> " \
         --env DOCKER_IMAGE="$image" \
         --net host \
+        -v ${HOME}/.ssh/known_hosts:${HOME}/.ssh/known_hosts:ro,Z \
         -v ${HOME}/.cache:${HOME}/.cache \
         -v "$temp_passwd_file":/etc/passwd:ro,Z \
         -v ${PWD}:/go/${GOPATH}/src:Z \
         -v ${HOME}/.gitconfig:${HOME}/.gitconfig:ro \
         -v ${HOME}/.ssh:${HOME}/.ssh:ro \
+        -v ${HOME}/.magefile:${HOME}/.magefile \
         -v ${GOPATH}:${GOPATH} \
         -v ${project_root}:${project_root} \
-        -v "${HOME}/.bashrc":"${HOME}/.bashrc" \
+        -v "${HOME}/.bashrc-docker-shell":"${HOME}/.bashrc" \
         -w ${project_root} \
         ${image} ${cmd}
     test -f "$temp_passwd_file" && rm -f "$temp_passwd_file"
@@ -602,7 +604,7 @@ akarctl() {
   GRPC_TLS_PORT=${AKAR_GRPC_TLS_PORT:-$(kubectl -n ves-system get configmap akar-config -o json | jq -r '.data."config.yml"' | yq e '.GrpcTLSPort' -)}
   SERVER_CN=${AKAR_SERVER_CN:-$(kubectl -n ves-system get deployment akar -o json | jq -r '.spec.template.spec.containers[]|select(.name=="wingman")|.env|from_entries|.serviceNames' | cut -d',' -f1)}
   if [[ -n "$GRPC_TLS_PORT" ]]; then
-    akar_pod=$(kubectl -n ves-system get pods -lname=akar | awk '{print $1}')
+    akar_pod=$(kubectl -n ves-system get pods -lname=akar --no-headers | awk '{print $1}')
     if [[ -n "$akar_pod" ]]; then
       kubectl -n ves-system -c akar exec -it "$akar_pod" -c akar -- \
         akard client-ctl -u "localhost:${GRPC_TLS_PORT}" --server-cn "$SERVER_CN" \
@@ -612,6 +614,23 @@ akarctl() {
     fi
   else
     echo "could not determine akar's GRPC TLS port"
+  fi
+}
+
+akardnsctl() {
+  GRPC_TLS_PORT=${AKAR_GRPC_TLS_PORT:-$(kubectl -n ves-system get configmap akar-dnsdomain-config -o json | jq -r '.data."config.yml"' | yq e '.GrpcTLSPort' -)}
+  SERVER_CN=${AKAR_SERVER_CN:-$(kubectl -n ves-system get deployment akar-dnsdomain -o json | jq -r '.spec.template.spec.containers[]|select(.name=="wingman")|.env|from_entries|.serviceNames' | cut -d',' -f1)}
+  if [[ -n "$GRPC_TLS_PORT" ]]; then
+    akar_pod=$(kubectl -n ves-system get pods -lname=akar-dnsdomain --no-headers | awk '{print $1}')
+    if [[ -n "$akar_pod" ]]; then
+      kubectl -n ves-system -c akar exec -it "$akar_pod" -c akar -- \
+        akard client-ctl -u "localhost:${GRPC_TLS_PORT}" --server-cn "$SERVER_CN" \
+        $@
+    else
+      echo "could not find a running akar-dnsdomain pod" >&2
+    fi
+  else
+    echo "could not determine akar-dnsdomain's GRPC TLS port"
   fi
 }
 
@@ -689,6 +708,7 @@ nioctl() {
 }
 
 vegactl() {
+  local host
   local usage="usage:\nvegactl kubectl-args"
   GRPC_TLS_PORT=${VEGA_GRPC_TLS_PORT:-$(kubectl -n ves-system describe cm ver-config | grep -E '^GrpcTLSPort' | cut -d' ' -f2)}
   SERVER_CN=${VEGA_SERVER_CN:-$(kubectl -n ves-system describe cm ver-config | grep VegaCommonName | cut -d' ' -f2)}
@@ -705,6 +725,42 @@ vegactl() {
   else
     echo "could not determine vega's GRPC TLS port"
   fi
+}
+
+env-gc-site() {
+  if [ ! -v 1 ]; then
+    echo >&2 "must specify environment (demo1, crt, staging, prod)"
+    return 1
+  fi
+  local environment="$1"
+  local site="${2:-gc}"
+  case $environment in
+    demo1)
+      if [[ "$site" == "gc" ]]; then
+        site=gc01
+      fi
+      ;;
+    crt)
+      if [[ "$site" == "gc" ]]; then
+        site=gc01
+      fi
+      ;;
+    staging)
+      if [[ "$site" == "gc" ]]; then
+        site=gc1-iad-01
+      fi
+      ;;
+    prod)
+      if [[ "$site" == "gc" ]]; then
+        site=gc01-cle
+      fi
+      ;;
+    *)
+      echo >&2 "unknown environment $environment"
+      return 1
+      ;;
+  esac
+  echo "$site"
 }
 
 env-site-fqdn() {
@@ -777,31 +833,38 @@ env-compass-hostname() {
 # for reference, the following was sometimes used instead of /ves.io.stdlib/introspect/read/pprof_profile, not sure of the exact implications
 # url="https://${compass_hostname}/introspection/${site_fqdn}/${service}/debug/pprof/${pprof_type}?debug=1&seconds=${sample_time}"
 profile-service() {
-  usage="usage:\nprofile_service service_name [environment] [site] [pprof_type] [sample_time]"
-  if [ ! -v 1 ]; then
-    echo >&2 "must specify service to profile"
+  usage="usage:\nprofile-service environment service_name [site] [pprof_type] [sample_time]"
+  if [ $# -lt 2 ]; then
+    echo >&2 "must specify environment and service to profile"
     echo >&2 "$usage"
     return 1
   fi
-  local service="$1"
-  local environment="${2:-demo1}"
+  local environment="$1"
+  local service="$2"
   local site="${3:-gc01}"
   local pprof_type="${4:-cpu}"
   local valid_profile=false
+  local debug_mode=1
   for t in cpu block mutex goroutine heap allocs; do
     if [[ "$pprof_type" == "$t" ]]; then
       valid_profile=true
+    fi
+    if [[ "$pprof_type" == "goroutine" ]]; then
+      debug_mode=0 # 0: pprof format, as opposed to a text dump of current goroutines
+    fi
+    if [[ "$pprof_type" == "heap" ]]; then
+      debug_mode=0 # 0: pprof format, as opposed to a text dump of current goroutines
     fi
   done
   if [[ "$valid_profile" == "false" ]]; then
     echo >&2 "invalid pprof profile type, valid types are cpu, block, mutex, goroutine, heap, or allocs"
     return 1
   fi
-  local sample_time="${5:-30}"
+  local sample_time="${5:-15}"
   local site_fqdn=$(env-site-fqdn "$environment" "$site")
   local compass_hostname=$(env-compass-hostname "$environment")
   output_filename_base="${service}-${site}.${environment}.${pprof_type}.$(date --iso-8601=seconds)"
-  url="https://${compass_hostname}/introspection/${site_fqdn}/${service}/ves.io.stdlib/introspect/read/pprof_profile?name=${pprof_type}&debug_mode=1&seconds=${sample_time}"
+  url="https://${compass_hostname}/introspection/${site_fqdn}/${service}/ves.io.stdlib/introspect/read/pprof_profile?name=${pprof_type}&debug_mode=${debug_mode}&seconds=${sample_time}"
   echo "starting profile of $service on $environment (url: $url) for ${sample_time}s..."
   curl \
     --insecure \
@@ -810,9 +873,21 @@ profile-service() {
     --cert-type P12 \
     --cert "$HOME/.ves-internal/${environment}/usercerts.p12:volterra" \
     -o "${output_filename_base}.json" \
-    "$url" \
-      && cat "${output_filename_base}.json" | jq -r '.contents' | base64 --decode > "${output_filename_base}.pprof" \
-      && echo "profile saved at $output_filename"
+    "$url"
+  if [[ $? -ne 0 ]]; then
+    echo >&2 "error: introspect request to $url failed"
+    return 1
+  fi
+  if [[ -n $(cat "${output_filename_base}.json" | jq -r 'select(.err!=null)') ]]; then
+    echo >&2 -n "error: introspect request to $url returned an error: "
+    cat "${output_filename_base}.json" | jq -r '.err' >&2
+    return 1
+  fi
+  cat "${output_filename_base}.json" | jq -r '.contents' | base64 --decode > "${output_filename_base}.pprof" \
+    && echo >&2 "profile saved at ${output_filename_base}.pprof"
+  go tool pprof -http localhost:8888 "${output_filename_base}.pprof"
+  echo >&2 "cleaning up downloaded json file ${output_filename_base}.json"
+  rm "${output_filename_base}.json" || :
 }
 
 # kv set image statefulset/streak streak=gcr.io/volterraio/streak@sha256:37be0ca9476b754ed144da6678a414748825e733dfd0345fa3fc1924a559d42a
@@ -1008,15 +1083,7 @@ disable-docker-write-through() {
 }
 
 matrix-renew-certs() {
-  if ! matrix certInfo >/dev/null 2>&1; then
-    for env in demo1 crt staging prod; do matrix get-user-cert -b firefox -e "$env"; done
-  else
-    matrix certInfo 2>&1 \
-      | pcregrep -B4 'status:.*expired' \
-      | pcregrep -B2 '^\s*User Certificate' \
-      | pcregrep -o '^\w+' \
-      | xargs -I% sh -c "echo renewing cert for %...; matrix get-user-cert -b firefox -e %"
-  fi
+  for env in demo1 crt staging prod; do echo -n "${env}: "; matrix get-user-cert -b firefox -e "$env"; done
 }
 
 gc-login() {
@@ -1488,7 +1555,7 @@ gitlab-test-failures() {
     return 1
   fi
   local per_page=${PER_PAGE:-100}
-  local pages=${PAGES:-1}
+  local pages=${PAGES:-10}
   local max_results=${MAX_RESULTS:-1}
   local found_results=0
   local curl_metadata_out_file=$(mktemp)
@@ -1525,8 +1592,10 @@ gitlab-test-failures() {
   done
   rm -f $curl_metadata_out_file
 }
-# given a string, and if a tmux window with that name exists, switch to it
+
+# given a string, check if a tmux window with that name exists, if so, switch to it
 # otherwise, find the most commonly used working directory that matches, create a new tmux window and switch to that dir
+# if that failed, just create a new tmux window with the given name
 tz() {
   if [[ ! -v 1 ]]; then
     echo >&2 "error: must specify a directory name or fragment for zoxide to query"

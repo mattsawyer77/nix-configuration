@@ -20,6 +20,9 @@ with lib;
   programs.zsh.enableBashCompletion = true;
   programs.zsh.enableSyntaxHighlighting = true;
   nix.configureBuildUsers = true;
+  nix.settings.extra-sandbox-paths = [
+    "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib"
+  ];
   nixpkgs = {
     config = {
       allowUnfree = true;
@@ -33,13 +36,22 @@ with lib;
       #   in self;
     };
     overlays = [
+      # (emacsPackage.overrideAttrs (prev: {
+      #   patches =
+      #     (prev.patches or [ ]) ++ [
+      #       # fix terminal emacs daemon (aka multi-tty support)
+      #       ../patches/emacs-tty-1.patch
+      #       ../patches/emacs-tty-2.patch
+      #     ];
+      # }))
       # emacs-overlay.overlay
       # (import ./emacs-mac.nix {
       #   inherit config pkgs lib emacs-overlay emacs-src emacs-vterm-src;
       # })
-      (import ./neovim.nix)
+      # (import ./neovim.nix)
       nil.overlays.nil
-      (import ./golangci-lint.nix)
+      # (import ./golangci-lint.nix)
     ]; # overlays
   }; # nixpkgs
+
 }

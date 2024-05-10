@@ -1,5 +1,11 @@
 # return an activation script and an file/onChange script for use within home modules
-{ pkgs, doomDir, localBinPath, username, envVars, ... }:
+{ 
+pkgs, 
+doomDir, 
+username, 
+envVars,
+emacsPackage ? pkgs.emacs29,
+... }:
 let
   userConfigDir = {
     source = ./emacs;
@@ -30,11 +36,11 @@ let
 in
 {
   home.file."${doomDir}" = userConfigDir;
-  home.packages = with pkgs; [ emacs29-macport ];
+  home.packages = [ emacsPackage ];
   # make packages available to file.onChange and activation scripts
   home.extraActivationPath = with pkgs; [
     sd
-    emacs29-macport
+    emacsPackage
     python3
     ripgrep
     pcre
@@ -44,20 +50,23 @@ in
     cmake
     coreutils
   ];
-  home.sessionVariables = {
-    EDITOR = "em";
-    VISUAL = "em";
+  # home.sessionVariables = {
+  #   EDITOR = "em";
+  #   VISUAL = "em";
+  # };
+  programs.emacs = {
+    package = emacsPackage;
   };
   programs.zsh.shellAliases = {
     doom = "~/.emacs.d/bin/doom";
-    em = "em.zsh";
+    # em = "em.zsh";
   };
   # for git, $EDITOR/$VISUAL can't be set to reference a shell function, so deploy the script as follows
-  home.file."em.zsh" = {
-    executable = true;
-    source = ./em.zsh;
-    target = localBinPath + "/em";
-  };
+  # home.file."em.zsh" = {
+  #   executable = true;
+  #   source = ./em.zsh;
+  #   target = localBinPath + "/em";
+  # };
   # disabled since doom emacs sync isn't working well
   # always run doom sync when activating home manager
   # activation = lib.hm.dag.entryAfter [ "writeBoundary" ] ''

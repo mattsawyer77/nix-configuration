@@ -2,18 +2,19 @@
 local w = wezterm
 ---@diagnostic disable-next-line: unused-local
 local favoriteSchemes = {
+  ["iceberg-dark"] = true,
   ["Floraverse"] = true,
   ["Kanagawa (Gogh)"] = true,
   ["Horizon Dark (base16)"] = true,
   ["Ocean Dark (Gogh)"] = true,
-  ["OceanDark (Gogh)"] = true,
   ["Mashup Colors (terminal.sexy)"] = true,
   ["Neon Night (Gogh)"] = true,
   ["Argonaut"] = true,
-  ["iceberg-dark"] = true,
   ["nightfox"] = true,
   ["Codeschool (light) (terminal.sexy)"] = true,
   ["Hemisu Light"] = true,
+  ["Spring"] = true,
+  ["Papercolor Light (Gogh)"] = true,
 };
 
 ---cycle through builtin dark schemes in dark mode,
@@ -66,11 +67,11 @@ local function themeCycler(window, useFavorites, _)
   local found = false
   for i = 1, #schemesToSearch, 1 do
     if schemesToSearch[i] == currentScheme then
-      found = true
       local scheme = schemesToSearch[i+1]
       if scheme == nil then
         break
       end
+      found = true
       overrides.color_scheme = scheme
       window:set_config_overrides(overrides)
       w.log_info("Switched to: " .. scheme)
@@ -95,7 +96,7 @@ end
 -- overrides = window:get_config_overrides(); overrides.color_scheme = "iceberg-dark"; window:set_config_overrides(overrides)
 -- overrides = window:get_config_overrides(); overrides.color_scheme = "nightfox"; window:set_config_overrides(overrides)
 
-return {
+local config = {
   ---@diagnostic disable-next-line: undefined-global
   font = w.font('PragmataPro Liga', {
                         -- weight = "Thin"
@@ -116,11 +117,10 @@ return {
   -- color_scheme = "Floraverse",
   -- color_scheme = "Horizon Dark (base16)",
   -- color_scheme = "Ocean Dark (Gogh)",
-  -- color_scheme = "OceanDark (Gogh)",
   -- color_scheme = "Mashup Colors (terminal.sexy)",
-  color_scheme = "Neon Night (Gogh)",
+  -- color_scheme = "Neon Night (Gogh)",
   -- color_scheme = "Argonaut",
-  -- color_scheme = "iceberg-dark",
+  color_scheme = "iceberg-dark",
   -- color_scheme = "nightfox",
   hide_tab_bar_if_only_one_tab = true,
   line_height = 1.1,

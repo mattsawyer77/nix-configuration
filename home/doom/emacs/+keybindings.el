@@ -31,13 +31,19 @@
     :desc "Close Tab" "x" #'centaur-tabs-kill-all-buffers-in-current-group
     :desc "New Tab" "n" #'centaur-tabs--create-new-tab
     )))
- (:after flycheck
-  :leader
-  (:prefix ("e" . "errors")
-   :desc "go to next error" "n" #'flycheck-next-error
-   :desc "go to previous error" "p" #'flycheck-previous-error
-   :desc "verify Flycheck setup" "v" #'flycheck-verify-setup
-   :desc "list errors" "l" #'flycheck-list-errors))
+ (:after emacs-eat
+  :nv "<f8>" #'eat-project
+  (:leader
+   (:prefix ("o" . "+open")
+    :desc "Open EAT" "e" #'eat-project
+    )))
+ ;; (:after flycheck
+ ;; :leader
+ ;; (:prefix ("e" . "errors")
+ ;; :desc "go to next error" "n" #'flycheck-next-error
+ ;; :desc "go to previous error" "p" #'flycheck-previous-error
+ ;; :desc "verify Flycheck setup" "v" #'flycheck-verify-setup
+ ;; :desc "list errors" "l" #'flycheck-list-errors))
  (:leader
   (:after projectile
    :desc "Switch to last project buffer" "`" #'projectile-project-buffers-other-buffer)
@@ -46,14 +52,15 @@
   (:after vertico
    :leader
    :desc "Repeat last Vertico search" "\"" #'vertico-repeat-select))
-)
+ )
 
 (after! evil-nerd-commenter
   (map! :map general-override-mode-map
         :nv "#" #'evilnc-comment-or-uncomment-lines)
   )
 
-(after! (general evil projectile consult)
+;; (after! (general evil projectile consult)
+(after! (general evil consult)
   (map! :map general-override-mode-map
         :nv "g d" #'+lookup/definition
         :nv "g t" #'+lookup/type-definition
@@ -63,13 +70,13 @@
         :nv "g b" #'consult-buffer)
   )
 
-(map! :after flycheck
-      (:leader
-      (:prefix ("e" . "errors")
-       :desc "go to next error" "n" #'flycheck-next-error
-       :desc "go to previous error" "p" #'flycheck-previous-error
-       :desc "verify Flycheck setup" "v" #'flycheck-verify-setup
-       :desc "list errors" "l" #'flycheck-list-errors)))
+;; (map! :after flycheck
+;; (:leader
+;; (:prefix ("e" . "errors")
+;; :desc "go to next error" "n" #'flycheck-next-error
+;; :desc "go to previous error" "p" #'flycheck-previous-error
+;; :desc "verify Flycheck setup" "v" #'flycheck-verify-setup
+;; :desc "list errors" "l" #'flycheck-list-errors)))
 
 (map! :after impatient-showdown-mode
       :mode markdown-mode
@@ -83,8 +90,9 @@
         :desc "cargo check" "c" (cmd! (compile "cargo check"))
         )))
 
-(map! :after org
-      :map org-mode-map
+(map! :after evil-org
+      :map evil-org-mode-map
+      :mode org-mode
       :i "TAB" #'evil-org->
       :i "S-TAB" #'evil-org-<
       :nv "C-j" #'org-move-subtree-down

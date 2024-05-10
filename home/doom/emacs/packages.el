@@ -85,6 +85,9 @@
            :repo "mattsawyer77/kanagawa-theme"
            :branch "main"))
 
+(package! apheleia)
+
+(package! just-mode)
 
 (package! emacs-eat
   :recipe (:host codeberg
