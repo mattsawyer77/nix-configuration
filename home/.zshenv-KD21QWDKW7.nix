@@ -294,11 +294,81 @@ skopeo-inspect-digest() {
     | jq -r '.Digest'
 }
 
+skopeo-inspect-labels() {
+  if echo "$url" | grep '^docker://' >/dev/null; then
+    url="$1"
+  else
+    url="docker://$1"
+  fi
+  set -o pipefail
+  skopeo inspect "$url" \
+    | jq -r '.Labels'
+}
+
 skopeo-inspect-commit() {
-  commit=$(skopeo-inspect "$1")
-  if [[ "$?" -eq 0 ]] && [[ -n "$commit" ]]; then
-    git fetch
-    git log --all -n 1 "$commit"
+  root_dir=${ROOT_DIR:-${HOME}/workspaces}
+  url=$1
+  shift
+  labels=$(skopeo-inspect-labels $url)
+  if [[ "$?" -ne 0 ]]; then
+    echo >&2 "could not inspect labels for $url"
+    return 1
+  fi
+  if [[ -n "$labels" ]]; then
+    repo_dir="$(printf '%s\n' $labels | jq -r '."project-url"' | sd '^https://gitlab.com' $root_dir)"
+    if [[ ! -d "$repo_dir" ]]; then
+      repo_dir="${root_dir}/f5/volterra/ves.io/$(printf '%s\n' $labels | jq -r '.service')"
+      if [[ ! -d "$repo_dir" ]]; then
+        echo >&2 "could not determine repo dir for $url"
+        echo >&2 "found labels: ${labels}"
+        return 1
+      fi
+    fi
+    service="$(printf '%s\n' $labels | jq -r '.service')"
+    commit="$(printf '%s\n' $labels | jq -r '."commit-sha"')"
+    git -C $repo_dir fetch origin --quiet
+    echo >&2 -n "$service "
+    git -C $repo_dir log "$commit" $@
+  fi
+}
+
+sre-model-find-commit() {
+  if [[ $# -lt 2 ]]; then
+    echo >&2 "must specify environment for sre model (e.g., demo1, crt, prod, etc.) and service (e.g., akar, griffin, etc.)"
+    return 1
+  fi
+  root_dir=${ROOT_DIR:-${HOME}/workspaces/f5/volterra/ves.io/sre}
+  environment=$1
+  shift
+  sre_repo_dir=${root_dir}/sre-${environment}-model
+  if [[ ! -d $sre_repo_dir ]]; then
+    echo >&2 "invalid environment $environment"
+    return 1
+  fi
+  service=$1
+  shift
+  if [[ -z "$service" ]]; then
+    echo >&2 "must specify service (e.g., akar, griffin, etc.)"
+    return 1
+  fi
+  export IFS=$'\n'
+  image_profile_files=($(rg -g'render*' -l "([\S]*_)?${service}_image:.*${service}@sha256.*" $sre_repo_dir))
+  for file in $image_profile_files; do
+    image=$(pcregrep --buffer-size=64M "${service}_image:.*${service}@sha256" "$file")
+    image_url=$(echo "$image" | pcregrep -o 'volterra.azurecr.io.*')
+    image_key=$(echo "$image" | pcregrep -o "\w*${service}_image")
+    if [[ -n "$image_url" ]]; then
+      if [[ $# -eq 0 ]]; then
+        skopeo-inspect-commit "$image_url" -n 1 -p
+      else
+        skopeo-inspect-commit "$image_url" $@
+      fi
+      echo "image URL: $image_url"
+    fi
+  done
+  if [[ -z "$image_profile_files" ]]; then
+    echo >&2 "could not find ${service}_image in $sre_repo_dir"
+    return 1
   fi
 }
 
