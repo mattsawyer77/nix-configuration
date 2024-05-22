@@ -352,10 +352,10 @@ sre-model-find-commit() {
     return 1
   fi
   export IFS=$'\n'
-  image_profile_files=($(rg -g'render*' -l "([\S]*_)?${service}_image:.*${service}@sha256.*" $sre_repo_dir))
+  image_profile_files=($(rg -g'render*' -l "([\S]*_)?${service}_image:.*${service}@sha256:[a-z0-9]+" $sre_repo_dir))
   for file in $image_profile_files; do
     image=$(pcregrep --buffer-size=64M "${service}_image:.*${service}@sha256" "$file")
-    image_url=$(echo "$image" | pcregrep -o 'volterra.azurecr.io.*')
+    image_url=$(echo "$image" | pcregrep -o 'volterra.azurecr.io.*sha256:[a-z0-9]+')
     image_key=$(echo "$image" | pcregrep -o "\w*${service}_image")
     if [[ -n "$image_url" ]]; then
       if [[ $# -eq 0 ]]; then
@@ -581,7 +581,7 @@ docker-shell () {
         -v ${project_root}:${project_root} \
         -v "${HOME}/.bashrc-docker-shell":"${HOME}/.bashrc" \
         -w ${project_root} \
-        ${image} ${cmd}
+         ${image} ${cmd}
     test -f "$temp_passwd_file" && rm -f "$temp_passwd_file"
   fi
 }
