@@ -56,6 +56,7 @@ let
     # openssl # conflicts with libressl
     pinentry
     pkg-config
+    podman
     redis
     scons
     sd
@@ -187,6 +188,45 @@ in
 #      source = ./terminal/terminfo-24bit.src;
 #      target = homeDirectory + "/.config/terminfo-24bit.src";
 #    };
+    file."registries.config" = {
+      target = homeDirectory + "/.config/containers/registries.config";
+      text = ''
+        unqualified-search-registries = ["docker.io", "quay.io","voltera.azurecr.io"]
+      '';
+    };
+    file."policy.json" = {
+      target = homeDirectory + "/.config/containers/policy.json";
+      text = ''
+        {
+          "default": [
+            {
+              "type": "reject"
+            }
+          ],
+          "transports": {
+            "dir": {
+              "": [
+                {
+                  "type": "insecureAcceptAnything"
+                }
+              ]
+            },
+            "docker": {
+              "docker.io": [
+                {
+                  "type": "insecureAcceptAnything"
+                }
+              ],
+              "volterra.azurecr.io": [
+                {
+                  "type": "insecureAcceptAnything"
+                }
+              ]
+            }
+          }
+        }
+      '';
+    };
   };
   programs.home-manager.enable = true;
   programs.direnv.enable = true;
