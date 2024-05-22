@@ -213,6 +213,10 @@
         modules = [
           ./hardware/sawyer-dev-vio.nix
           ./modules/nixos.nix
+          ({ pkgs, ... }: import ./modules/k3s {
+            inherit pkgs;
+            listenerURL = "https://0.0.0.0:6443";
+          })
           home-manager.nixosModules.home-manager
           {
             home-manager.useGlobalPkgs = true;
