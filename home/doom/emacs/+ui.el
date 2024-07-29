@@ -14,9 +14,9 @@
                '(menu-bar-lines . 0)
                )))
 
-;; (when (featurep :system 'macos)
-;;   (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
-;;   (add-to-list 'default-frame-alist '(ns-appearance . dark)))
+(when (featurep :system 'macos)
+  (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
+  (add-to-list 'default-frame-alist '(ns-appearance . dark)))
 
 ;;; XXX: titlebar shenanigans
 ;; (defun ns-auto-titlebar-set-frame (frame &rest _)

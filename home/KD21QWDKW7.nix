@@ -1,4 +1,14 @@
-{ config, lib, pkgs, username, fontConfig, mkalias, ... }:
+{ config
+, lib
+, pkgs
+, username
+# , darwin-emacs
+# , emacs-overlay
+, mkalias
+#, poetry2nix
+, nixpkgs-emacs
+, ...
+}:
 
 let
   homeDirectory = "/Users/" + username;
@@ -107,7 +117,9 @@ in
     (import ./doom {
       inherit pkgs username envVars;
       doomDir = doomDirectory;
-      emacsPackage = pkgs.emacs29-macport;
+      # use default emacs package for now
+      # emacsPackage = pkgs.emacs29-macport;
+      emacsPackage = nixpkgs-emacs.outputs.legacyPackages.aarch64-darwin.emacs29-macport;
     })
     (import ./git {
       inherit config pkgs lib;
