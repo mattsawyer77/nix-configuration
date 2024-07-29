@@ -12,6 +12,10 @@
     };
     # flake-utils.url = "github:numtide/flake-utils";
     # nixpkgs-emacs.url = "github:nixos/nixpkgs/master";
+    # custom nixpkgs: added via nix registry
+    nixpkgs-emacs = {
+      url = "sawyer-nixpkgs";
+    };
     # emacs-overlay = {
     #   # master commit from 2023-08-16:
     #   url = "github:nix-community/emacs-overlay/314ea6e0c500c52886d7d375229716e34995e643";
@@ -140,6 +144,9 @@
                     inherit config lib pkgs username fontConfig;
                     mkalias = inputs.mkalias;
                     poetry2nix = inputs.poetry2nix;
+                    nixpkgs-emacs = inputs.nixpkgs-emacs;
+                    # darwin-emacs = inputs.darwin-emacs;
+                    # emacs-overlay = inputs.emacs-overlay;
                   });
               }
               # ./modules/haskell.nix
