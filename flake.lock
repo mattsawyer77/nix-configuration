@@ -174,8 +174,8 @@
     },
     "nixpkgs-emacs": {
       "locked": {
-        "lastModified": 1722289915,
-        "narHash": "sha256-oMkmKmtV4oAQ95FLEHkIa9DewxVS8Js4RaI5LsJ5Qt0=",
+        "lastModified": 1722533670,
+        "narHash": "sha256-aBqrjogavrbSdUCMJTLvoOOKAvpd9Xx4RCZqZRmu0cU=",
         "path": "/Users/m.sawyer/workspaces/nixpkgs",
         "type": "path"
       },
