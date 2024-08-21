@@ -57,7 +57,8 @@
 (package! info-colors)
 (package! textsize)
 (package! org-modern)
-(package! centaur-tabs)
+;; (unpin! centaur-tabs)
+(package! centaur-tabs :pin "d6009c295a4363930247ae9a4d1125aea4d3fd74")
 (package! ewal)
 (package! git-auto-commit-mode)
 ;; (package! doom-nano-modeline
@@ -97,4 +98,5 @@
                    ("terminfo/65" "terminfo/65/*")
                    ("integration" "integration/*")
                    (:exclude ".dir-locals.el" "*-tests.el"))))
+(package! envrc)
 (disable-packages! hl-line)

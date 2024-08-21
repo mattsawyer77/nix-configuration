@@ -113,7 +113,7 @@
 
        :tools
        (debugger +lsp)          ; FIXME stepping through code, to help you add bugs
-       direnv
+       ;; direnv ;; disabled due to https://github.com/wbolster/emacs-direnv/issues/17
        (docker +lsp)
        editorconfig      ; let someone else argue about tabs vs spaces
        ;;ein               ; tame Jupyter notebooks with emacs

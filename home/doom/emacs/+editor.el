@@ -960,3 +960,6 @@ wheel."
 
 (after! emacs-eat
   (setq eat-term-name "xterm-256color"))
+
+(after! envrc
+  (envrc-global-mode))
