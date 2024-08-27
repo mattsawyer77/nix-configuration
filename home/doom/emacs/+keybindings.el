@@ -6,6 +6,7 @@
 (map!
  :map general-override-mode-map
  :g "C-s" #'basic-save-buffer
+ :g "<f8>" #'eat-project
  :n "C-," (lambda ()
             (interactive)
             (dired-other-window "~/workspaces/nix-configuration/home/doom/emacs"))

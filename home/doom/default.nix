@@ -38,7 +38,10 @@ let
 in
 {
   home.file."${doomDir}" = userConfigDir;
-  home.packages = [ emacsPackage ];
+  home.packages = [
+    emacsPackage
+    pkgs.emacs-lsp-booster
+  ];
   # make packages available to file.onChange and activation scripts
   home.extraActivationPath = with pkgs; [
     sd

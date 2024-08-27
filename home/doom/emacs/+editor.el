@@ -939,3 +939,6 @@ wheel."
       (message "could not find emacs-lsp-booster on path, falling back to default (non-boosted) lsp-mode")))
   )
 ;; end of emacs-lsp-booster
+
+(after! emacs-eat
+  (setq eat-term-name "xterm-256color"))

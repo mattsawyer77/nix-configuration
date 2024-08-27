@@ -246,7 +246,11 @@
               firewall = {
                 enable = true;
                 allowPing = true;
-                allowedTCPPorts = [ 22 2022 ];
+                allowedTCPPorts = [
+                  22 # ssh
+                  2022 # et
+                  6443 # k3s
+                ];
               };
             };
             i18n.defaultLocale = "en_US.UTF-8";

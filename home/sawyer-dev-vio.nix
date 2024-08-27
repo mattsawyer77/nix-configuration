@@ -61,6 +61,7 @@ let
     scons
     sd
     ssm-session-manager-plugin
+    sysbench
     valgrind
     wezterm
     wireshark
@@ -84,6 +85,7 @@ let
     # not working (causes the terminal to freeze):
     # SKIM_TMUX_OPTS = "--color=current_bg:24 --height=40%";
     VISUAL = "hx";
+    KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
   };
 
   extraPaths = [

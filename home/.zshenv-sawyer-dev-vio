@@ -342,39 +342,79 @@ vulpixctl() {
   fi
 }
 
-griffinctl() {
-  GRPC_TLS_PORT=${GRIFFIN_GRPC_TLS_PORT:-$(kubectl -n ves-system get configmap griffin-config -o json | jq -r '.data."config.yml"' | yq e '.GrpcTLSPort' -)}
-  echo "griffin GRPC TLS port: $GRPC_TLS_PORT" >&2
-  SERVER_CN=${GRIFFIN_SERVER_CN:-$(kubectl -n ves-system get deployment griffin -o json | jq -r '.spec.template.spec.containers[]|select(.name=="wingman")|.env|from_entries|.serviceNames' | cut -d',' -f1)}
-  echo "griffin CN: $SERVER_CN" >&2
-  if [[ -n "$GRPC_TLS_PORT" ]]; then
-    griffin_pod=$(kubectl -n ves-system get pods | grep griffin | awk '{print $1}')
-    if [[ -n "$griffin_pod" ]]; then
-      kubectl -n ves-system -c griffin exec -it "$griffin_pod" -c griffin -- \
-        griffinctl -u "localhost:${GRPC_TLS_PORT}" --server-cn "$SERVER_CN" \
-        $@
+rakarctl() {
+  if [[ ! -v 1 ]]; then
+    echo >&2 "must specify namespace for RE"
+    return 1
+  fi
+  local site_ns="$1"
+  shift
+  if ! kubectl get ns "$site_ns" >/dev/null 2>&1; then
+    echo >&2 "error: namespace $site_ns not found"
+    return 1
+  fi
+  GRPC_PORT=${RAKAR_GRPC_PORT:-$(kubectl -n "$site_ns" get configmap rakar-config -o json | jq -r '.data."config.yml"' | yq e '.GrpcPort' -)}
+  COOKIE=${COOKIE:-"ves-io:ongoing-config:admin"}
+  if [[ -n "$GRPC_PORT" ]]; then
+    rakar_pod=$(kubectl -n "$site_ns" get pods -lname=rakar | tail -1 | awk '{print $1}')
+    if [[ -n "$rakar_pod" ]]; then
+      kubectl -n "$site_ns" exec -it "$rakar_pod" -c rakar -- \
+        "rakarctl -t -u "localhost:#{GRPC_PORT}" --cookie "${COOKIE}" $@"
     else
-      echo "could not find a running griffin pod" >&2
+      echo "could not find a running rakar pod" >&2
     fi
   else
-    echo "could not determine griffin's GRPC TLS port"
+    echo "could not determine rakar's GRPC port"
   fi
 }
 
 akarctl() {
-  GRPC_TLS_PORT=${AKAR_GRPC_TLS_PORT:-$(kubectl -n ves-system get configmap akar-config -o json | jq -r '.data."config.yml"' | yq e '.GrpcTLSPort' -)}
-  SERVER_CN=${AKAR_SERVER_CN:-$(kubectl -n ves-system get deployment akar -o json | jq -r '.spec.template.spec.containers[]|select(.name=="wingman")|.env|from_entries|.serviceNames' | cut -d',' -f1)}
-  if [[ -n "$GRPC_TLS_PORT" ]]; then
-    akar_pod=$(kubectl -n ves-system get pods | grep akar | grep -v readonly | awk '{print $1}')
+  COOKIE=${COOKIE:-"ves-io:ongoing-config:admin"}
+  GRPC_PORT=${AKAR_GRPC_PORT:-$(kubectl -n ves-system get configmap akar-config -o json | jq -r '.data."config.yml"' | yq e '.GrpcPort' -)}
+  if [[ -n "$GRPC_PORT" ]]; then
+    akar_pod=$(kubectl -n ves-system get pods -lname=akar | tail -1 | awk '{print $1}')
     if [[ -n "$akar_pod" ]]; then
-      kubectl -n ves-system -c akar exec -it "$akar_pod" -c akar -- \
-        akarctl -u "localhost:${GRPC_TLS_PORT}" --server-cn "$SERVER_CN" \
+      kubectl -n ves-system exec -it "$akar_pod" -c akar -- \
+        akarctl -t -u "localhost:${GRPC_PORT}" --cookie "${COOKIE}" \
         $@
     else
       echo "could not find a running akar pod" >&2
     fi
   else
-    echo "could not determine akar's GRPC TLS port"
+    echo "could not determine akar's GRPC port"
+  fi
+}
+
+griffinctl() {
+  COOKIE=${COOKIE:-"ves-io:ongoing-config:admin"}
+  GRPC_PORT=${GRIFFIN_GRPC_PORT:-$(kubectl -n ves-system get configmap griffin-config -o json | jq -r '.data."config.yml"' | yq e '.GrpcPort' -)}
+  if [[ -n "$GRPC_PORT" ]]; then
+    griffin_pod=$(kubectl -n ves-system get pods -lname=griffin | tail -1 | awk '{print $1}')
+    if [[ -n "$griffin_pod" ]]; then
+      kubectl -n ves-system exec -it "$griffin_pod" -c griffin -- \
+        griffinctl -t -u "localhost:${GRPC_PORT}" --cookie "${COOKIE}" \
+        $@
+    else
+      echo "could not find a running griffin pod" >&2
+    fi
+  else
+    echo "could not determine griffin's GRPC port"
+  fi
+}
+
+vegactl() {
+  GRPC_PORT=${VEGA_GRPC_PORT:-$(kubectl -n ves-system get configmap ver-config -o json | jq -r '.data."config.yml"' | yq e '.GrpcPort' -)}
+  if [[ -n "$GRPC_PORT" ]]; then
+    vega_pod=$(kubectl -n ves-system get pods -lname=ver | tail -1 | awk '{print $1}')
+    if [[ -n "$vega_pod" ]]; then
+      kubectl -n ves-system exec -it "$vega_pod" -c vega -- \
+        vegactl -t -u "localhost:${GRPC_PORT}" \
+        $@
+    else
+      echo "could not find a running vega pod" >&2
+    fi
+  else
+    echo "could not determine vega's GRPC port"
   fi
 }
 
@@ -710,6 +750,13 @@ nix-config-update() {
     && nix flake update)
 }
 
+podman-login() {
+  az acr login -n volterra --expose-token \
+    | jq -r '.accessToken' \
+    | podman login volterra.azurecr.io \
+      --username 00000000-0000-0000-0000-000000000000 \
+      --password-stdin
+}
 # workaround for https://github.com/containers/skopeo/issues/1534
 skopeo-acr-login() {
   az acr login -n volterra --expose-token \
@@ -719,8 +766,33 @@ skopeo-acr-login() {
       --password-stdin
 }
 
+az-login() {
+  az login --tenant ves.f5.com
+}
+
+# run Docker for Mac Desktop if it's not already running,
+# and return once it's up
+run-docker() {
+  if ! systemctl status docker >/dev/null 2>&1; then
+    echo "docker service is not running, starting it now, which requires root..."
+    if ! sudo systemctl start docker; then
+      return 1
+    fi
+    echo -n "waiting for docker to start..."
+    while ! docker system info >/dev/null 2>&1; do
+      echo -n '.'
+      sleep 1
+    done
+    echo
+  fi
+}
+
 acr-login() {
-  az login --tenant ves.f5.com && az acr login -n volterra && skopeo-acr-login
+  run-docker \
+    && if ! az acr login -n volterra >/dev/null; then
+        az-login
+      fi \
+    && skopeo-acr-login
 }
 
 # find an image with the given tag name (i.e. name is equal to the git commit hash or branch name)
