@@ -1,14 +1,14 @@
 {
   description = "mattsawyer77's environment";
   inputs = {
-    unstable.url = "github:nixos/nixpkgs/master";
+    nixpkgs.url = "github:nixos/nixpkgs/master";
     darwin = {
       url = "github:LnL7/nix-darwin";
-      inputs.nixpkgs.follows = "unstable";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     home-manager = {
       url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "unstable";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     # flake-utils.url = "github:numtide/flake-utils";
     # nixpkgs-emacs.url = "github:nixos/nixpkgs/master";
@@ -30,24 +30,24 @@
     # };
     neovim-nightly-overlay = {
       url = "github:nix-community/neovim-nightly-overlay";
-      inputs.nixpkgs.follows = "unstable";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     nil = {
       url = "github:oxalica/nil";
-      inputs.nixpkgs.follows = "unstable";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     mkalias = {
       url = "github:reckenrode/mkalias";
-      inputs.nixpkgs.follows = "unstable";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     # for loki's logcli
     loki = {
       url = "github:grafana/loki";
-      inputs.nixpkgs.follows = "unstable";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     poetry2nix = {
       url = "github:nix-community/poetry2nix";
-      inputs.nixpkgs.follows = "unstable";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
   outputs = { self, nixpkgs, darwin, flake-utils, home-manager, ... }@inputs: {
@@ -221,10 +221,10 @@
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-            home-manager.users.sawyer= ({ config, lib, pkgs, ... }:
+            home-manager.users.sawyer = ({ config, lib, pkgs, ... }:
               import ./home/sawyer-dev-vio.nix {
                 inherit config lib pkgs;
-		username = "sawyer";
+                username = "sawyer";
               });
           }
           ({ pkgs, ... }: {
