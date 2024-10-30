@@ -172,6 +172,18 @@
         "type": "github"
       }
     },
+    "nixpkgs-emacs": {
+      "locked": {
+        "lastModified": 1730253323,
+        "narHash": "sha256-wGU7yXeyEuSJjCPDiYM3a8a9/gep/4p8cAsBwurAMRg=",
+        "path": "/Users/m.sawyer/workspaces/nixpkgs",
+        "type": "path"
+      },
+      "original": {
+        "id": "sawyer-nixpkgs",
+        "type": "indirect"
+      }
+    },
     "root": {
       "inputs": {
         "darwin": "darwin",
@@ -180,7 +192,8 @@
         "loki": "loki",
         "mkalias": "mkalias",
         "nil": "nil",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "nixpkgs-emacs": "nixpkgs-emacs"
       }
     },
     "rust-overlay": {
