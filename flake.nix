@@ -20,32 +20,10 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # flake-utils.url = "github:numtide/flake-utils";
-    # nixpkgs-emacs.url = "github:nixos/nixpkgs/master";
     # custom nixpkgs: added via nix registry
     nixpkgs-emacs = {
       url = "sawyer-nixpkgs";
     };
-    # emacs-overlay = {
-    #   # master commit from 2023-08-16:
-    #   url = "github:nix-community/emacs-overlay/314ea6e0c500c52886d7d375229716e34995e643";
-    #   # emacs-overlay:stable:emacsUnstable from 2023-05-31:
-    #   # url = "github:nix-community/emacs-overlay/f0fb4a32a96e9fb9be4713ed530f8ae461f37552";
-    #   inputs.nixpkgs.follows = "nixpkgs-emacs";
-    # };
-    # emacs-src = {
-    #   url = "github:emacs-mirror/emacs";
-    #   flake = false;
-    # };
-    # # Use latest libvterm to build macOS emacs build
-    # emacs-vterm-src = {
-    #   url = "github:akermu/emacs-libvterm";
-    #   flake = false;
-    # };
-    # neovim-nightly-overlay = {
-    #   url = "github:nix-community/neovim-nightly-overlay";
-    #   inputs.nixpkgs.follows = "nixpkgs";
-    # };
     nil = {
       url = "github:oxalica/nil";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -66,7 +44,6 @@
       let
         fontConfig = {
           monospaceFamily = "PragmataPro Liga";
-          # monospaceFamily = "JetBrains Mono";
         };
       in
       {
@@ -120,6 +97,8 @@
             specialArgs = inputs;
             modules = [
               ({ config, pkgs, lib, ... }: {
+                system.stateVersion = 5;
+                ids.gids.nixbld = 30000;
                 users.users."${username}" = {
                   name = username;
                   home = "/Users/${username}";
@@ -155,16 +134,9 @@
                     mkalias = inputs.mkalias;
                     poetry2nix = inputs.poetry2nix;
                     nixpkgs-emacs = inputs.nixpkgs-emacs;
-                    # darwin-emacs = inputs.darwin-emacs;
-                    # emacs-overlay = inputs.emacs-overlay;
                   });
               }
-              # ./modules/haskell.nix
               ./modules/mac.nix
-              # ({ config, pkgs, ... }: import ./modules/tailscale.nix {
-              #   inherit config pkgs;
-              #   needFirewall = false;
-              # })
             ];
           }; # KD21QWDKW7
       }; # darwinConfigurations

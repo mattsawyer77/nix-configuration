@@ -3,6 +3,8 @@
 ;; (unpin! lsp-mode)
 ;; (unpin! lsp-ui)
 (unpin! lsp-treemacs)
+;; temporary workaround for https://github.com/minad/consult/issues/1015
+;; (unpin! consult)
 ;; (unpin! rustic)
 ;; (unpin! consult-lsp)
 ;; (unpin! treemacs)
@@ -14,6 +16,10 @@
 (package! evil-nerd-commenter)
 (package! highlight-indent-guides)
 (package! treemacs-persp)
+(package! org-journal)
+(unpin! org-roam)
+(package! org-roam-ui)
+(unpin! corfu)
 ;; (package! flycheck-posframe)
 ;; (when EMACS29+
 ;; (package! evil-textobj-tree-sitter)
@@ -99,4 +105,12 @@
                    ("integration" "integration/*")
                    (:exclude ".dir-locals.el" "*-tests.el"))))
 (package! envrc)
+(package! cov)
+
+;; gitlab integration
+(package! lab
+  :recipe (:host github
+           :repo "mattsawyer77/lab.el"
+           :branch "main"))
+
 (disable-packages! hl-line)

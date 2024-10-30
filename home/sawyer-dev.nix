@@ -62,11 +62,6 @@ in
       source = ./scripts/em.zsh;
       target = homeDirectory + "/" + localBinPath + "/em";
     };
-    file."terminfo-24bit.src" = {
-      executable = false;
-      source = ./terminal/terminfo-24bit.src;
-      target = homeDirectory + "/.config/terminfo-24bit.src";
-    };
   };
   programs.home-manager.enable = true;
   programs.direnv.enable = true;

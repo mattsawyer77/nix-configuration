@@ -25,12 +25,10 @@
 
 ;; make kops edit automatically use yaml mode
 (add-to-list 'auto-mode-alist '("\\kops-edit.+yaml$" . yaml-ts-mode))
-(add-to-list 'auto-mode-alist '("\\ya?ml\.tmpl$" . yaml-ts-mode))
+(add-to-list 'auto-mode-alist '("\\\.tmpl$" . go-template-mode))
 ;; make k8s templates automatically use go template mode
 (add-to-list 'auto-mode-alist '("\\k8s\/templates" . go-template-mode))
 (add-to-list 'auto-mode-alist '("\\kubernetes\/templates" . go-template-mode))
-(add-to-list 'auto-mode-alist '("\\deploy\/k8s.+.tmpl" . go-template-mode))
-(add-to-list 'auto-mode-alist '("\\\.*.yaml.tmpl" . go-template-mode))
 ;; make stack files use yaml mode
 (add-to-list 'auto-mode-alist '("\\stack.yaml" . yaml-ts-mode))
 (add-to-list 'auto-mode-alist '("\\package.yaml" . yaml-ts-mode))
@@ -42,7 +40,7 @@
 ;; make SSH authorized keys files more readable
 (add-to-list 'auto-mode-alist '("\\SConscript". python-mode))
 (add-to-list 'auto-mode-alist '("\\SConstruct". python-mode))
-(add-to-list 'auto-mode-alist '("\\go\.mod". go-mode))
+(add-to-list 'auto-mode-alist '("\\go\.mod". go-mod-ts-mode))
 ;; use GNU Makefile mode instead of BSD
 (add-to-list 'auto-mode-alist '("\\Makefile" . makefile-gmake-mode))
 ;; jsonnet
@@ -52,6 +50,8 @@
 (add-to-list 'auto-mode-alist '("\\\.mermaid$" . mermaid-mode))
 ;; markdown
 (add-to-list 'auto-mode-alist '("\\\.md$" . gfm-mode))
+;; CODEOWNERS
+(add-to-list 'auto-mode-alist '("\\CODEOWNERS$" . conf-mode))
 
 (after! evil
   ;; prevent paste from its default behavior of replacing the clipboard register with the replaced contents
@@ -82,6 +82,7 @@
   ;;       (cl-remove 'go-mode tree-sitter-major-mode-language-alist :key #'car))
   (require 'tree-sitter-langs)
   (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
+  (add-hook! go-mode #'tree-sitter-mode)
   ;; (setq-default tree-sitter-hl-use-font-lock-keywords nil)
   ;; (add-hook! go-mode
   ;; (setq-local tree-sitter-hl-use-font-lock-keywords t)
@@ -124,7 +125,7 @@
         lsp-rust-server 'rust-analyzer
         lsp-rust-analyzer-display-chaining-hints t
         lsp-rust-analyzer-display-parameter-hints t
-        lsp-rust-analyzer-server-display-inlay-hints t
+        ;; lsp-rust-analyzer-server-display-inlay-hints t
         ;; lsp-rust-analyzer-cargo-watch-command "clippy"
         )
   )
@@ -158,11 +159,8 @@
 ;; (setq flycheck-golangci-lint-fast t)
 ;; )
 
-;; taplo is broken on macOS, at least.
-;; https://github.com/tamasfe/taplo/issues/363
-(when IS-LINUX
-  (add-hook! conf-toml-mode #'lsp)
-  (add-hook! toml-ts-mode #'lsp))
+(add-hook! conf-toml-mode #'lsp)
+(add-hook! toml-ts-mode #'lsp)
 
 (add-hook! emacs-lisp-mode #'+word-wrap-mode)
 (add-hook! emacs-lisp-mode #'rainbow-delimiters-mode-enable)
@@ -175,12 +173,14 @@
 ;; (add-hook! go-ts-mode
 ;;   (setq go-ts-mode-indent-offset 2))
 
+;; (after! (go-mode rainbow-delimiters)
+;;   (add-hook! go-mode #'rainbow-delimiters-mode))
 ;; override LSP's default diagnostic checker and use golangci-lint instead
 ;; (add-hook! lsp-diagnostics-mode
 ;;   (when (eq major-mode 'go-mode)
-;;     ;; too slow, keep LSP as the default checker for now
-;;     ;; (lsp-diagnostics-flycheck-disable)
-;;     ;; (flycheck-golangci-lint-setup)
+;;     (lsp-diagnostics-flycheck-disable)
+;;     (flycheck-golangci-lint-setup)
+;;     (setq flycheck-golangci-lint-fast t)
 ;;     (map! :mode go-mode
 ;;           :map general-override-mode-map
 ;;           :rnv "SPC c x" #'flycheck-list-errors
@@ -272,7 +272,7 @@ wheel."
 
 (after! undo-tree
   (setq undo-tree-auto-save-history t)
-  (setq undo-tree-history-directory-alist '(("." . "~/.emacs.d/.local/undo")))
+  (setq undo-tree-history-directory-alist '(("." . "~/.config/emacs/.local/undo")))
   (global-undo-tree-mode 1))
 
 (after! evil-surround
@@ -295,34 +295,28 @@ wheel."
   (setq treemacs-project-follow-cleanup t)
   )
 
-
+(defun sawyer/handle-frame-resize ()
+  "function to execute whenever the frame resizes"
+  (let
+      ((new-treemacs-width (/ (frame-pixel-width) 70)))
+    (setq treemacs--width-is-locked nil)
+    (treemacs-set-width new-treemacs-width)
+    (setq treemacs--width-is-locked t)
+    (message (format "resized treemacs width to %s" treemacs-width)))
+  )
+;; (if (> (/ (float (car dimensions)) (car (cdr dimensions))) 2)
+;;     ;; wide aspect ratio
+;;     (treemacs-set-width 80)
+;;   ;; normal aspect ratio
+;;   (treemacs-set-width 50)
+;;   ))
 (after! (textsize treemacs)
-  (defun sawyer/handle-frame-resize ()
-    "function to execute whenever the frame resizes"
-    (let
-        ((dimensions (cddr (frame-monitor-attribute 'geometry (selected-frame)))))
-      (if (> (/ (float (car dimensions)) (car (cdr dimensions))) 2)
-          ;; wide aspect ratio
-          (setq treemacs-width 60)
-        ;; normal aspect ratio
-        (setq treemacs-width 40)
-        ))
-    )
   (textsize-mode 1)
   (sawyer/handle-frame-resize)
   ;; (advice-add 'set-frame-height :after #'sawyer/handle-frame-resize)
   ;; (advice-add 'set-frame-width :after #'sawyer/handle-frame-resize)
   ;; (advice-add 'set-frame-size :after #'sawyer/handle-frame-resize)
   )
-
-(after! company
-  (global-company-mode)
-  (setq company-idle-delay 0.2)
-  (setq company-minimum-prefix-length 2)
-  (setq company-selection-wrap-around t))
-
-(after! company-lsp
-  (push 'company-lsp company-backends))
 
 (after! flycheck
   (setq flycheck-indication-mode 'left-fringe)
@@ -346,8 +340,8 @@ wheel."
                      9 16
                      (face flycheck-error-list-checker-name))
                    0 t)])))
-;; (after! flycheck
-;;   (add-hook! prog-mode (flycheck-mode 1)))
+(after! flycheck
+  (add-hook! prog-mode (flycheck-mode 1)))
 
 (after! (flycheck-posframe lsp-ui)
   (flycheck-posframe-configure-pretty-defaults)
@@ -448,6 +442,7 @@ wheel."
   ;; lsp-terraform is broken and breaks other lsp clients,
   ;; see https://github.com/emacs-lsp/lsp-mode/issues/3577
   (delete 'lsp-terraform lsp-client-packages)
+  ;; (setq lsp-golangci-lint-fast t)
   )
 
 (after! (lsp-mode lsp-ui)
@@ -581,33 +576,44 @@ wheel."
   (cond ((equal (system-name) "SEA-ML-00059144")
          (setq org-agenda-files '("/Users/sawyer/Documents/OneDrive - F5 Networks/notes")))
         ((equal (system-name) "KD21QWDKW7")
-         (setq org-agenda-files '("/Users/m.sawyer/Library/CloudStorage/OneDrive-F5,Inc/notes")))
+         (progn
+           (setq org-directory "~/onedrive/notes")
+           (setq org-agenda-files '("/Users/m.sawyer/Library/CloudStorage/OneDrive-F5,Inc/notes"))
+           ))
         (t
          (setq org-agenda-files '("/Users/sawyer/Library/Mobile Documents/com~apple~CloudDocs/notes"))))
-  (setq
-   org-hide-emphasis-markers t
-   org-hide-block-startup nil
-   org-hide-leading-stars t
-   org-hide-macro-markers t
-   org-auto-align-tags nil
-   org-tags-column 0
-   org-catch-invisible-edits 'show-and-error
-   org-special-ctrl-a/e t
-   org-insert-heading-respect-content t
+  ;; (setq
+  ;;  org-hide-emphasis-markers t
+  ;;  org-hide-block-startup nil
+  ;;  org-hide-leading-stars t
+  ;;  org-hide-macro-markers t
+  ;;  org-auto-align-tags nil
+  ;;  org-tags-column 0
+  ;;  org-fold-catch-invisible-edits 'show-and-error
+  ;;  org-special-ctrl-a/e t
+  ;;  org-insert-heading-respect-content t
 
-   ;; Org styling, hide markup etc.
-   org-pretty-entities t
-   org-ellipsis "…"
+  ;;  ;; Org styling, hide markup etc.
+  ;;  org-pretty-entities t
+  ;;  org-ellipsis "…"
 
-   ;; Agenda styling
-   org-agenda-block-separator ?─
-   org-agenda-time-grid
-   '((daily today require-timed)
-     (800 1000 1200 1400 1600 1800 2000)
-     " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
-   org-agenda-current-time-string
-   "⭠ now ─────────────────────────────────────────────────")
+  ;;  ;; Agenda styling
+  ;;  org-agenda-block-separator ?─
+  ;;  org-agenda-time-grid
+  ;;  '((daily today require-timed)
+  ;;    (800 1000 1200 1400 1600 1800 2000)
+  ;;    " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
+  ;;  org-agenda-current-time-string
+  ;;  "⭠ now ─────────────────────────────────────────────────")
+  ;; )
   )
+;; (after! (org org-roam)
+;;   (setq org-roam-directory (file-truename (format! "%s/%s" org-directory "roam")))
+;;   )
+;; (after! (org org-journal)
+;;   (setq +org-capture-journal-file (file-truename (format! "%s/%s" org-directory "journal")))
+;;   (setq org-journal-dir (file-truename (format! "%s/%s" org-directory "journal")))
+;;   )
 
 ;; (when-let (dims (doom-store-get 'last-frame-size))
 ;;   (cl-destructuring-bind ((left . top) width height fullscreen) dims
@@ -801,8 +807,55 @@ wheel."
   :size 5
   )
 
-;; centaur tabs
 (after! centaur-tabs
+  ;; override stock centaur-tabs-hide-tab
+  ;; (defun centaur-tabs-hide-tab (buffer-name)
+  ;; "conditionally hide the tab based on the buffer name"
+  ;; (let ((name (format "%s" buffer-name)))
+  ;; (or
+  ;; ;; Current window is not dedicated window.
+  ;; (window-dedicated-p (selected-window))
+  ;;
+  ;; ;; Buffer name not match below blacklist.
+  ;; (string-prefix-p " *" name)
+  ;; (string-prefix-p "*" name))))
+
+  ;;   (defun centaur-tabs-hide-tab-cached (buf)
+  ;;     "Cached vesion of `centaur-tabs-hide-tab' to improve performance.
+  ;; Operates over buffer BUF"
+  ;;     ;; (let ((hide (gethash buf centaur-tabs-hide-hash 'not-found)))
+  ;;     ;;   (when (eq hide 'not-found)
+  ;;     ;;     (setq hide (funcall centaur-tabs-hide-tab-function buf))
+  ;;     ;;     (puthash buf hide centaur-tabs-hide-hash))
+  ;;     ;;   hide))
+  ;;     (centaur-tabs-hide-tab-function buf))
+
+  ;; same as upstream, but don't create arbitrary groups for hidden buffers
+  ;; (defun centaur-tabs-projectile-buffer-groups ()
+  ;;   "Return the list of group names BUFFER belongs to."
+  ;;   (if centaur-tabs-projectile-buffer-group-calc
+  ;;       (symbol-value 'centaur-tabs-projectile-buffer-group-calc)
+  ;;     (set (make-local-variable 'centaur-tabs-projectile-buffer-group-calc)
+  ;;          (cond
+  ;;           ;; ((or (get-buffer-process (current-buffer)) (memq major-mode '(comint-mode compilation-mode))) '("Term"))
+  ;;           ;; ((string-equal "*" (substring (buffer-name) 0 1)) '("Misc"))
+  ;;           ((condition-case _err
+  ;;                (projectile-project-root)
+  ;;              (error nil))
+  ;;            (list (projectile-project-name)))
+  ;;           ;; ((memq major-mode '(emacs-lisp-mode python-mode emacs-lisp-mode c-mode
+  ;;           ;;                     c++-mode javascript-mode js-mode
+  ;;           ;;                     js2-mode makefile-mode
+  ;;           ;;                     lua-mode vala-mode))
+  ;;           ;;  '("Coding"))
+  ;;           ;; ((memq major-mode '( nxhtml-mode html-mode
+  ;;           ;;                      mhtml-mode css-mode))
+  ;;           ;;  '("HTML"))
+  ;;           ;; ((memq major-mode '(org-mode calendar-mode diary-mode)) '("Org"))
+  ;;           ;; ((memq major-mode '(dired-mode)) '("Dir"))
+  ;;           (t '())))
+  ;;     (symbol-value 'centaur-tabs-projectile-buffer-group-calc)))
+
   (setq
    centaur-tabs--buffer-show-groups t
    ;; centaur-tabs-style "alternate"
@@ -818,26 +871,8 @@ wheel."
    centaur-tabs-gray-out-icons 'buffer
    centaur-tabs-set-bar nil
    ;; centaur-tabs-set-bar 'over
-   )
+   centaur-tabs-excluded-prefixes '("*" " *"))
   (centaur-tabs-group-by-projectile-project)
-  (defun centaur-tabs-hide-tab (x)
-    "Do not show buffer X in tabs."
-    (let ((name (format "%s" x)))
-      (or
-       ;; Current window is not dedicated window.
-       (window-dedicated-p (selected-window))
-
-       ;; Buffer name not match below blacklist.
-       (string-prefix-p " *" name)
-       (string-prefix-p "*" name)
-
-       ;; don't show in org-mode
-       (string-suffix-p ".org" name)
-
-       ;; Is not magit buffer.
-       ;; (and (string-prefix-p "magit" name)
-       ;;      (not (file-name-extension name)))
-       )))
   )
 
 (add-hook! after-init #'centaur-tabs-mode)
@@ -916,6 +951,7 @@ wheel."
 ;;         (format "run -u %d -v /tmp:/tmp %s" (user-uid) mermaid-docker-image)))
 
 (after! git-auto-commit-mode (setq gac-automatically-push-p t))
+
 ;; from emacs-lsp-booster
 ;; https://github.com/blahgeek/emacs-lsp-booster
 (defun lsp-booster--advice-json-parse (old-fn &rest args)
@@ -953,6 +989,10 @@ wheel."
       (message "could not find emacs-lsp-booster on path, falling back to default (non-boosted) lsp-mode")))
   )
 ;; end of emacs-lsp-booster
+
+;; (after! lab
+;;   (setq lab-token-env-var "GITLAB_API_TOKEN")
+;;   )
 
 (after! lsp-treemacs
   (setq lsp-treemacs-error-list-expand-depth 3)

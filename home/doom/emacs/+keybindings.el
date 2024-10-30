@@ -1,7 +1,7 @@
 ;;;  -*- lexical-binding: t; -*-
 
-(map! "<mouse-4>" 'up-slightly)
-(map! "<mouse-5>" 'down-slightly)
+(when (fboundp 'up-slightly) (map! "<mouse-4>" 'up-slightly))
+(when (fboundp 'down-slightly) (map! "<mouse-5>" 'down-slightly))
 
 (map!
  :map general-override-mode-map
@@ -60,7 +60,7 @@
   )
 
 ;; (after! (general evil projectile consult)
-(after! (general evil consult)
+(after! (general evil consult projectile simple)
   (map! :map general-override-mode-map
         :nv "g d" #'+lookup/definition
         :nv "g t" #'+lookup/type-definition

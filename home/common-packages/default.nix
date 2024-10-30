@@ -4,7 +4,7 @@
     bash
     bat
     bat-extras.batman
-    bottom # app command is `btm`
+    btop
     cachix
     cask
     cmake
@@ -38,7 +38,7 @@
     ijq
     jansson
     jq
-    kubectl
+    kubecolor
     less
     libcxx
     libgccjit
@@ -52,8 +52,8 @@
     # llvm
     # llvmPackages_12.lldb
     # llvm_12
-    lua-language-server
-    luajit
+    # lua-language-server # broken as of 2024-05-14
+    # luajit
     # most
     msgpack
     # mu
@@ -88,7 +88,7 @@
     prototool
     pyenv
     pyright
-    python3
+    # python3
     python311Packages.grip
     python311Packages.xmltodict
     pywal

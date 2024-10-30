@@ -123,7 +123,7 @@ local config = {
   color_scheme = "iceberg-dark",
   -- color_scheme = "nightfox",
   hide_tab_bar_if_only_one_tab = true,
-  line_height = 1.1,
+  line_height = 1.2,
   freetype_load_flags = 'NO_HINTING',
   window_padding = {
     left = "5pt",
@@ -138,9 +138,50 @@ local config = {
     { key = "t", mods = "ALT", action = w.action_callback(function(window) themeCycler(window, true) end) },
     -- Theme Cycler (all schemes)
     { key = "t", mods = "CMD|ALT", action = w.action_callback(function(window) themeCycler(window, false) end) },
-    { key = "f9", action = w.action_callback(function(window) themeCycler(window, true) end) },
+    { key = "F9", action = w.action_callback(function(window) themeCycler(window, true) end) },
 
     -- Look up Scheme you switched to
     { key = "Escape", mods = "CTRL", action = w.action.ShowDebugOverlay },
   }
 }
+
+local gpus = w.gui.enumerate_gpus()
+if #gpus > 0 then
+  config.webgpu_preferred_adapter = gpus[1]
+  config.front_end = "WebGpu"
+end
+
+config.ssh_domains = {
+  {
+    -- multiplexing = 'None',
+    multiplexing = 'WezTerm',
+    -- The name of this specific domain.  Must be unique amongst
+    -- all types of domain in the configuration file.
+    name = 'sawyer-dev-vio',
+
+    -- identifies the host:port pair of the remote server
+    -- Can be a DNS name or an IP address with an optional
+    -- ":port" on the end.
+    remote_address = '10.145.68.0:22',
+
+    -- Whether agent auth should be disabled.
+    -- Set to true to disable it.
+    -- no_agent_auth = false,
+
+    -- The username to use for authenticating with the remote host
+    username = 'sawyer',
+
+    -- If true, connect to this domain automatically at startup
+    -- connect_automatically = true,
+
+    -- Specify an alternative read timeout
+    -- timeout = 60,
+
+    -- The path to the wezterm binary on the remote host.
+    -- Primarily useful if it isn't installed in the $PATH
+    -- that is configure for ssh.
+    -- remote_wezterm_path = "/home/yourusername/bin/wezterm"
+  },
+}
+
+return config

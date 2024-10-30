@@ -185,37 +185,37 @@ let
           #   }];
           # }
 
-          # XXX: Firefox's native tab search is flaky
-          # {
-          #   description =
-          #     "map ctrl+space to tab search in Firefox";
-          #   manipulators = [{
-          #     conditions = [{
-          #       type = "frontmost_application_if";
-          #       bundle_identifiers = [ "^org\\.mozilla\\." ];
-          #     }];
-          #     from = {
-          #       modifiers = { mandatory = [ "left_control" ]; };
-          #       key_code = "spacebar";
-          #     };
-          #     to = [
-          #       {
-          #         modifiers = [ "left_command" ];
-          #         key_code = "l";
-          #       }
-          #       {
-          #         # % + a space activates "tab search" in the search bar
-          #         modifiers = [ "right_shift" ];
-          #         key_code = "5";
-          #       }
-          #       {
-          #         modifiers = [];
-          #         key_code = "spacebar";
-          #       }
-          #     ];
-          #     type = "basic";
-          #   }];
-          # }
+          {
+            description =
+              "map ctrl+space to tab search in Firefox";
+            manipulators = [{
+              conditions = [{
+                type = "frontmost_application_if";
+                bundle_identifiers = [ "^org\\.mozilla\\." ];
+              }];
+              from = {
+                modifiers = { mandatory = [ "left_control" ]; };
+                key_code = "spacebar";
+              };
+              to = [
+                {
+                  modifiers = [ "left_command" ];
+                  key_code = "l";
+                }
+                {
+                  # typing % followed by a space in the search bar activates "tab search"
+                  modifiers = [ "right_shift" ];
+                  key_code = "5";
+                }
+                {
+                  modifiers = [];
+                  key_code = "spacebar";
+                  hold_down_milliseconds = 30;
+                }
+              ];
+              type = "basic";
+            }];
+          }
         ];
       };
       devices = [
@@ -287,24 +287,24 @@ let
           manipulate_caps_lock_led = true;
           simple_modifications = [ ];
         }
-        {
-          disable_built_in_keyboard_if_exists = false;
-          fn_function_keys = [ ];
-          identifiers = {
-            is_keyboard = true;
-            is_pointing_device = false;
-            product_id = 263;
-            vendor_id = 13364;
-          };
-          ignore = false;
-          manipulate_caps_lock_led = true;
-          simple_modifications = [
-            # {
-            #   from = { key_code = "caps_lock"; };
-            #   to = [{ key_code = "left_control"; }];
-            # }
-          ];
-        }
+        # {
+        #   disable_built_in_keyboard_if_exists = false;
+        #   fn_function_keys = [ ];
+        #   identifiers = {
+        #     is_keyboard = true;
+        #     is_pointing_device = false;
+        #     product_id = 263;
+        #     vendor_id = 13364;
+        #   };
+        #   ignore = false;
+        #   manipulate_caps_lock_led = true;
+        #   simple_modifications = [
+        #     # {
+        #     #   from = { key_code = "caps_lock"; };
+        #     #   to = [{ key_code = "left_control"; }];
+        #     # }
+        #   ];
+        # }
         {
           disable_built_in_keyboard_if_exists = false;
           fn_function_keys = [ ];
@@ -465,6 +465,7 @@ let
         country_code = 0;
         indicate_sticky_modifier_keys_state = true;
         mouse_key_xy_scale = 100;
+        keyboard_type_v2 = "ansi";
       };
     }];
   };

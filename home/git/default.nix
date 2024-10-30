@@ -50,10 +50,13 @@
         line-numbers-zero-style = "#4b5263";
         line-numbers-left-format = ''"{nm:^4} "'';
         line-numbers-right-format = ''"{np:^4} "'';
+        # NOTE: the following is broken
+        # side-by-side = true;
       };
     };
     extraConfig = {
       merge.conflictstyle = "zdiff3";
+      pull.ff = "only";
       push.default = "current";
       rebase.autostash = "true";
       init.defaultBranch = "main";

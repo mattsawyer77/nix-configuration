@@ -2,10 +2,7 @@
 , lib
 , pkgs
 , username
-# , darwin-emacs
-# , emacs-overlay
 , mkalias
-#, poetry2nix
 , nixpkgs-emacs
 , ...
 }:
@@ -15,26 +12,8 @@ let
   doomDirectory = ".doom.d";
   goPathSuffix = "gocode";
   localBinPath = ".local/bin";
+  npmPackagePath = ".config/npm-packages";
   mkaliasPackage = mkalias.packages.aarch64-darwin.mkalias;
-  # to update/regenerate, run node2nix -i <(echo '["bash-language-server", "prettier", "typescript-formatter"]') --nodejs-18
-  # then copy the resulting files into ./npm-packages
-  npmPackages = import ./npm-packages { inherit pkgs; };
-  # to update/regenerate, run the following commamd from the home/npm-packages dir:
-  # node2nix -i <(echo '["bash-language-server", "prettier", "typescript-formatter"]') --nodejs-18
-  # XXX: puppeteer doesn't seem to work with external firefox
-  # and cannot seem to download chromium either
-  # configure mermaid/puppeteer not to try to download any browser
-  # npmPackageImport = import ./npm-packages { inherit pkgs; };
-  # mermaidEnvFix = {
-  #   PUPPETEER_PRODUCT="firefox";
-  #   PUPPETEER_SKIP_DOWNLOAD="true";
-  # };
-  # npmPackages = npmPackageImport;
-  # XXX: puppeteer doesn't seem to work with external firefox
-  # // {
-  #   "@mermaid-js/mermaid-cli" = npmPackageImport."@mermaid-js/mermaid-cli".overrideAttrs (_: mermaidEnvFix);
-  #   puppeteer = npmPackageImport.puppeteer.overrideAttrs (_: mermaidEnvFix);
-  # };
   shellScriptWrappers = [
     # enable `gsed` alias which calls gnused for compatibility with homebrew
     (pkgs.writeShellScriptBin "gsed" ''exec ${pkgs.gnused}/bin/sed "$@"'')
@@ -42,62 +21,63 @@ let
     (pkgs.writeShellScriptBin "gsort" ''exec ${pkgs.coreutils}/bin/sort "$@"'')
     # enable `glibtool` alias which calls libtool for compatibility with homebrew
     (pkgs.writeShellScriptBin "glibtool" ''exec ${pkgs.libtool}/bin/libtool "$@"'')
+    # enable `gxargs` alias which calls xargs for compatibility with homebrew
+    (pkgs.writeShellScriptBin "gxargs" ''exec ${pkgs.findutils}/bin/xargs "$@"'')
+    # enable `gtar` alias which calls gnu tar for compatibility with homebrew
+    (pkgs.writeShellScriptBin "gtar" ''exec ${pkgs.gnutar}/bin/tar "$@"'')
   ];
   homePackages = (with pkgs; [
     aws-iam-authenticator
     awscli
     azure-cli
     bazel
+    buf
     ccls
     certigo
     # curlFull # nixpkgs curl builds with openssl 3 which breaks legacy PKCS12 cert auth
     delve
     etcd
-    # envsubst # conflicts with gettext which is required for home-manager
-    # gdb # broken as of 2023-01-20
     gnused
-    golangci-lint # customized in golangci-lint.nix overlay since it's broken in nixpkgs right now
-    (google-cloud-sdk.withExtraComponents
-      [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
+    gnutar
+    golangci-lint
+    (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
     gocyclo
     golint
+    kluctl
+    kubectl
+    kubecolor
     jsonnet
     jsonnet-language-server
     just
-    # lima
     mockgen
     openfortivpn
     openldap
-    # plantuml
-    # podman # broken as of 2022-05-12
-    # scons
-    # terraform
-    # terraform-ls
-    # tflint
+    python311
+    ripgrep
+    pcre
+    libiconv
+    libgccjit
+    pkg-config
+    cmake
+    coreutils
   ])
   # wrappers for homebrew compatibility, etc.
   ++ shellScriptWrappers
-  # npm packages setup via node2nix
-  # ++ (builtins.attrValues npmPackages)
   # flakes outside nixpkgs (that don't have overlays)
   # TODO: how to make this more idiomatic without specifying the system arch
-  ++ [ mkaliasPackage poetry2nixPackage ];
+  ++ [mkaliasPackage];
   envVars = {
-    # ALTERNATE_EDITOR="hx";
-    # can't get emacsclient to work on macOS in the terminal
-    EDITOR="hx";
-    VISUAL="hx";
+    EDITOR = "hx";
+    VISUAL = "hx";
     USE_GKE_GCLOUD_AUTH_PLUGIN = "True";
     SAML2AWS_USER_AGENT =
       "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.00) Gecko/20100101 Firefox/82.0";
     LSP_USE_PLISTS = "true";
-    # puppeteer seems not to work with firefox
-    # PUPPETEER_PRODUCT="firefox";
-    # PUPPETEER_EXECUTABLE_PATH="/Applications/Firefox.app/Contents/MacOS/firefox-bin";
   };
   extraPaths = [
     (homeDirectory + "/" + localBinPath)
     (homeDirectory + "/.cargo/bin")
+    (homeDirectory + "/.docker/bin")
     (homeDirectory + "/" + goPathSuffix + "/bin")
     (homeDirectory + "/" + npmPackagePath + "/bin")
   ];
@@ -117,7 +97,8 @@ in
     (import ./doom {
       inherit pkgs username envVars;
       doomDir = doomDirectory;
-      # use default emacs package for now
+      # we'll run doom commands manually
+      runDoomCommands = false;
       # emacsPackage = pkgs.emacs29-macport;
       emacsPackage = nixpkgs-emacs.outputs.legacyPackages.aarch64-darwin.emacs29-macport;
     })
@@ -145,16 +126,12 @@ in
       $DRY_RUN_CMD chown ${username} ~/Applications
       $DRY_RUN_CMD chmod u+w ~/Applications
 
-      # for app in ~/Applications/*.app; do
-      #   $DRY_RUN_CMD rm -f "$app"
-      # done
-
       find ~/Applications/Home\ Manager\ Apps/* -maxdepth 0 -mindepth 0 -wholename '*.app' -exec readlink '{}' + |
         while read app; do
           # Spotlight does not recognize symlinks, it will ignore directory we link to the applications folder.
           # It does understand MacOS aliases though, a unique filesystem feature. Sadly they cannot be created
           # from bash (as far as I know), so we use a custom utility called mkalias.
-          app_name=$(basename "$app" | sd '\.[^\.]+$' $''')
+          app_name=$(basename "$app" | ${pkgs.sd}/bin/sd '\.[^\.]+$' $''')
           $DRY_RUN_CMD ${mkaliasPackage}/bin/mkalias $app ~/Applications/$app_name
           $DRY_RUN_CMD ${pkgs.dockutil}/bin/dockutil --add "$app" --replacing "$app_name" --no-restart ~${username}
       done
@@ -162,9 +139,47 @@ in
       $DRY_RUN_CMD /usr/bin/killall -m Dock
       set +x
     '';
+    file."registries.config" = {
+      target = homeDirectory + "/.config/containers/registries.config";
+      text = ''
+        unqualified-search-registries = ["docker.io", "quay.io","voltera.azurecr.io"]
+      '';
+    };
+    file."policy.json" = {
+      target = homeDirectory + "/.config/containers/policy.json";
+      text = ''
+        {
+          "default": [
+            {
+              "type": "reject"
+            }
+          ],
+          "transports": {
+            "dir": {
+              "": [
+                {
+                  "type": "insecureAcceptAnything"
+                }
+              ]
+            },
+            "docker": {
+              "docker.io": [
+                {
+                  "type": "insecureAcceptAnything"
+                }
+              ],
+              "volterra.azurecr.io": [
+                {
+                  "type": "insecureAcceptAnything"
+                }
+              ]
+            }
+          }
+        }
+      '';
+    };
   };
   programs.home-manager.enable = true;
-  # programs.alacritty = import ./alacritty/alacritty.nix { inherit fontConfig; };
   programs.zsh = {
     envExtra = builtins.readFile ./.zshenv-KD21QWDKW7.nix;
     initExtra = ''

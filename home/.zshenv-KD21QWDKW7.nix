@@ -1,16 +1,19 @@
 #!/usr/bin/env zsh
 
 nix-config-check() {
-  darwin-rebuild check --flake ~/workspaces/nix-configuration
+  caffeinate -i darwin-rebuild check --flake ~/workspaces/nix-configuration
 }
 
 nix-config-switch() {
-  sudo echo -n \
-    && darwin-rebuild switch --flake ~/workspaces/nix-configuration
+  caffeinate -i darwin-rebuild switch --flake ~/workspaces/nix-configuration
 }
 
 nix-config-update() {
-  (cd ~/workspaces/nix-configuration \
+  (cd ~/workspaces/nix-configuration; \
+    if [[ -n "$(git status --porcelain flake.lock)" ]]; then
+      echo "flake.lock is dirty, please commit or revert before updating the flake";
+      false
+    fi \
     && nix flake update)
 }
 
@@ -73,86 +76,6 @@ find-proto-import-path() {
   echo "$dirs"
 }
 
-# generate-protoc-import-dir-locals() {
-#   local root_dir
-#   local single_proto=""
-#   if [[ ! -v 1 ]]; then
-#     root_dir=.
-#   else
-#     if [[ -d "$1" ]]; then
-#       root_dir="$1"
-#     elif [[ -f "$1" ]]; then
-#       single_proto="$1"
-#       root_dir=$(dirname "$single_proto")
-#     else
-#       echo >&2 "$1 is neither a file nor a directory"
-#       return 1
-#     fi
-#   fi
-#   local repo_proto_dirs
-#   if [[ -n "$single_proto" ]]; then
-#     repo_proto_dirs=($root_dir)
-#     echo "generating .dir-locals.el for $single_proto in ${root_dir} (non-recursive)..."
-#   else
-#     repo_proto_dirs=($(fd '\.proto$' "$root_dir" -x dirname | sort -u))
-#     echo "generating .dir-locals.el for each directory recursively from ${root_dir}..."
-#   fi
-#   for repo_proto_dir in $repo_proto_dirs; do
-#     import_dirs=$(find-proto-import-path "$repo_proto_dir")
-#     if [[ -n "$import_dirs" ]]; then
-#       echo " - generating ${repo_proto_dir}/.dir-locals.el"
-#       cat >"${repo_proto_dir}/.dir-locals.el" <<EOF
-# ((protobuf-mode .
-#   ((flycheck-protoc-import-path .
-#     (
-# $import_dirs
-#     )))))
-# EOF
-#     else
-#       echo " - no import dirs found for $repo_proto_dir"
-#     fi
-#   done
-# }
-
-# generate-protoc-import-dir-locals() {
-#   local root_dir=$(git rev-parse --show-toplevel)
-#   repo_name=$(echo "$root_dir" | pcregrep -o '[^/]+/?$')
-#   repo_proto_dirs=($(fd --no-ignore-vcs '\.proto$' "$root_dir" -x dirname | grep -v vendor | sort -u))
-#   declare -a absolute_proto_roots
-#   absolute_proto_roots=(
-#     ${HOME}/.local/share/protobuf-extras
-#     ${HOME}/.local/share/protobuf-extras/protobuf
-#     ${root_dir}/proto
-#     ${root_dir}/schema
-#     ${root_dir}/schema/vendor
-#     ${root_dir}/schema/vendor/github.com/gogo/googleapis
-#   )
-#   declare -a found_proto_roots
-#   for dir in $absolute_proto_roots; do
-#     if [[ -d "$dir" ]]; then
-#       found_proto_roots+="$dir"
-#     fi
-#   done
-#   echo "generating .dir-locals.el for each directory recursively from ${root_dir}..."
-#   for repo_proto_dir in $repo_proto_dirs; do
-#     (cd $repo_proto_dir && \
-#       declare -a rel_proto_roots && \
-#       for dir in $found_proto_roots; do
-#         rel_proto_root=$(realpath --relative-to=. "$dir") && \
-#           rel_proto_roots+="\"$rel_proto_root\""
-#       done && \
-#       echo " - generating ${repo_proto_dir}/.dir-locals.el" && \
-#       cat >"${repo_proto_dir}/.dir-locals.el" <<EOF
-# ((protobuf-mode .
-#   ((flycheck-protoc-import-path .
-#     (
-# $rel_proto_roots
-#     )))))
-# EOF
-#     )
-#   done
-# }
-
 generate-protoc-import-dir-locals() {
   local username=$(whoami)
   local repo_dir=$(git rev-parse --show-toplevel)
@@ -170,6 +93,78 @@ generate-protoc-import-dir-locals() {
     $(printf '"%s"\n    ' "$rel_proto_roots[@]")
   )))))
 EOF
+}
+
+get-go-version-envrc() {
+  version="$1"
+  if [[ -z "$version" ]]; then
+    echo >&2 "error: must specify version (example: 'go1.20.12')"
+    return 1
+  fi
+  cat <<EOF
+export GOSUMDB=sum.golang.org
+export GOPRIVATE=gopkg.volterra.us
+export GOTOOLCHAIN=${version}
+EOF
+}
+
+generate-go-version-envrc() {
+  local requested_go_version=${1:-""}
+  local repo_dir=$(git rev-parse --show-toplevel)
+  local repo_name="$(basename $repo_dir)"
+  local envrc_filename="${repo_dir}/.envrc"
+  local current_go_version=$(go version | awk '{print $3}')
+  if [[ -z "$requested_go_version" ]]; then
+    run-docker
+    local go_builder_image=$(grep -E '(IMAGE_GO_BUILDER|GO_BUILDER_IMAGE).*go-builder:v.*' "${repo_dir}/.gitlab-ci.yml" | grep -oE 'volterra.azurecr.*go-builder:v[0-9]\.[0-9]+\.[0-9]+$')
+    if [[ -n "$go_builder_image" ]]; then
+      local expected_go_version=$(docker run -it --rm "$go_builder_image" go version | grep -oE 'go1\.[0-9]+\.[0-9]+')
+      if [[ -n "$expected_go_version" ]]; then
+        echo "${go_builder_image} has go version ${expected_go_version}"
+        requested_go_version="$expected_go_version"
+      else
+        echo >&2 "error: could not determine go version from image $go_builder_image"
+        return 1
+      fi
+    else
+      local go_mod_go_version=$(grep -E '^go\s+' "${repo_dir}/go.mod" | grep -oE '1\.[0-9]+(\.[0-9]+)?')
+      echo "unable to find go version from ${repo_name}/.gitlab-ci.yml. the following go versions are detected: "
+      echo " - current go version: ${current_go_version}"
+      echo " - go.mod go version:  go${go_mod_go_version}"
+      echo -n "enter go version to use for ${repo_name}: "
+      read -r answer
+      if echo "$answer" | grep -E '^go' >/dev/null; then
+        requested_go_version="$answer"
+      elif [[ -n "$answer" ]]; then
+        requested_go_version="go${requested_go_version}"
+      else
+        echo "exiting"
+        return
+      fi
+    fi
+  fi
+  if [[ "$requested_go_version" != "$current_go_version" ]]; then
+    if ! command -v "$requested_go_version" >/dev/null 2>&1; then
+      echo "go version $requested_go_version not found, installing now..."
+      if go install "golang.org/dl/go${requested_go_version}@latest" && $requested_go_version download; then
+        return 1
+      fi
+    fi
+  fi
+  if [[ -f "$envrc_filename" ]]; then
+    echo '.envrc already exists with the following content:'
+    cat "$envrc_filename"
+    echo
+    echo -n 'do you want to overwrite? [y/n] '
+    read -r answer
+    if [[ "$answer" == "y" ]]; then
+      get-go-version-envrc "$requested_go_version" > "$envrc_filename"
+    else
+      echo "exiting, no changes applied."
+    fi
+  else
+    get-go-version-envrc "$requested_go_version" > "$envrc_filename"
+  fi
 }
 
 ssm() {
@@ -227,8 +222,31 @@ skopeo-acr-login() {
       --password-stdin
 }
 
+az-login() {
+  az login --tenant ves.f5.com
+}
+
+# run Docker for Mac Desktop if it's not already running,
+# and return once it's up
+run-docker() {
+  if ! pgrep -flai Applications/Docker.app >/dev/null; then
+    echo -n "starting docker..."
+    open -a ~/Applications/Docker.app \
+      && while true; do \
+        docker system info >/dev/null 2>&1 && break
+        echo -n "."
+        sleep 1
+      done
+    echo ""
+  fi
+}
+
 acr-login() {
-  az login --tenant ves.f5.com && az acr login -n volterra && skopeo-acr-login
+  run-docker \
+    && if ! az acr login -n volterra >/dev/null; then
+        az-login
+      fi \
+    && skopeo-acr-login
 }
 
 # find an image with the given tag name (i.e. name is equal to the git commit hash or branch name)
@@ -248,6 +266,24 @@ acr-find-tag() {
   # try to transform branch name to pattern used to publish to ACR
   name=$(echo "$name" | sd '\W' '-' | sd '\-$' '' | tr '[:upper:]' '[:lower:]')
   az acr repository show-tags --name volterra --repository "ves.io/${repo}" --detail --orderby time_desc --query "[?contains(name,'${name}')]" $@
+}
+
+# find the commit for a given repo and branch/tag
+acr-find-commit() {
+  local acr_metadata=$(acr-find-tag $@) \
+    && local images=($(printf '%s\n' "$acr_metadata" | jq -rc 'map({digest,lastUpdateTime,name})|flatten[]')) \
+    && for image_metadata in $images; do
+      digest=$(echo "$image_metadata" | jq -r '.digest')
+      time=$(echo "$image_metadata" | jq -r '.lastUpdateTime')
+      name=$(echo "$image_metadata" | jq -r '.name')
+      image="volterra.azurecr.io/ves.io/${repo}@${digest}"
+      echo "$image"
+      commit=$(skopeo-inspect "volterra.azurecr.io/ves.io/${repo}@${digest}") \
+        && (cd ~/workspaces/f5/volterra/ves.io/${repo} \
+          && git fetch origin \
+          && git log -n 1 $commit)
+      echo
+    done
 }
 
 # find an image with the given tag name (i.e. name is equal to the git commit hash or branch name)
@@ -279,8 +315,13 @@ skopeo-inspect() {
   else
     url="docker://$1"
   fi
-  skopeo inspect "$url" \
-    | jq -r '.Labels."commit-sha"'
+  commit=$(skopeo inspect "$url" \
+    | jq -r '.Labels|to_entries|map(select(.key|contains("commit-sha")))|first|.value')
+  if [[ -z "$commit" ]] || [[ "$commit" == "null" ]]; then
+    echo >&2 "could not find commit for $url"
+    return 1
+  fi
+  echo $commit
 }
 
 skopeo-inspect-digest() {
@@ -300,12 +341,16 @@ skopeo-inspect-labels() {
   else
     url="docker://$1"
   fi
-  set -o pipefail
-  skopeo inspect "$url" \
-    | jq -r '.Labels'
+  labels=$(skopeo inspect "$url" \
+    | jq -r '.Labels')
+  if [[ -z "$labels" ]] || [[ "$labels" == "null" ]]; then
+    echo >&2 "could not find labels for $url"
+    return 1
+  fi
+  echo $labels
 }
 
-skopeo-inspect-commit() {
+skopeo-inspect-commit-log() {
   root_dir=${ROOT_DIR:-${HOME}/workspaces}
   url=$1
   shift
@@ -315,7 +360,7 @@ skopeo-inspect-commit() {
     return 1
   fi
   if [[ -n "$labels" ]]; then
-    repo_dir="$(printf '%s\n' $labels | jq -r '."project-url"' | sd '^https://gitlab.com' $root_dir)"
+    repo_dir="$(printf '%s\n' $labels | jq -r '."com.f5.cloud.project-url"' | sd '^https://gitlab.com' $root_dir)"
     if [[ ! -d "$repo_dir" ]]; then
       repo_dir="${root_dir}/f5/volterra/ves.io/$(printf '%s\n' $labels | jq -r '.service')"
       if [[ ! -d "$repo_dir" ]]; then
@@ -324,11 +369,17 @@ skopeo-inspect-commit() {
         return 1
       fi
     fi
-    service="$(printf '%s\n' $labels | jq -r '.service')"
-    commit="$(printf '%s\n' $labels | jq -r '."commit-sha"')"
-    git -C $repo_dir fetch origin --quiet
-    echo >&2 -n "$service "
-    git -C $repo_dir log "$commit" $@
+    service="$(printf '%s\n' $labels | jq -r '."com.f5.cloud.app-name"')"
+    commit="$(printf '%s\n' $labels | jq -r "to_entries|map(select(.key|contains(\"commit-sha\")))|first|.value")"
+    if [[ -z "$commit" ]] || [[ "$commit" == "null" ]]; then
+      echo >&2 "could not find commit label for $url"
+      return 1
+    fi
+    git -C $repo_dir fetch origin --quiet \
+      && git -C $repo_dir log "$commit" $@
+  else
+    echo >&2 "no labels found for $url"
+    return 1
   fi
 }
 
@@ -351,120 +402,26 @@ sre-model-find-commit() {
     echo >&2 "must specify service (e.g., akar, griffin, etc.)"
     return 1
   fi
+  (git -C $sre_repo_dir checkout master && git -C $sre_repo_dir pull --quiet) \
+    || return 1
   export IFS=$'\n'
-  image_profile_files=($(rg -g'render*' -l "([\S]*_)?${service}_image:.*${service}@sha256:[a-z0-9]+" $sre_repo_dir))
-  for file in $image_profile_files; do
-    image=$(pcregrep --buffer-size=64M "${service}_image:.*${service}@sha256" "$file")
-    image_url=$(echo "$image" | pcregrep -o 'volterra.azurecr.io.*sha256:[a-z0-9]+')
-    image_key=$(echo "$image" | pcregrep -o "\w*${service}_image")
-    if [[ -n "$image_url" ]]; then
+  images=($(rg -g'render*' -o --no-filename --no-line-number "\b([\w]+_)?${service}_image:.*@sha256:[a-z0-9]+" | sort -u))
+  for image in "${images[@]}"; do
+    if [[ -n "$image" ]]; then
+      image_key=$(echo "${image}" | sd '([\w_]+_image).*' '$1' | sd '_image' '')
+      image_url=$(echo "${image}" | sd '^\s*.*_image:\s*' '' | sd '\s*$' '')
+      echo "\n${image_key}: "
       if [[ $# -eq 0 ]]; then
-        skopeo-inspect-commit "$image_url" -n 1 -p
+        skopeo-inspect-commit-log "$image_url" -n 1 -p
       else
-        skopeo-inspect-commit "$image_url" $@
+        skopeo-inspect-commit-log "$image_url" $@
       fi
-      echo "image URL: $image_url"
+      echo "image url: $image_url"
     fi
   done
-  if [[ -z "$image_profile_files" ]]; then
+  if [[ -z "$images" ]]; then
     echo >&2 "could not find ${service}_image in $sre_repo_dir"
     return 1
-  fi
-}
-
-volterra-ss-commit() {
-  local ss="$1"
-  image=$(kubectl -n ves-system get statefulset "$ss" -o json \
-    | jq -r '.spec.template.spec.containers[]|{image,name}|select(.name=="'"$ss"'")|.image')
-  if [[ -z "$image" ]]; then
-    echo >&2 "no image found for statefulset $ss"
-  else
-    skopeo inspect docker://"$image" \
-      | jq -r '.Labels."commit-sha"'
-  fi
-}
-
-volterra-ds-commit() {
-  local ss="$1"
-  image=$(kubectl -n ves-system get daemonset "$ds" -o json \
-    | jq -r '.spec.template.spec.containers[]|{image,name}|select(.name=="'"$ds"'")|.image')
-  if [[ -z "$image" ]]; then
-    echo >&2 "no image found for daemonset $ds"
-  else
-    skopeo inspect docker://"$image" \
-      | jq -r '.Labels."commit-sha"'
-  fi
-}
-
-volterra-envs() {
-  local name="$1"
-  if [[ ! -v 1 ]]; then
-    echo >&2 "ERROR: name required!\nusage: volterra-envs [name]"
-    echo >&2 "example: volterra-envs akar"
-  else
-    envs=$(kubectl -n ves-system get pod -l "app=$name" -o json \
-      | jq -rc '.items|first|.spec.containers[]|select(.name=="'"$name"'")|.env[]|.name+": "+((.valueFrom|tostring)//.value)')
-    if [[ -z "$envs" ]]; then
-      echo >&2 "no environment variables found for a pod with labels app.kubernetes.io/instance=$name"
-    else
-      echo "$envs"
-    fi
-  fi
-}
-
-volterra-configmap() {
-  local name="$1"
-  if [[ ! -v 1 ]]; then
-    echo >&2 "ERROR: name required!\nusage: volterra-configmap [name]"
-    echo >&2 "example: volterra-configmap akar"
-  else
-    envs=$(kubectl -n ves-system get configmap -l "app.kubernetes.io/instance=$name" -o json \
-      | kv get configmap -l "app.kubernetes.io/instance=$name" -o json \
-      | jq -r '.items|first|.data|."config.yml"//."'"$name"'.yml"')
-    if [[ -z "$envs" ]]; then
-      echo >&2 "no configmap found for a pod with labels $app.kubernetes.io/instance=$name"
-    else
-      echo "$envs"
-    fi
-  fi
-}
-
-volterra-commit() {
-  local resource_type="$1"
-  local name="$2"
-  if [[ ! -v 1 ]] || [[ ! -v 2 ]]; then
-    echo >&2 "ERROR: resource type and name are required!\nusage: volterra-commit <k8s-resource-type> <k8s-resource-name> [container name (defaults to resource name)]"
-  else
-    local container="${3:-$name}"
-    image=$(kubectl -n ves-system get "$resource_type" "$name" -o json \
-      | jq -r '.spec.template.spec.containers[]|{image,name}|select(.name=="'"$container"'")|.image')
-    if [[ -z "$image" ]]; then
-      echo >&2 "no image found for $resource_type $name"
-    else
-      echo "image: $image"
-      if ! command -v skopeo >/dev/null || echo "$image" | grep azurecr.io >/dev/null; then
-        # skopeo doesn't work with docker for mac apparently
-      docker pull "$image" --quiet \
-        && commit_sha=$(docker inspect "$image" \
-        | jq -r '.[].Config.Labels."commit-sha"') \
-        && repo=$(echo "$image" | perl -pe 's@.*/ves\.io/(\w+).*@\1@')
-      else
-        commit_sha=$(skopeo inspect docker://"$image" \
-          | jq -r '.Labels."commit-sha"') \
-        && repo=$(echo "$image" | perl -pe 's@.*volterraio/(\w+).*@\1@')
-      fi
-      if [[ -n "$commit_sha" ]] && [[ -n "$repo" ]]; then
-        repo_dir=$(realpath ~/workspaces/volterra/ves.io/"$repo")
-        if [[ -d "$repo_dir" ]]; then
-          git -C "$repo_dir" log -n 1 origin "$commit_sha" \
-            || (git -C "$repo_dir" fetch --quiet origin && git -C "$repo_dir" log -n 1 origin "$commit_sha")
-        else
-          echo >&2 -n "repo dir $repo_dir does not exist"
-        fi
-      else
-        echo >&2 "ERROR: unable to determine commit sha or repo for $image"
-      fi
-    fi
   fi
 }
 
@@ -567,7 +524,6 @@ docker-shell () {
         --env GOCACHE=${go_cache_dir} \
         --env GOPATH=${GOPATH} \
         --env HOME=${HOME} \
-        --env PS1="${image}:\w> " \
         --env DOCKER_IMAGE="$image" \
         --net host \
         -v ${HOME}/.ssh/known_hosts:${HOME}/.ssh/known_hosts:ro,Z \
@@ -1285,23 +1241,6 @@ streak-get-status-objects() {
   streakctl customAPI ves.io.streak.CustomAPI ListStatusObjects --json-data '{ "status_object_type": "'"$status_object_type"'", "config_object_uids": '"$config_objects_str"' }' | yq e '.'
 }
 
-# alacritty-toggle-theme() {
-#   local dark_theme="Ocean.dark"
-#   local light_theme="Ocean.light"
-#   if ! command -v alacritty-themes >/dev/null; then
-#     echo -n 'alacritty-themes is not installed. install it now? [y/n]? '
-#     read -r answer
-#     if [[ "$answer" == "y" ]]; then
-#       sudo npm install -g alacritty-themes && alacritty-toggle-theme $@
-#     fi
-#   fi
-#   if [[ $(alacritty-themes --current) == "$dark_theme" ]]; then
-#     alacritty-themes "$light_theme"
-#   else
-#     alacritty-themes "$dark_theme"
-#   fi
-# }
-
 get-service-certificate() {
   port_forward_pid=''
   temp_cert_file=''
@@ -1678,4 +1617,173 @@ tz() {
   tmux new-window -c "$dir" -n "$search" -S
 }
 
+# open or switch to a tmux window for the given project then open helix (hx) to edit
+hxp() {
+  if [[ ! -v 1 ]]; then
+    echo >&2 "error: must specify a directory name or fragment for zoxide to query"
+  fi
+  search="$1"
+  dir=$(zoxide query "$search" 2>/dev/null)
+  if [[ -z "$dir" ]]; then
+    dir=$HOME
+  fi
+  if tmux select-window -t "$search" 2>/dev/null; then
+    tmux send-keys -t "$search" 'hx .' Enter
+  else
+    tmux new-window -c "$dir" -n "$search" \
+    && tmux select-window -t "$search" \
+    && tmux send-keys -t "$search" 'hx .' Enter
+  fi
+}
+
+highlight() {
+  if [[ ! -v 1 ]]; then
+    echo >&2 "PCRE regex required"
+    return 1
+  fi
+  local regex=$1
+  local input
+  read input
+  set -x
+  printf '%s\n' "$input" | pcregrep --color "^|$regex"
+  set +x
+}
+
+sic-vega-mode() {
+  if [[ ! -v 2 ]]; then
+    echo >&2 "error: must specify environment and site where vega (ver) is running"
+    return 1
+  fi
+  local env=$1
+  local site=$2
+  sic introspect "$env" "$site" ver ves.io.vega.cfg.ver_instance.Object | jq -rc 'to_entries|map(.value.object)|map({name: .metadata.name, state: .spec.ver_spec.node_running_state})|sort[]'
+}
+
+# figure out which version of go a project is actually using
+resolve-go-version() {
+  local version=$(go version | awk '{print $3}')
+  local repo_root=$(git rev-parse --show-toplevel)
+  if [[ $? -ne 0 ]]; then
+    echo >&2 "current dir is not in a git repo, default go version:"
+    echo "$version"
+    return 0
+  fi
+  local go_builder_tag
+  # look in local .gitlab-ci.yml
+  local override_version=$(yj <"${repo_root}/.gitlab-ci.yml" | jq -r '.variables' | pcregrep -o 'go-builder:[\w.-_]+' | sd 'go-builder:([\w.-_]+)' '$1')
+  if [[ -n "$override_version" ]]; then
+    echo >&2 "go-builder version from .gitlab-ci.yml: $override_version"
+    go_builder_tag=$override_version
+  else
+    # find cicd-deployment ref
+    local include_ref=$(yj <"${repo_root}/.gitlab-ci.yml" | jq -r '.include|map(select(.project|contains("cicd-deployment")))|map(.ref)|unique|flatten[0]')
+    if [[ -z "$include_ref" ]]; then
+      include_ref=master
+    fi
+    # look in cicd-deployment includes
+    include_version=$(git archive --remote=git@gitlab.com:f5/volterra/ves.io/sre/cicd-deployment.git "$include_ref" pipelines/general-ci-include.yml | tar xO | pcregrep -o 'go-builder:([\w.-_]+)' | sd 'go-builder:([\w.-_]+)' '$1')
+    if [[ -n "$include_version" ]]; then
+      echo >&2 "go-builder version from cicd-deployment: ${include_version}:"
+      go_builder_tag=$include_version
+    else
+      echo >&2 "error: could not determine go version for project"
+      return 1
+    fi
+  fi
+  # look in go-builder image for go version sans patch
+  docker run -it --rm "volterra.azurecr.io/ves.io/go-builder:${go_builder_tag}" go version | awk '{print $3}' | pcregrep -o '1\.\d+'; echo >&2
+}
+
+argo2mermaid() {
+  if [[ ! -v 1 ]]; then
+    echo >&2 "must specify ArgoCD workflow filename and optionally an output filename"
+    return 1
+  fi
+  if [[ ! -f $1 ]]; then
+    echo >&2 "input file: $1 not found"
+    return 1
+  fi
+  input_file="$1"
+  if [[ "$input_file" =~ .*\.(json$) ]]; then
+    json="$(cat $input_file)"
+  elif [[ "$input_file" =~ .*\.(ya?ml$) ]]; then
+    json="$(yq e -o json $input_file)"
+  else
+    echo >&2 "only yaml or json input files are supported"
+    return 1
+  fi
+  if [[ $? -ne 0 ]]; then
+    echo >&2 "failed to convert $input_file to json -- is it valid YAML?"
+    return 1
+  fi
+  jq_query='.spec.templates|map(select((.dag.tasks|length)>0))|map(.dag.tasks|map(select((.dependencies|length)>0)))|flatten|map(. as $task|(.dependencies|map("    "+.+" --> "+($task|.name))))|flatten[]'
+  dag="$(printf '%s\n' "$json" | jq -r $jq_query)"
+  if [[ $? -ne 0 ]]; then
+    echo >&2 "failed to parse DAG tasks in $input_file"
+    return 1
+  fi
+  printf '---\ntitle: %s\n---\n' "$input_file"
+  printf '%s\n%s\n' "graph TD" "$dag"
+}
+
+zoom-autofocus() {
+  if ! (shortcuts list | grep 'zoom focus' >/dev/null); then
+    echo >&2 "'zoom focus' shortcut missing"
+    return 1
+  fi
+  if ! (shortcuts list | grep 'zoom unfocus' >/dev/null); then
+    echo >&2 "'zoom unfocus' shortcut missing"
+    return 1
+  fi
+  zoom_running=0
+  while true; do
+    if pgrep CptHost >/dev/null; then
+      if [[ $zoom_running -eq 0 ]]; then
+        echo >&2 "$(date): zoom meeting detected, enabling zoom focus..."
+        zoom_running=1
+        shortcuts run "zoom focus"
+      fi
+    else
+      if [[ $zoom_running -eq 1 ]]; then
+        echo >&2 "$(date): zoom meeting ended, disabling zoom focus..."
+        zoom_running=0
+        shortcuts run "zoom unfocus"
+      fi
+      sleep 30
+    fi
+  done
+}
+
+etcd-get-raw() {
+  prefix="$1"
+  objtype="$2"
+  key="$3"
+  kubectl -n etcd exec etcd-0 -c etcd -- etcdctl get "/${prefix}/db/${objtype}.default/primary/${key}" -w protobuf | protoc --decode_raw
+}
+
+generate-lcov() {
+  export IFS=$'\n'
+  root_dir=$(git rev-parse --show-toplevel)
+  (cd $root_dir \
+    && mod_info=$(grep '^module' go.mod) \
+    && root_module=$(echo "$mod_info" | sd 'module\s*[^/]+/(.*)$' '$1') \
+    && root_package=$(echo "$mod_info" | sd 'module\s*' '')
+   # stdlib
+   if [[ "$root_module" == "stdlib" ]]; then
+     packages=($(go list ./... | grep -vE 'stdlib/test|pb$'))
+   # standard service repo
+   elif [[ -d ./cmd ]] && [[ -d ./pkg ]]; then
+     packages=($(go list ./cmd/... ./pkg/... | grep -vE 'pbgo|pb$'))
+   # default to all packages
+   else
+     packages=($(go list ./...))
+   fi
+   for pkg in $packages; do
+     echo "package: $pkg"
+     dir=$(echo $pkg | sd "${root_package}/" './')
+     echo "$(date): getting coverage for ${pkg} in ${dir}..."
+     go test -coverprofile "${dir}/coverage.out" $pkg\
+       && gcov2lcov --use-absolute-source-path -infile="${dir}/coverage.out" -outfile="${dir}/lcov.info"
+   done
+  )
 }

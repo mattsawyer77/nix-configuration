@@ -1,17 +1,48 @@
 { config
 , pkgs
-, lib
 , nil
   # , emacs-overlay
   # , emacs-src
   # , emacs-vterm-src
 , ...
 }:
-
-with lib;
+let
+  # emacsPackage = pkgs.emacs29-macport;
+  # emacsPackage = pkgs.emacs29-nox;
+  # emacsPackage = pkgs.emacs29;
+  # emacsDaemonSocket = "/tmp/emacs-server-socket";
+in
 
 {
   services.nix-daemon.enable = true;
+  # environment.systemPackages = [
+  #   emacsPackage
+  #   pkgs.fetchpatch
+  # ];
+  # the following won't work with 24-bit color
+  # services.emacs = {
+  #   enable = true;
+  #   package = pkgs.emacs29-macport;
+  # };
+  # launchd.user.agents.emacs = {
+  #   path = [ config.environment.systemPath ];
+  #   serviceConfig = {
+  #     EnvironmentVariables = {
+  #       COLORTERM = "truecolor";
+  #     };
+  #     ProgramArguments = [
+  #       "${emacsPackage}/bin/emacs"
+  #       "-nw"
+  #       "--fg-daemon"
+  #       # "--fg-daemon=${emacsDaemonSocket}"
+  #       # "-S"
+  #       # emacsDaemonSocket
+  #     ];
+  #     RunAtLoad = true;
+  #     KeepAlive = true;
+  #     ProcessType = "Interactive";
+  #   };
+  # };
   programs.zsh.enable = true;
   programs.zsh.enableFzfCompletion = true;
   programs.zsh.enableFzfGit = true;
