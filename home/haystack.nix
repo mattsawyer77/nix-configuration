@@ -240,7 +240,7 @@ in
   programs.starship = { enable = true; };
   programs.zoxide = { enable = true; };
   programs.zsh = {
-    envExtra = builtins.readFile ./.zshenv-sawyer-dev-vio;
+    envExtra = builtins.readFile ./.zshenv-haystack;
     initExtra = ''
       command -v npm >/dev/null && npm config set prefix ${npmPackagePath} && export PATH=$PATH:$HOME/${npmPackagePath}/bin
       # source <(kubectl completion zsh)

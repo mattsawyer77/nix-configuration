@@ -9,8 +9,16 @@ with lib;
 
 {
   environment.systemPackages = with pkgs; [
+    azure-cli
     bash
+    bat
+    bat-extras.batman
+    bind
     curlFull
+    docker
+    docker-compose
+    etcd
+    eternal-terminal
     eza
     fd
     file
@@ -18,14 +26,28 @@ with lib;
     helix
     htop
     jq
+    just
+    kluctl
     less
+    libsndfile
+    msgpack
+    ncurses
+    netperf
+    nmap
     pkg-config
     readline
     ripgrep
+    skim
+    skopeo
     starship
     tmux
     wget
+    wireshark
     zsh
+    zsh-autosuggestions
+    zsh-syntax-highlighting
+    zsh-z
+    zstd
   ];
   nix = {
     package = pkgs.nixVersions.stable;
@@ -43,4 +65,5 @@ with lib;
       nil.overlays.nil
     ]; # overlays
   }; # nixpkgs
+  programs.zsh.enable = true;
 }

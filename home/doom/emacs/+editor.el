@@ -990,10 +990,6 @@ wheel."
   )
 ;; end of emacs-lsp-booster
 
-;; (after! lab
-;;   (setq lab-token-env-var "GITLAB_API_TOKEN")
-;;   )
-
 (after! lsp-treemacs
   (setq lsp-treemacs-error-list-expand-depth 3)
   )

@@ -3,19 +3,19 @@
 find-proto-import-path() {
   local dirs=""
   local target_dir="$1"
-  (test -d "$target_dir" || echo >&2 "$target_dir is not a valid dir") \
-    && dirs=$(cd "$target_dir" \
-      && typeset -A import_paths \
-      && for import in $(grep -h import *.proto | cut -d'"' -f2); do \
+  (test -d "$target_dir" || echo >&2 "$target_dir is not a valid dir") &&
+    dirs=$(cd "$target_dir" &&
+      typeset -A import_paths &&
+      for import in $(grep -h import *.proto | cut -d'"' -f2); do
         if [[ -z "${import_paths[$import]}" ]]; then
-          paths=$(find $(realpath --relative-to . $(git rev-parse --show-toplevel)) -wholename "*$import" \
-            | sd "/$import" "" \
-            | sd '^(.+)$' '    \"$1\"') \
-          import_paths+=( ["$import"]="$paths" )
+          paths=$(find $(realpath --relative-to . $(git rev-parse --show-toplevel)) -wholename "*$import" |
+          sd "/$import" "" |
+            sd '^(.+)$' '    \"$1\"') \
+          import_paths+=(["$import"]="$paths")
         fi
         echo "${import_paths[$import]}"
-      done \
-    | sort -u)
+      done |
+        sort -u)
   echo "$dirs"
 }
 
@@ -65,9 +65,9 @@ git-cleanup-branches() {
 
 # workaround for https://github.com/containers/skopeo/issues/1534
 skopeo-acr-login() {
-  az acr login -n volterra --expose-token \
-    | jq -r '.accessToken' \
-    | skopeo login volterra.azurecr.io \
+  az acr login -n volterra --expose-token |
+    jq -r '.accessToken' |
+    skopeo login volterra.azurecr.io \
       --username 00000000-0000-0000-0000-000000000000 \
       --password-stdin
 }
@@ -79,8 +79,8 @@ skopeo-inspect() {
   else
     url="docker://$1"
   fi
-  skopeo inspect "$url" \
-    | jq -r '.Labels."commit-sha"'
+  skopeo inspect "$url" |
+    jq -r '.Labels."commit-sha"'
 }
 
 skopeo-inspect-digest() {
@@ -90,8 +90,8 @@ skopeo-inspect-digest() {
   else
     url="docker://$1"
   fi
-  skopeo inspect "$url" \
-    | jq -r '.Digest'
+  skopeo inspect "$url" |
+    jq -r '.Digest'
 }
 
 skopeo-inspect-commit() {
@@ -104,25 +104,25 @@ skopeo-inspect-commit() {
 
 volterra-ss-commit() {
   local ss="$1"
-  image=$(kubectl -n ves-system get statefulset "$ss" -o json \
-    | jq -r '.spec.template.spec.containers[]|{image,name}|select(.name=="'"$ss"'")|.image')
+  image=$(kubectl -n ves-system get statefulset "$ss" -o json |
+    jq -r '.spec.template.spec.containers[]|{image,name}|select(.name=="'"$ss"'")|.image')
   if [[ -z "$image" ]]; then
     echo >&2 "no image found for statefulset $ss"
   else
-    skopeo inspect docker://"$image" \
-      | jq -r '.Labels."commit-sha"'
+    skopeo inspect docker://"$image" |
+      jq -r '.Labels."commit-sha"'
   fi
 }
 
 volterra-ds-commit() {
   local ss="$1"
-  image=$(kubectl -n ves-system get daemonset "$ds" -o json \
-    | jq -r '.spec.template.spec.containers[]|{image,name}|select(.name=="'"$ds"'")|.image')
+  image=$(kubectl -n ves-system get daemonset "$ds" -o json |
+    jq -r '.spec.template.spec.containers[]|{image,name}|select(.name=="'"$ds"'")|.image')
   if [[ -z "$image" ]]; then
     echo >&2 "no image found for daemonset $ds"
   else
-    skopeo inspect docker://"$image" \
-      | jq -r '.Labels."commit-sha"'
+    skopeo inspect docker://"$image" |
+      jq -r '.Labels."commit-sha"'
   fi
 }
 
@@ -132,8 +132,8 @@ volterra-envs() {
     echo >&2 "ERROR: name required!\nusage: volterra-envs [name]"
     echo >&2 "example: volterra-envs akar"
   else
-    envs=$(kubectl -n ves-system get pod -l "app=$name" -o json \
-      | jq -rc '.items|first|.spec.containers[]|select(.name=="'"$name"'")|.env[]|.name+": "+((.valueFrom|tostring)//.value)')
+    envs=$(kubectl -n ves-system get pod -l "app=$name" -o json |
+      jq -rc '.items|first|.spec.containers[]|select(.name=="'"$name"'")|.env[]|.name+": "+((.valueFrom|tostring)//.value)')
     if [[ -z "$envs" ]]; then
       echo >&2 "no environment variables found for a pod with labels app.kubernetes.io/instance=$name"
     else
@@ -148,9 +148,9 @@ volterra-configmap() {
     echo >&2 "ERROR: name required!\nusage: volterra-configmap [name]"
     echo >&2 "example: volterra-configmap akar"
   else
-    envs=$(kubectl -n ves-system get configmap -l "app.kubernetes.io/instance=$name" -o json \
-      | kv get configmap -l "app.kubernetes.io/instance=$name" -o json \
-      | jq -r '.items|first|.data|."config.yml"//."'"$name"'.yml"')
+    envs=$(kubectl -n ves-system get configmap -l "app.kubernetes.io/instance=$name" -o json |
+      kv get configmap -l "app.kubernetes.io/instance=$name" -o json |
+      jq -r '.items|first|.data|."config.yml"//."'"$name"'.yml"')
     if [[ -z "$envs" ]]; then
       echo >&2 "no configmap found for a pod with labels $app.kubernetes.io/instance=$name"
     else
@@ -166,28 +166,28 @@ volterra-commit() {
     echo >&2 "ERROR: resource type and name are required!\nusage: volterra-commit <k8s-resource-type> <k8s-resource-name> [container name (defaults to resource name)]"
   else
     local container="${3:-$name}"
-    image=$(kubectl -n ves-system get "$resource_type" "$name" -o json \
-      | jq -r '.spec.template.spec.containers[]|{image,name}|select(.name=="'"$container"'")|.image')
+    image=$(kubectl -n ves-system get "$resource_type" "$name" -o json |
+      jq -r '.spec.template.spec.containers[]|{image,name}|select(.name=="'"$container"'")|.image')
     if [[ -z "$image" ]]; then
       echo >&2 "no image found for $resource_type $name"
     else
       echo "image: $image"
       if ! command -v skopeo >/dev/null || echo "$image" | grep azurecr.io >/dev/null; then
         # skopeo doesn't work with docker for mac apparently
-      docker pull "$image" --quiet \
-        && commit_sha=$(docker inspect "$image" \
-        | jq -r '.[].Config.Labels."commit-sha"') \
-        && repo=$(echo "$image" | perl -pe 's@.*/ves\.io/(\w+).*@\1@')
+        docker pull "$image" --quiet &&
+          commit_sha=$(docker inspect "$image" |
+            jq -r '.[].Config.Labels."commit-sha"') &&
+          repo=$(echo "$image" | perl -pe 's@.*/ves\.io/(\w+).*@\1@')
       else
-        commit_sha=$(skopeo inspect docker://"$image" \
-          | jq -r '.Labels."commit-sha"') \
-        && repo=$(echo "$image" | perl -pe 's@.*volterraio/(\w+).*@\1@')
+        commit_sha=$(skopeo inspect docker://"$image" |
+          jq -r '.Labels."commit-sha"') &&
+          repo=$(echo "$image" | perl -pe 's@.*volterraio/(\w+).*@\1@')
       fi
       if [[ -n "$commit_sha" ]] && [[ -n "$repo" ]]; then
         repo_dir=$(realpath ~/workspaces/volterra/ves.io/"$repo")
         if [[ -d "$repo_dir" ]]; then
-          git -C "$repo_dir" log -n 1 origin "$commit_sha" \
-            || (git -C "$repo_dir" fetch --quiet origin && git -C "$repo_dir" log -n 1 origin "$commit_sha")
+          git -C "$repo_dir" log -n 1 origin "$commit_sha" ||
+            (git -C "$repo_dir" fetch --quiet origin && git -C "$repo_dir" log -n 1 origin "$commit_sha")
         else
           echo >&2 -n "repo dir $repo_dir does not exist"
         fi
@@ -204,8 +204,8 @@ gcr-info() {
     local branch=${2:-master}
     gcloud container images list-tags "gcr.io/volterraio/$repo" \
       --format=json \
-      --sort-by=timestamp \
-      | jq -r '.[]|last(select(.tags|index("branch-'"$branch"'")))'
+      --sort-by=timestamp |
+      jq -r '.[]|last(select(.tags|index("branch-'"$branch"'")))'
   else
     echo >&2 "ERROR: must specify a repo"
     false
@@ -218,8 +218,8 @@ gcr-digest() {
     local branch=${2:-master}
     gcloud container images list-tags "gcr.io/volterraio/$repo" \
       --format=json \
-      --sort-by=timestamp \
-      | jq -r '.[]|last(select(.tags|index("branch-'"$branch"'")))|.digest'
+      --sort-by=timestamp |
+      jq -r '.[]|last(select(.tags|index("branch-'"$branch"'")))|.digest'
   else
     echo >&2 "ERROR: must specify a repo"
     false
@@ -235,11 +235,12 @@ volterra-vpn() {
   if [[ -f "$config_file" ]]; then
     local servers=$(pcregrep -o 'vpnssl-.*acorus.net' "$config_file" 2>/dev/null)
     if [[ $? -eq 0 ]] && [[ -n "$servers" ]]; then
-      server=$(echo "$servers" \
-        | sort -u \
-        | skim)
+      server=$(echo "$servers" |
+        sort -u |
+        skim)
       if [[ -n "$server" ]]; then
-        sudo -E openfortivpn "$server" -c "$config_file"; notify
+        sudo -E openfortivpn "$server" -c "$config_file"
+        notify
       else
         echo >&2 "no server selected."
         return 1
@@ -257,7 +258,7 @@ volterra-vpn() {
   dscacheutil -flushcache && sudo killall -HUP mDNSResponder
 }
 
-docker-shell () {
+docker-shell() {
   local image="${1:-$(pcregrep -o 'volterra.*go-builder:v?[\d\.]+' .gitlab-ci.yml)}"
   if [[ -z "$image" ]]; then
     echo >&2 "ERROR: no image specified, and go-builder image could not be derived from .gitlab-ci.yml"
@@ -268,10 +269,10 @@ docker-shell () {
     local go_src_dir=$(echo $project_root | sed "s^.*src/\(.*\)^src/\1^")
     local go_cache_dir="${project_root}/.cache-docker/go"
     echo "running container shell with $image"
-    echo "${USER}:x:${UID}:${GID}:Volterra User:${HOME}:/bin/bash" > "$temp_passwd_file" \
-      && mkdir -p "${project_root}/.cache.go" \
-      && mkdir -p "${HOME}/.magefile" \
-      && docker run --rm -it --user ${UID}:${GID} --userns=host \
+    echo "${USER}:x:${UID}:${GID}:Volterra User:${HOME}:/bin/bash" >"$temp_passwd_file" &&
+      mkdir -p "${project_root}/.cache.go" &&
+      mkdir -p "${HOME}/.magefile" &&
+      docker run --rm -it --user ${UID}:${GID} --userns=host \
         --env GOCACHE=${go_cache_dir} \
         --env GOPATH=${GOPATH} \
         --env HOME=${HOME} \
@@ -335,8 +336,8 @@ vulpixctl() {
   if [[ -n "$GRPC_TLS_PORT" ]]; then
     kubectl -n ves-system -c vulpix exec -it deploy/vulpix -c vulpix -- \
       vulpixctl -u "localhost:${GRPC_TLS_PORT}" --server-cn "$SERVER_CN" \
-      $@ \
-      | pcregrep -v 'WARNING|golang/protobuf|which has long been excluded'
+      $@ |
+      pcregrep -v 'WARNING|golang/protobuf|which has long been excluded'
   else
     echo "could not determine vulpix's GRPC TLS port"
   fi
@@ -438,12 +439,12 @@ nioctl() {
     echo >&2 "could not determine kind of service $service_name"
     return 1
   fi
-  GRPC_TLS_PORT=${NIO_GRPC_TLS_PORT:-$(kubectl -n ves-system get configmap "${service_name}-config" -o json \
-    | jq -r '.data."nio.yml"' \
-    | yq e '.GrpcTLSPort' -)}
+  GRPC_TLS_PORT=${NIO_GRPC_TLS_PORT:-$(kubectl -n ves-system get configmap "${service_name}-config" -o json |
+    jq -r '.data."nio.yml"' |
+    yq e '.GrpcTLSPort' -)}
   # echo "nio GRPC TLS port: $GRPC_TLS_PORT" >&2
-  SERVER_CN=${NIO_SERVER_CN:-$(printf '%s\n' "$service" \
-    | jq -r '.spec.template.spec.containers[]|select(.name=="wingman")|.env|from_entries|.serviceNames|split(",")|last')}
+  SERVER_CN=${NIO_SERVER_CN:-$(printf '%s\n' "$service" |
+    jq -r '.spec.template.spec.containers[]|select(.name=="wingman")|.env|from_entries|.serviceNames|split(",")|last')}
   # echo "nio CN: $SERVER_CN" >&2
   if [[ -n "$GRPC_TLS_PORT" ]]; then
     nio_pod=$(kubectl -n ves-system get pods --no-headers -l name="${service_name}" | awk '{print $1}' | head -1)
@@ -474,22 +475,22 @@ profile-service() {
   local api_gw_hostname
   local compass_hostname
   case $environment in
-    demo1)
-      compass_hostname="compass-lma.demo1.volterra.us"
-      api_gw_hostname="${5:-gc01.int.ves.io}"
-      ;;
-    crt)
-      compass_hostname="compass-lma.crt.volterra.us"
-      api_gw_hostname="${5:-gc01.int.ves.io}"
-      ;;
-    staging)
-      compass_hostname="compass-lma.staging.volterra.us"
-      api_gw_hostname="${5:-gc1-iad-01.int.volterra.us}"
-      ;;
-    *)
-      echo >&2 "unknown environment $environment"
-      return 1
-      ;;
+  demo1)
+    compass_hostname="compass-lma.demo1.volterra.us"
+    api_gw_hostname="${5:-gc01.int.ves.io}"
+    ;;
+  crt)
+    compass_hostname="compass-lma.crt.volterra.us"
+    api_gw_hostname="${5:-gc01.int.ves.io}"
+    ;;
+  staging)
+    compass_hostname="compass-lma.staging.volterra.us"
+    api_gw_hostname="${5:-gc1-iad-01.int.volterra.us}"
+    ;;
+  *)
+    echo >&2 "unknown environment $environment"
+    return 1
+    ;;
   esac
   output_filename="${service}.${environment}.${pprof_type}.$(date --iso-8601=seconds).pprof"
   url="https://${compass_hostname}/introspection/${api_gw_hostname}/${service}/debug/pprof/${pprof_type}?seconds=${sample_time}"
@@ -501,8 +502,8 @@ profile-service() {
     --cert-type P12 \
     --cert "$HOME/.ves-internal/${environment}/usercerts.p12:volterra" \
     -o "$output_filename" \
-    "$url" \
-    && echo "profile saved at $output_filename"
+    "$url" &&
+    echo "profile saved at $output_filename"
 }
 
 # kv set image statefulset/streak streak=gcr.io/volterraio/streak@sha256:37be0ca9476b754ed144da6678a414748825e733dfd0345fa3fc1924a559d42a
@@ -540,7 +541,7 @@ ksvc() {
 }
 
 kcontainers() {
-  kubectl get statefulset,deployment,daemonset -o json $@ | jq -r '.items[]|.kind+": "+.metadata.name+": "+([.spec.template.spec.containers[]|.name]|sort|join(", "))'| column -s':' -t
+  kubectl get statefulset,deployment,daemonset -o json $@ | jq -r '.items[]|.kind+": "+.metadata.name+": "+([.spec.template.spec.containers[]|.name]|sort|join(", "))' | column -s':' -t
 }
 
 introspect() {
@@ -564,22 +565,22 @@ get-latest-ce-version() {
   local api_gw_hostname
   local compass_hostname
   case $environment in
-    demo1)
-      compass_hostname="compass-lma.demo1.volterra.us"
-      api_gw_hostname="${5:-gc01.int.ves.io}"
-      ;;
-    crt)
-      compass_hostname="compass-lma.crt.volterra.us"
-      api_gw_hostname="${5:-gc01.int.ves.io}"
-      ;;
-    staging)
-      compass_hostname="compass-lma.staging.volterra.us"
-      api_gw_hostname="${5:-gc1-iad-01.int.volterra.us}"
-      ;;
-    *)
-      echo >&2 "unknown environment $environment"
-      return 1
-      ;;
+  demo1)
+    compass_hostname="compass-lma.demo1.volterra.us"
+    api_gw_hostname="${5:-gc01.int.ves.io}"
+    ;;
+  crt)
+    compass_hostname="compass-lma.crt.volterra.us"
+    api_gw_hostname="${5:-gc01.int.ves.io}"
+    ;;
+  staging)
+    compass_hostname="compass-lma.staging.volterra.us"
+    api_gw_hostname="${5:-gc1-iad-01.int.volterra.us}"
+    ;;
+  *)
+    echo >&2 "unknown environment $environment"
+    return 1
+    ;;
   esac
   curl "https://${compass_hostname}/introspection/${api_gw_hostname}/maurice/ves.io.stdlib/introspect/read/object/ves.io.pikachu.version.Object?response_format=1&page_start=0&page_limit=1000" \
     -H 'pragma: no-cache' \
@@ -590,8 +591,8 @@ get-latest-ce-version() {
     --compressed \
     -sf \
     --cert-type P12 \
-    --cert ~/.ves-internal/${environment}/usercerts.p12:volterra \
-    | jq -r '.get_responses|to_entries[]|select(.value.object.metadata.name=="ce-build-version")|.value.object.spec.version_spec.name'
+    --cert ~/.ves-internal/${environment}/usercerts.p12:volterra |
+    jq -r '.get_responses|to_entries[]|select(.value.object.metadata.name=="ce-build-version")|.value.object.spec.version_spec.name'
 }
 
 # change docker's kernel's disk driver to write-through mode
@@ -614,18 +615,18 @@ matrix-renew-certs() {
   if ! matrix certInfo >/dev/null 2>&1; then
     for env in demo1 crt staging prod; do matrix get-user-cert -b firefox -e "$env"; done
   else
-    matrix certInfo 2>&1 \
-      | pcregrep -B4 'status:.*expired' \
-      | pcregrep -B2 '^\s*User Certificate' \
-      | pcregrep -o '^\w+' \
-      | xargs -I% sh -c "echo renewing cert for %...; matrix get-user-cert -b firefox -e %"
+    matrix certInfo 2>&1 |
+      pcregrep -B4 'status:.*expired' |
+      pcregrep -B2 '^\s*User Certificate' |
+      pcregrep -o '^\w+' |
+      xargs -I% sh -c "echo renewing cert for %...; matrix get-user-cert -b firefox -e %"
   fi
 }
 
 gc-login() {
-  k cluster-info 2>/dev/null \
-    || (gcloud auth login --project=devtest-293809 \
-    && gcloud container clusters get-credentials gc01-int-ves-io --region us-east4)
+  k cluster-info 2>/dev/null ||
+    (gcloud auth login --project=devtest-293809 &&
+      gcloud container clusters get-credentials gc01-int-ves-io --region us-east4)
 }
 
 site-terraform-output() {
@@ -646,8 +647,8 @@ site-terraform-output() {
     return 1
   fi
   if [[ -n "$tf_params_id" ]]; then
-    vulpixctl introspection get ves.io.schema.views.terraform_parameters.StatusObject "$tf_params_id" \
-      | yq e '.object.applyStatus.tfOutput' -
+    vulpixctl introspection get ves.io.schema.views.terraform_parameters.StatusObject "$tf_params_id" |
+      yq e '.object.applyStatus.tfOutput' -
   else
     echo >&2 "ERROR: could not get terraform output for site named '$site_name'"
     return 1
@@ -681,24 +682,25 @@ get-service-certificate() {
     return 1
   fi
   alias kv='kubectl -n ves-system'
-  proxy_url=$(kv get cm "${service}-config" -o yaml \
-    | yq e '.data|to_entries|.0.value' \
-    | yq e '.tls.serverParams.tlsCertificates[0]'.certificateUrl \
-    | sd 'wingman://' 'http://')
+  proxy_url=$(kv get cm "${service}-config" -o yaml |
+    yq e '.data|to_entries|.0.value' |
+    yq e '.tls.serverParams.tlsCertificates[0]'.certificateUrl |
+    sd 'wingman://' 'http://')
   pod_name=$(kv get pods -l"name=${service}" --no-headers | awk '{print $1}' | head -1)
   if [[ $? -ne 0 ]]; then
     echo 2>&1 "failed to get a pod named ${service}"
     return 1
   fi
-  wingman_port=$(echo "$proxy_url" \
-    | pcregrep -o 'http://[^:/]+:(\d+)' \
-    | cut -d':' -f3)
+  wingman_port=$(echo "$proxy_url" |
+    pcregrep -o 'http://[^:/]+:(\d+)' |
+    cut -d':' -f3)
   if [[ -z "$wingman_port" ]]; then
     echo >&2 "could not parse wingman port from '${proxy_url}'"
     return 1
   fi
   echo >&2 "port-forwarding to ${pod_name} 8070:${wingman_port}"
-  kv port-forward "$pod_name" "8070:${wingman_port}" >/dev/null & port_forward_pid=$!
+  kv port-forward "$pod_name" "8070:${wingman_port}" >/dev/null &
+  port_forward_pid=$!
   if [[ $? -ne 0 ]]; then
     echo >&2 "could not port-forward to ${pod_name} port ${wingman_port}"
     return 1
@@ -707,8 +709,8 @@ get-service-certificate() {
   temp_cert_file="$(mktemp).crt"
   sleep 1
   echo "downloading cert to $temp_cert_file"
-  curl "$proxy_url" --no-progress-meter --fail -o "$temp_cert_file" \
-    && openssl x509 -in "$temp_cert_file" -text -noout -subject
+  curl "$proxy_url" --no-progress-meter --fail -o "$temp_cert_file" &&
+    openssl x509 -in "$temp_cert_file" -text -noout -subject
 }
 
 # use after some long-running process to notify you while your
@@ -737,31 +739,31 @@ notify() {
 }
 
 nix-config-check() {
-  sudo nixos-rebuild test --flake ~/workspaces/nix-configuration#sawyer-dev-vio
+  sudo nixos-rebuild test --flake ~/workspaces/nix-configuration#haystack
 }
 
 nix-config-switch() {
-  sudo echo -n \
-    && sudo nixos-rebuild switch --flake ~/workspaces/nix-configuration#sawyer-dev-vio
+  sudo echo -n &&
+    sudo nixos-rebuild switch --flake ~/workspaces/nix-configuration#haystack
 }
 
 nix-config-update() {
-  (cd ~/workspaces/nix-configuration \
-    && nix flake update)
+  (cd ~/workspaces/nix-configuration &&
+    nix flake update)
 }
 
 podman-login() {
-  az acr login -n volterra --expose-token \
-    | jq -r '.accessToken' \
-    | podman login volterra.azurecr.io \
+  az acr login -n volterra --expose-token |
+    jq -r '.accessToken' |
+    podman login volterra.azurecr.io \
       --username 00000000-0000-0000-0000-000000000000 \
       --password-stdin
 }
 # workaround for https://github.com/containers/skopeo/issues/1534
 skopeo-acr-login() {
-  az acr login -n volterra --expose-token \
-    | jq -r '.accessToken' \
-    | skopeo login volterra.azurecr.io \
+  az acr login -n volterra --expose-token |
+    jq -r '.accessToken' |
+    skopeo login volterra.azurecr.io \
       --username 00000000-0000-0000-0000-000000000000 \
       --password-stdin
 }
@@ -788,11 +790,11 @@ run-docker() {
 }
 
 acr-login() {
-  run-docker \
-    && if ! az acr login -n volterra >/dev/null; then
-        az-login
-      fi \
-    && skopeo-acr-login
+  run-docker &&
+    if ! az acr login -n volterra >/dev/null; then
+      az-login
+    fi &&
+    skopeo-acr-login
 }
 
 # find an image with the given tag name (i.e. name is equal to the git commit hash or branch name)
@@ -821,23 +823,22 @@ skopeo-inspect() {
   else
     url="docker://$1"
   fi
-  skopeo inspect "$url" \
-    | jq -r '.Labels."commit-sha"'
+  skopeo inspect "$url" |
+    jq -r '.Labels."commit-sha"'
 }
 
 gc-login() {
   export USE_GKE_GCLOUD_AUTH_PLUGIN=True
   kubectl config use-context gke_devtest-293809_us-east4_gc01-int-ves-io
-  k cluster-info 2>/dev/null \
-    || (gcloud auth login --project=devtest-293809 \
-    && gcloud container clusters get-credentials gc01-int-ves-io --region us-east4)
+  k cluster-info 2>/dev/null ||
+    (gcloud auth login --project=devtest-293809 &&
+      gcloud container clusters get-credentials gc01-int-ves-io --region us-east4)
 }
 
 gc-crt-login() {
   export USE_GKE_GCLOUD_AUTH_PLUGIN=True
   kubectl config use-context gke_crt-env_us-east4_gc01-crt-int-ves-io
-  k cluster-info 2>/dev/null \
-    || (gcloud auth login --project=crt-env \
-    && gcloud container clusters get-credentials gc01-crt-int-ves-io --region us-east4)
+  k cluster-info 2>/dev/null ||
+    (gcloud auth login --project=crt-env &&
+      gcloud container clusters get-credentials gc01-crt-int-ves-io --region us-east4)
 }
-

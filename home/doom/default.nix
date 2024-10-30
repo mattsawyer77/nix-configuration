@@ -1,11 +1,12 @@
 # return an activation script and an file/onChange script for use within home modules
-{ 
-pkgs, 
-doomDir, 
-username, 
+{
+pkgs,
+doomDir,
+username,
 envVars,
 emacsPackage ? pkgs.emacs,
 runDoomCommands ? true,
+launchDaemon ? false,
 ... }:
 let
   userConfigDir = {
@@ -36,12 +37,14 @@ let
 in
 {
   home.file."${doomDir}" = userConfigDir;
-  home.packages = [ emacsPackage ];
+  home.packages = [
+    emacsPackage
+    pkgs.emacs-lsp-booster
+  ];
   # make packages available to file.onChange and activation scripts
   home.extraActivationPath = with pkgs; [
     sd
-    emacsPackage
-    python311
+    python3
     ripgrep
     pcre
     libiconv
@@ -49,17 +52,18 @@ in
     pkg-config
     cmake
     coreutils
-  ];
-  # home.sessionVariables = {
-  #   EDITOR = "em";
-  #   VISUAL = "em";
-  # };
-  programs.emacs = {
-    package = emacsPackage;
-  };
+  ] ++ [ emacsPackage ];
   programs.zsh.shellAliases = {
     doom = "~/.config/emacs/bin/doom";
     # em = "em.zsh";
+  };
+  services.emacs = (if launchDaemon then {
+    enable = true;
+    package = emacsPackage;
+    socketActivation.enable = true;
+  } else { });
+  systemd.user.sessionVariables = {
+    COLORTERM = "truecolor";
   };
   # for git, $EDITOR/$VISUAL can't be set to reference a shell function, so deploy the script as follows
   # home.file."em.zsh" = {

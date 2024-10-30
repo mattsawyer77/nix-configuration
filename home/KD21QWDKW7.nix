@@ -91,7 +91,13 @@ in
     ./wezterm
     (import ./tmux {
       inherit pkgs;
-      optionOverrides = [ ];
+      optionOverrides = [
+        {
+          name = "default-command";
+          value = ''"reattach-to-user-namespace -l zsh"'';
+          flags = [ "global" ];
+        }
+      ];
     })
     ./karabiner
     (import ./doom {

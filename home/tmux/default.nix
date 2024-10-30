@@ -1,4 +1,6 @@
-{ pkgs, optionOverrides, ... }:
+{ pkgs
+, optionOverrides ? []
+, ... }:
 
 let
   optionFlags = {
@@ -133,11 +135,6 @@ let
       flags = [ "global" ];
     }
     {
-      name = "default-command";
-      value = ''"reattach-to-user-namespace -l zsh"'';
-      flags = [ "global" ];
-    }
-    {
       name = "status-left";
       value = ''
         "#[bg=#e63634]#[fg=brightwhite]#{?client_prefix,#[bg=green],} #S "
@@ -222,14 +219,14 @@ in
 {
   home.packages = with pkgs; [
     tmux
-    tmuxPlugins.resurrect
+    # tmuxPlugins.resurrect
   ];
   programs.tmux = {
     enable = true;
     package = pkgs.tmux;
-    plugins = with pkgs.tmuxPlugins; [
-      resurrect
-    ];
+    # plugins = with pkgs.tmuxPlugins; [
+    #   resurrect
+    # ];
     baseIndex = 1;
     clock24 = true;
     disableConfirmationPrompt = true;
@@ -238,7 +235,7 @@ in
     prefix = "C-space";
     shortcut = "space"; # ??
     sensibleOnTop = false;
-    shell = "${pkgs.zsh}/bin/zsh";
+    shell = "/etc/profiles/per-user/sawyer/bin/zsh";
     extraConfig = ''
       ${mapKeyUnbinds unbindKeys}
       ${mapKeyBinds "bind -n" rootKeys}
