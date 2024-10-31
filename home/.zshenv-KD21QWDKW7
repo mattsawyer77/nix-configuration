@@ -1691,7 +1691,7 @@ resolve-go-version() {
     fi
   fi
   # look in go-builder image for go version sans patch
-  docker run -it --rm "volterra.azurecr.io/ves.io/go-builder:${go_builder_tag}" go version | awk '{print $3}' | pcregrep -o '1\.\d+'; echo >&2
+  docker run -it --rm "volterra.azurecr.io/ves.io/go-builder:${go_builder_tag}" go version | awk '{print $3}' | pcregrep -o '1\.\d+(\.\d+)'; echo >&2
 }
 
 argo2mermaid() {

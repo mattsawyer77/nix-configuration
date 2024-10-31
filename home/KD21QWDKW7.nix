@@ -187,7 +187,7 @@ in
   };
   programs.home-manager.enable = true;
   programs.zsh = {
-    envExtra = builtins.readFile ./.zshenv-KD21QWDKW7.nix;
+    envExtra = builtins.readFile ./.zshenv-KD21QWDKW7;
     initExtra = ''
       command -v npm >/dev/null && npm config set prefix ${npmPackagePath} && export PATH=$PATH:$HOME/${npmPackagePath}/bin
     '';
