@@ -12,6 +12,7 @@
   };
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/master";
+    nixpkgs-stable.url = "github:nixos/nixpkgs/release-24.05";
     darwin = {
       url = "github:LnL7/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -134,6 +135,7 @@
                     mkalias = inputs.mkalias;
                     poetry2nix = inputs.poetry2nix;
                     nixpkgs-emacs = inputs.nixpkgs-emacs;
+                    nixpkgs-stable = inputs.nixpkgs-stable;
                   });
               }
               ./modules/mac.nix

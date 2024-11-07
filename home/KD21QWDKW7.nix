@@ -1,9 +1,10 @@
 { config
 , lib
 , pkgs
+, nixpkgs-stable
+, nixpkgs-emacs
 , username
 , mkalias
-, nixpkgs-emacs
 , ...
 }:
 
@@ -29,7 +30,7 @@ let
   homePackages = (with pkgs; [
     aws-iam-authenticator
     awscli
-    azure-cli
+    # azure-cli # broken on unstable, so using nixpkgs stable
     bazel
     buf
     ccls
@@ -65,7 +66,8 @@ let
   ++ shellScriptWrappers
   # flakes outside nixpkgs (that don't have overlays)
   # TODO: how to make this more idiomatic without specifying the system arch
-  ++ [mkaliasPackage];
+  ++ [ mkaliasPackage ]
+  ++ [ nixpkgs-stable.outputs.legacyPackages.aarch64-darwin.azure-cli ];
   envVars = {
     EDITOR = "hx";
     VISUAL = "hx";
