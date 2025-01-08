@@ -56,7 +56,6 @@ let
     # openssl # conflicts with libressl
     pinentry
     pkg-config
-    podman
     redis
     scons
     sd
@@ -74,6 +73,7 @@ let
   envVars = {
     BAT_THEME = "1337";
     COLORTERM = "truecolor";
+    DOCKER_HOST = "unix:///run/user/1001/podman/podman.sock";
     EDITOR = "hx";
     GO111MODULE = "on";
     GOPATH = (homeDirectory + "/" + goPathSuffix);

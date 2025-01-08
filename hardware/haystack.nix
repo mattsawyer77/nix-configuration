@@ -20,15 +20,27 @@
   # Define on which hard drive you want to install Grub.
   boot.loader.grub.device = "/dev/vda"; # or "nodev" for efi only
 
-  fileSystems."/" =
-    { device = "/dev/disk/by-uuid/f222513b-ded1-49fa-b591-20ce86a2fe7f";
+  fileSystems = {
+    "/" = {
+      device = "/dev/disk/by-uuid/f222513b-ded1-49fa-b591-20ce86a2fe7f";
       fsType = "ext4";
     };
 
-  fileSystems."/boot" =
-    { device = "systemd-1";
-      fsType = "autofs";
+    "/home/sawyer/workspaces" = {
+      device = "/dev/vdb1";
+      fsType = "ext4";
+      options = [
+        "user=sawyer"
+        "relatime"
+      ];
     };
+
+    "/boot" =
+      {
+        device = "systemd-1";
+        fsType = "autofs";
+      };
+  };
 
   swapDevices = [ ];
 

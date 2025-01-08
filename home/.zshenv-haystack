@@ -360,7 +360,7 @@ rakarctl() {
     rakar_pod=$(kubectl -n "$site_ns" get pods -lname=rakar | tail -1 | awk '{print $1}')
     if [[ -n "$rakar_pod" ]]; then
       kubectl -n "$site_ns" exec -it "$rakar_pod" -c rakar -- \
-        "rakarctl -t -u "localhost:#{GRPC_PORT}" --cookie "${COOKIE}" $@"
+        rakarctl -t -u "localhost:${GRPC_PORT}" --cookie "${COOKIE}" $@
     else
       echo "could not find a running rakar pod" >&2
     fi

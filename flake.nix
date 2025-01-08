@@ -155,6 +155,12 @@
             inherit pkgs;
             listenerURL = "https://0.0.0.0:6443";
           })
+          ({ config, pkgs, ... }: import ./modules/tailscale.nix {
+            inherit config pkgs;
+            needFirewall = false;
+          })
+          ./modules/podman
+          ./modules/containerd
           home-manager.nixosModules.home-manager
           {
             home-manager.useGlobalPkgs = true;
@@ -171,11 +177,11 @@
               isNormalUser = true;
               home = "/home/sawyer";
               description = "Matt Sawyer";
-              extraGroups = [ "wheel" "networkmanager" "docker" ];
+              extraGroups = [ "wheel" "networkmanager" "docker" "podman" ];
               shell = pkgs.zsh;
             };
             users.users.sawyer.openssh.authorizedKeys.keys = [
-              "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO1g1AytlaSn6IgGptJI41eQ66yi4hXYMLNRk3GBxWVE m.sawyer@KD21QWDKW7"
+              "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDUkwAz+dBcwzjI9Hwz0ETqH2GSOd3Og4cgisF8NC7Ck m.sawyer@KD21QWDKW7"
             ];
             networking = {
               networkmanager.enable = true;
@@ -212,8 +218,8 @@
             services.eternal-terminal.enable = true;
             services.openssh.enable = true;
             time.timeZone = "America/Los_Angeles";
-            virtualisation.docker.enable = true;
-            virtualisation.docker.extraOptions = "--bip 192.168.10.1/24";
+            # virtualisation.docker.enable = true;
+            # virtualisation.docker.extraOptions = "--bip 192.168.10.1/24";
           })
         ]; # modules
       }; # haystack

@@ -155,7 +155,7 @@
        (markdown +grip)          ; writing docs for people to ignore
        (nix +tree-sitter +lsp)               ; I hereby declare "nix geht mehr!"
        ;;ocaml             ; an objective camel
-       (org +gnuplot +pandoc +present)               ; organize your plain life in plain text
+       (org +gnuplot +jupyter +pandoc +present +pretty)               ; organize your plain life in plain text
        ;; plantuml          ; diagrams for confusing people more
        (python +lsp +pyenv +pyright +tree-sitter)            ; beautiful is better than ugly
        ;;(racket +lsp +xp)            ; a DSL for DSLs
