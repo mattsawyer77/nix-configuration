@@ -1,18 +1,25 @@
 # return an activation script and an file/onChange script for use within home modules
 {
-pkgs,
-doomDir,
-username,
-envVars,
-emacsPackage ? pkgs.emacs,
-runDoomCommands ? true,
-launchDaemon ? false,
-... }:
+  pkgs,
+  doomDir,
+  username,
+  envVars,
+  emacsPackage ? pkgs.emacs,
+  runDoomCommands ? true,
+  launchDaemon ? false,
+  ...
+}:
 let
-  userConfigDir = {
+  cpRecursiveFlags = if pkgs.stdenv.isDarwin then "-RLvf" else "-rLvf";
+ in
+{
+  # symlink doom config files to ${doomDir}.nix, then copy those symlinks into place as normal files,
+  # so that we can quickly tweak configuration without doing a full rebuild/activation
+  home.file."${doomDir}.nix" = {
     source = ./emacs;
-    target = doomDir;
+    target = "${doomDir}.nix";
     recursive = true;
+    force = true;
     # NOTE: the following script will only run if doom files have changed -- even if the script itself fails.
     onChange = if runDoomCommands then ("${pkgs.writeShellScript "doom-change" ''
       #!/usr/bin/env zsh
@@ -29,14 +36,27 @@ let
       $DRY_RUN_CMD cp $(readlink ~/${doomDir}/black-hole.png) ~/$EMACS_DIR/.local
       echo "syncing doom emacs..."
       $DRY_RUN_CMD $DOOM sync --force --pager cat
+      if [[ -d $HOME/${doomDir}.nix ]]; then
+        rm -rf $HOME/${doomDir} || :
+        mkdir -p $HOME/${doomDir}
+        cp ${cpRecursiveFlags} $HOME/${doomDir}.nix/* $HOME/${doomDir}
+      else
+        echo "${doomDir}.nix" does not yet exist. rebuild/reactivate once more to sync doom configuration.
+      fi
       set +x
     ''}") else ("${pkgs.writeShellScript "doom-change" ''
+      #!/usr/bin/env zsh
+      if [[ -d $HOME/${doomDir}.nix ]]; then
+        rm -rf $HOME/${doomDir} || :
+        mkdir -p $HOME/${doomDir}
+        cp ${cpRecursiveFlags} $HOME/${doomDir}.nix/* $HOME/${doomDir}
+      else
+        echo "${doomDir}.nix" does not yet exist. rebuild/reactivate once more to sync doom configuration.
+      fi
       echo "runDoomCommands is false. you need to run doom sync manually."
     ''}");
   };
-in
-{
-  home.file."${doomDir}" = userConfigDir;
+  # '';
   home.packages = [
     emacsPackage
     pkgs.emacs-lsp-booster
