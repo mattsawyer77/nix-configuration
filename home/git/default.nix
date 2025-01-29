@@ -27,7 +27,7 @@
       lp =
         "log --oneline --format='%C(yellow)%H %C(blue)%ci %C(green)%an %C(reset)%<(100,trunc)%s'";
       lt =
-        "log --tags --simplify-by-decoration --format='%C(green)%H %<(15)%C(yellow)%ci %<(20,trunc)%C(cyan)%aN %C(reset)%<(100,trunc)%d%n   %s'";
+        "log --tags --simplify-by-decoration --format='%C(green)%H %<(15)%C(yellow)%ci %<(20,trunc)%C(cyan)%aN %C(reset)%<(200,trunc)%d%n   %s'";
       st = "status -s";
     };
     delta = {
@@ -78,5 +78,12 @@
       receive.fsckObjects = "true";
       tag.sort = "taggerdate";
     };
+    ignores = [
+      ".DS_Store"
+      # direnv
+      ".devenv*"
+      "devenv.local.nix"
+      ".direnv"
+    ];
   };
 }

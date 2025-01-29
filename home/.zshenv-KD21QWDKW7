@@ -1108,8 +1108,48 @@ disable-docker-write-through() {
   docker run -it --rm --privileged --pid=host alpine:edge nsenter -t 1 -m -u -n -i bash -c 'echo "write back" > /sys/class/block/vda/queue/write_cache'
 }
 
+matrix-renew-cert() {
+  if [[ -z "$1" ]]; then
+    echo >&2 "error: must specify an environment (demo1, crt, staging, prod)"
+    return 1
+  fi
+  local env="$1"
+  shift
+  if [[ ! -d ~/.ves-internal/${env} ]]; then
+    echo >&2 "error: unknown environment $env"
+    return 1
+  fi
+  # NOTE: with LibreSSL or OpenSSL < 3, -legacy arg is not available for openssl command
+  # for OpenSSL >= 3, -legacy arg is required with openssl command below
+  local legacy_arg=''
+  if openssl version | grep 'OpenSSL 3' >/dev/null; then
+    legacy_arg='-legacy'
+  fi
+  local pass=volterra
+  local browser_arg=''
+  if ! grep -- '-b' <<<"$*" >/dev/null; then
+    browser_arg="-b firefox"
+  fi
+  matrix_output=$(matrix get-user-cert -b firefox -e "$env" $@)
+  echo >&2 "$matrix_output"
+  if [[ $? -eq 0 ]]; then
+    if grep 'User Certificate is valid' <<<"$matrix_output" >/dev/null; then
+      return 0
+    fi
+    /usr/bin/openssl pkcs12 $legacy_arg -export -out ~/.ves-internal/${env}/usercerts-macos.p12 -inkey ~/.ves-internal/${env}/usercerts.key -in ~/.ves-internal/${env}/usercerts.crt -certfile ~/.ves-internal/${env}/usercerts.crt -password "pass:${pass}" \
+    && security import ~/.ves-internal/${env}/usercerts-macos.p12 -P "$pass"
+  else
+    return 1
+  fi
+}
+
 matrix-renew-certs() {
-  for env in demo1 crt staging prod; do echo -n "${env}: "; matrix get-user-cert -b firefox -e "$env"; done
+  rm -rf ~/.ves-internal-backup 2>/dev/null || :
+  cp -a ~/.ves-internal ~/.ves-internal-backup
+  for env in demo1 crt staging prod; do
+    echo -n "${env}: ";
+    matrix-renew-cert "$env" $@
+  done
 }
 
 gc-login() {
@@ -1412,6 +1452,7 @@ loki() {
     return 1
   fi
   local environment="$1"
+  local loki_data_source_id=${LOKI_DATA_SOURCE_ID:-5}
   shift
   if [[ $# -lt 1 ]]; then
     echo >&1 "$usage"
@@ -1425,7 +1466,7 @@ loki() {
     LOKI_CLIENT_CERT_PATH=${HOME}/.ves-internal/${environment}/usercerts.crt \
     LOKI_CLIENT_KEY_PATH=${HOME}/.ves-internal/${environment}/usercerts.key \
     LOKI_TLS_SKIP_VERIFY=1 \
-    LOKI_ADDR="https://${compass_hostname}/analytics/api/datasources/proxy/2" \
+    LOKI_ADDR="https://${compass_hostname}/analytics/api/datasources/proxy/${LOKI_DATA_SOURCE_ID:-5}" \
     logcli $@
 }
 
@@ -1457,7 +1498,7 @@ setup-ce() {
       echo >&2 "ssh to $ip failed"
       return 1
     fi
-    for file in ~/onedrive/ce-files/*; do
+    for file in ~/onedrive/ce-files/* ~/onedrive/ce-files/.*; do
       echo "copying $(basename ${file}) to ${site} at ${ip}..."
       if ! scp -q -i "~/.ves-internal/$environment/id_rsa" "$file" "vesop@${ip}:"; then
         echo >&2 "scp of $file to $ip failed"
@@ -1617,6 +1658,40 @@ tz() {
   tmux new-window -c "$dir" -n "$search" -S
 }
 
+# given a string, check if a wezterm window with that name exists, if so, switch to it
+# otherwise, find the most commonly used working directory that matches, create a new wezterm window and switch to that dir
+# if that failed, just create a new wezterm window with the given name
+wz() {
+  if [[ ! -v 1 ]]; then
+    echo >&2 "error: must specify a directory name or fragment for zoxide to query"
+  fi
+  local search="$1"
+  local dir=$(zoxide query "$search" 2>/dev/null)
+  if [[ -z "$dir" ]]; then
+    dir=$HOME
+  fi
+  local tab_id=$(wezterm cli list --format json | jq -r "map(select(.tab_title==\"${search}\"))|map(.tab_id)[]")
+  if [[ -z "$tab_id" ]]; then
+    wezterm cli spawn --cwd "$dir" sh -c "wezterm cli set-tab-title $search; zsh -i"
+    sleep 1
+    tab_id=$(wezterm cli list --format json | jq -r "map(select(.tab_title==\"${search}\"))|map(.tab_id)[]")
+  fi
+  wezterm cli activate-tab --tab-id "$tab_id"
+}
+
+wezterm-tab-switcher() {
+  hostname=$(hostname)
+  selection=$(wezterm cli list --format json \
+    | jq -r 'map((.tab_id|tostring)+":\t"+.tab_title+" @"+.cwd)[]' \
+    | sd --flags "i" "file://${hn}" '' \
+    | sd "$HOME" '~' \
+    | sk --height=50%)
+  if [[ -n "$selection" ]]; then
+    tab_id=$(echo "$selection" | cut -d':' -f1)
+    wezterm cli activate-tab --tab-id "$tab_id"
+  fi
+}
+
 # open or switch to a tmux window for the given project then open helix (hx) to edit
 hxp() {
   if [[ ! -v 1 ]]; then
@@ -1770,22 +1845,57 @@ generate-lcov() {
     && root_package=$(echo "$mod_info" | sd 'module\s*' '')
    # stdlib
    if [[ "$root_module" == "stdlib" ]]; then
-     packages=($(go list ./... | grep -vE 'stdlib/test|pb$'))
+     packages=($(GOTOOLCHAIN=$GOTOOLCHAIN go list ./... | grep -vE 'stdlib/test|pb$'))
    # standard service repo
    elif [[ -d ./cmd ]] && [[ -d ./pkg ]]; then
-     packages=($(go list ./cmd/... ./pkg/... | grep -vE 'pbgo|pb$'))
+     packages=($(GOTOOLCHAIN=$GOTOOLCHAIN go list ./cmd/... ./pkg/... | grep -vE 'pbgo|pb$'))
    # default to all packages
    else
-     packages=($(go list ./...))
+     packages=($(GOTOOLCHAIN=$GOTOOLCHAIN go list ./...))
    fi
    for pkg in $packages; do
-     echo "package: $pkg"
      dir=$(echo $pkg | sd "${root_package}/" './')
-     echo "$(date): getting coverage for ${pkg} in ${dir}..."
-     go test -coverprofile "${dir}/coverage.out" $pkg\
-       && gcov2lcov --use-absolute-source-path -infile="${dir}/coverage.out" -outfile="${dir}/lcov.info"
+     echo "$(date -Iseconds): getting coverage for ${pkg} in ${dir}..."
+     GOTOOLCHAIN=$GOTOOLCHAIN nice +20 go test -coverprofile "${dir}/coverage.out" $pkg \
+       && GOTOOLCHAIN=$GOTOOLCHAIN gcov2lcov --use-absolute-source-path -infile="${dir}/coverage.out" -outfile="${dir}/lcov.info"
    done
   )
+}
+
+sic-multitrace() {
+  if [[ $# -lt 3 ]]; then
+    echo >&2 "usage: sic-multitrace env servicemap objtype [pattern]"
+    echo >&2 " (where servicemap is a comma-separated list of <site:service>)"
+    echo >&2 "example: sic-multitrace crt ny2-nyc-crt:ver,gc:streak ves.io.schema.bgp.StatusObject"
+    echo >&2 "example: sic-multitrace crt ny2-nyc-crt:ver,gc:streak ves.io.schema.bgp.StatusObject 8eb1e15a-ee22-4fa4-8877-67808d557397"
+    return 1
+  fi
+  local env=$1
+  local services=$2
+  local objtype=$3
+  local pattern=${4:-""}
+  local output_dir=$(mktemp -d)
+  unset output_files
+  declare -a output_files
+  for pair in $(echo "$services" | sd ',' '\n'); do
+    site=$(echo "$pair" | cut -d':' -f1)
+    service=$(echo "$pair" | cut -d':' -f2)
+    unset sic_args
+    declare -a sic_args
+    sic_args+=("trace" "$env" "$site" "$service" "$objtype")
+    jq_query='map([.key, .time, "'$site'", "'$service'", .message])[]|@csv'
+    if [[ -n "$pattern" ]]; then
+      sic_args+=("--pattern" "$pattern")
+    fi
+    output_file="${output_dir}/${site}-${service}.csv"
+    output_files+=($output_file)
+    echo >&2 "writing to file ${output_file}..."
+    sic $sic_args | jq -rc "$jq_query" > $output_file &
+  done
+  wait
+  for output_file in "${output_files[@]}"; do
+    cat $output_file
+  done | sort
 }
 
 doom-sync-files() {
@@ -1794,3 +1904,21 @@ doom-sync-files() {
   mkdir -p $doom_dir
   cp -RLvf ~/workspaces/nix-configuration/home/doom/emacs/* $doom_dir
 }
+
+parse-schema-version() {
+  local toml_section='metadata.ExternalSchemas'
+  local jq_query='map(select(.name|test("/schema$")))|map(.version)[]'
+  if [[ -v 1 ]]; then
+    cat $1 | taplo get "$toml_section" -o json | jq -r "$jq_query"
+  elif [[ -t 0 ]]; then
+    taplo get "$toml_section" -o json | jq -r "$jq_query"
+  elif [[ -f Gopkg.toml ]]; then
+    cat Gopkg.toml | taplo get "$toml_section" -o json | jq -r "$jq_query"
+  else
+    echo >&2 "error: no input specified, and no Gopkg.toml present"
+    return 1
+  fi
+}
+
+# filtering out namespaces with `--` and jobs
+jq_pod_resource_query='.items|map(select(.metadata.namespace|test(".*--.*")|not))|map(select(.metadata.ownerReferences[0].kind!="Job"))|map(.status.hostIP as $hostIP|.metadata.namespace as $ns|.metadata.name as $name|.spec.containers|map({namespace: $ns, pod: $name, container: .name, hostIP: $hostIP, cpu_requests: .resources.requests.cpu, cpu_limits: .resources.limits.cpu, gomaxprocs: ((.env//[])|map(select(.name=="GOMAXPROCS"))[0]|.value//.valueFrom.resourceFieldRef.resource)}))|flatten'

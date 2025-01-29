@@ -3,6 +3,8 @@
 (when (fboundp 'up-slightly) (map! "<mouse-4>" 'up-slightly))
 (when (fboundp 'down-slightly) (map! "<mouse-5>" 'down-slightly))
 
+
+;; TODO: unmap +/- keys in view-mode-map
 (map!
  :map general-override-mode-map
  :g "C-s" #'basic-save-buffer
@@ -97,6 +99,8 @@
       :i "S-TAB" #'evil-org-<
       :nv "C-j" #'org-move-subtree-down
       :nv "C-k" #'org-move-subtree-up
+      :nv "C-n" #'org-move-item-down
+      :nv "C-p" #'org-move-item-up
       :i "RET" #'evil-org-return
       (:localleader
        :nv "-" #'org-cycle-list-bullet))

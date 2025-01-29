@@ -13,6 +13,7 @@
 (setq-default scroll-margin 3)
 (setq-default maximum-scroll-margin 0.15)
 (setq-default sh-basic-offset 2)
+(setq scroll-margin 3)
 
 ;; (when (and (display-graphic-p) (featurep :system 'macos))
 ;; (setq doom-modeline-icon t)
@@ -76,13 +77,17 @@
   (setq ws-butler-global-exempt-modes (add-to-list 'ws-butler-global-exempt-modes 'makefile-gmake-mode t))
   (setq ws-butler-global-exempt-modes (add-to-list 'ws-butler-global-exempt-modes 'makefile-bsdmake-mode t)))
 
+(add-hook! go-mode
+  (tree-sitter-hl-mode 1))
+
 ;; use tree-sitter for syntax highlighting for modes that don't have native tree-sitter support
 (after! tree-sitter
   ;; (setf tree-sitter-major-mode-language-alist
   ;;       (cl-remove 'go-mode tree-sitter-major-mode-language-alist :key #'car))
   (require 'tree-sitter-langs)
-  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
-  (add-hook! go-mode #'tree-sitter-mode)
+  ;; (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
+  ;; (add-hook! go-mode #'tree-sitter-mode)
+  (add-hook! go-mode #'+word-wrap-mode)
   ;; (setq-default tree-sitter-hl-use-font-lock-keywords nil)
   ;; (add-hook! go-mode
   ;; (setq-local tree-sitter-hl-use-font-lock-keywords t)
@@ -321,12 +326,12 @@ wheel."
 (after! flycheck
   (setq flycheck-indication-mode 'left-fringe)
   (setq-default flycheck-relevant-error-other-file-show nil)
-  ;; make flycheck window auto-resize (with a max height of 15 lines)
+  ;; make flycheck window auto-resize (with a max height of 5 lines)
   (defadvice flycheck-error-list-refresh (around shrink-error-list activate)
     ad-do-it
     (-when-let (window (flycheck-get-error-list-window t))
       (with-selected-window window
-        (fit-window-to-buffer window 15))))
+        (fit-window-to-buffer window 5))))
   ;; make flycheck columns wider than their absurd defaults
   (add-hook! flycheck-error-list-mode
     (setq-local tabulated-list-format
@@ -520,6 +525,7 @@ wheel."
         ;;   and \\ is something I don't understand but it causes lsp to break if followed by an underscore
         (cl-union lsp-file-watch-ignored-directories
                   '("[/\\\\]\.cache[/\\\\]?"
+                    "\.cache\.go"
                     "[/\\\\]extschema[/\\\\]?"
                     "[/\\\\]_extschema[/\\\\]?"
                     "[/\\\\]_protoschema[/\\\\]?"
@@ -533,7 +539,9 @@ wheel."
                     "vendor"
                     "[/\\\\]target[/\\\\]?"
                     "\.vscode"
+                    "\.idea"
                     "\.direnv"
+                    "\.devenv"
                     ))
         )
   (setq lsp-modeline-diagnostics-scope :file)
@@ -566,6 +574,7 @@ wheel."
   ;; (setq lsp-diagnostics-provider :flymake)
   ;; (setq lsp-diagnostics-provider :flycheck)
   (setq lsp-nix-nil-formatter ["nixpkgs-fmt"])
+  (setq nix-nixfmt-bin "nixpkgs-fmt")
   )
 
 (after! (flycheck rustic)

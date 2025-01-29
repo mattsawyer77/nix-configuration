@@ -191,7 +191,13 @@ in
   programs.zsh = {
     envExtra = builtins.readFile ./.zshenv-KD21QWDKW7;
     initExtra = ''
-      command -v npm >/dev/null && npm config set prefix ${npmPackagePath} && export PATH=$PATH:$HOME/${npmPackagePath}/bin
-    '';
+    # hack to fix emacs/eat
+    if [ -n "$INSIDE_EMACS" ]; then
+      export TERM=xterm
+    fi
+    # '';
+    # initExtra = ''
+    #   command -v npm >/dev/null && npm config set prefix ${npmPackagePath} && export PATH=$PATH:$HOME/${npmPackagePath}/bin
+    # '';
   };
 }

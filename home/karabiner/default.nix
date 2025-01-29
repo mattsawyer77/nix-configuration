@@ -27,12 +27,15 @@ let
                   bundle_identifiers = [
                     "^org\\.alacritty"
                     "^io\\.alacritty"
-                    "^com\\.github\\.wez\\.wezterm"
+                    ".*wezterm.*"
                     "^org\\.gnu\\.emacs"
                     "^org\\.gnu\\.Emacs"
                     "com.jetbrains.goland"
                     "com.microsoft.VSCode"
                     "dev.zed.Zed"
+                  ];
+                  file_paths = [
+                    ".*/wezterm-gui"
                   ];
                 }];
                 from = {
@@ -208,7 +211,7 @@ let
                   key_code = "5";
                 }
                 {
-                  modifiers = [];
+                  modifiers = [ ];
                   key_code = "spacebar";
                   hold_down_milliseconds = 30;
                 }

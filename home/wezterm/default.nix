@@ -1,5 +1,9 @@
-{ pkgs, ... }: {
-  home.packages = [ pkgs.wezterm ];
+{
+  pkgs,
+  weztermPackage ? pkgs.wezterm,
+  ...
+}: {
+  home.packages = [ weztermPackage ];
   programs.wezterm = {
     enable = true;
     enableZshIntegration = true;

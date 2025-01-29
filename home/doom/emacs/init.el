@@ -18,7 +18,7 @@
 ;; (set-locale-environment "en.UTF-8")
 ;; (prefer-coding-system 'utf-8)
 
-(setq fancy-splash-image "~/.emacs.d/.local/black-hole.png")
+(setq fancy-splash-image "~/.config/emacs/.local/black-hole.png")
 (defun sawyer/set-ascii-splash ()
   (let* ((banner-raw
           '("   __    ___ ___      __      ___    ____   "
@@ -107,7 +107,7 @@
        ;; vterm             ; the best terminal emulation in Emacs
 
        :checkers
-       (syntax)              ; tasing you for every semicolon you forget
+       (syntax +icons +childframe)              ; tasing you for every semicolon you forget
        ;;spell             ; tasing you for misspelling mispelling
        ;;grammar           ; tasing grammar mistake every you make
 
