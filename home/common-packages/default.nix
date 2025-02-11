@@ -62,7 +62,7 @@
     # mutagen # broken as of 2022-05-13
     ncurses
     neovim # customized in ./neovim.nix overlay
-    nerdfonts
+    # nerdfonts
     netcat
     # netperf # broken as of 2023-11-27
     # nim

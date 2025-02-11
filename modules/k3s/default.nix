@@ -14,4 +14,8 @@ with pkgs;
       --write-kubeconfig-mode 644
     '';
   };
+  virtualisation.containers.registries.insecure = [
+    # k3s/xc-iab
+    "localhost:5000"
+  ];
 }
