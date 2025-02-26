@@ -1,0 +1,76 @@
+[alias]
+	lp = "log --oneline --format='%C(yellow)%H %C(blue)%ci %C(green)%an %C(reset)%<(100,trunc)%s'"
+	lpg = "log --oneline --graph --format='%C(yellow)%H %<(15)%C(blue)%ci %<(20,trunc)%C(green)%aN %C(reset)%<(100,trunc)%s'"
+	lt = "log --tags --simplify-by-decoration --format='%C(green)%H %<(15)%C(yellow)%ci %<(20,trunc)%C(cyan)%aN %C(reset)%<(200,trunc)%d%n   %s'"
+	st = "status -s"
+
+[commit]
+	verbose = "true"
+
+[core]
+	pager = "delta"
+
+[delta]
+	file-decoration-style = "yellow ul"
+	file-style = "yellow italic"
+	hunk-header-decoration-style = "omit"
+	hunk-header-style = "syntax bold"
+	line-numbers = "true"
+	line-numbers-left-format = "\"{nm:^4} \""
+	line-numbers-right-format = "\"{np:^4} \""
+	line-numbers-zero-style = "#4b5263"
+	minus-emph-style = "syntax \"#600818\""
+	minus-style = "syntax \"#450a15\""
+	navigate = "true"
+	paging = "always"
+	plus-emph-style = "syntax \"#175c2e\""
+	plus-style = "syntax \"#0b4820\""
+	syntax-theme = "zenburn"
+	tabs = "2"
+	width = "1"
+
+[diff]
+	algorithm = "histogram"
+
+[fetch]
+	fsckobjects = "true"
+
+[init]
+	defaultBranch = "main"
+
+[interactive]
+	diffFilter = "delta --color-only"
+
+[merge]
+	conflictstyle = "zdiff3"
+
+[pull]
+	ff = "only"
+
+[push]
+	default = "current"
+
+[rebase]
+	autostash = "true"
+
+[receive]
+	fsckObjects = "true"
+
+[safe]
+	directory = "*"
+
+[tag]
+	sort = "taggerdate"
+
+[transfer]
+	fsckobjects = "true"
+
+[url "ssh://git@github.com/"]
+	insteadOf = "https://github.com/"
+
+[url "ssh://git@gitlab.com/"]
+	insteadOf = "https://gitlab.com/"
+
+[user]
+	email = "m.sawyer@f5.com"
+	name = "Matt Sawyer"

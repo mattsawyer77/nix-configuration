@@ -84,6 +84,7 @@
       ".devenv*"
       "devenv.local.nix"
       ".direnv"
+      "*doom*scratch*"
     ];
   };
 }
