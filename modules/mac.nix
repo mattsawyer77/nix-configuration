@@ -14,7 +14,6 @@ let
 in
 
 {
-  services.nix-daemon.enable = true;
   # environment.systemPackages = [
   #   emacsPackage
   #   pkgs.fetchpatch
@@ -50,7 +49,6 @@ in
   programs.zsh.enableCompletion = true;
   programs.zsh.enableBashCompletion = true;
   programs.zsh.enableSyntaxHighlighting = true;
-  nix.configureBuildUsers = true;
   nix.settings.extra-sandbox-paths = [
     "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib"
   ];
