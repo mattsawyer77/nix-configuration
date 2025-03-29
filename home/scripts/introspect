@@ -1,0 +1,16 @@
+#!/usr/bin/env zsh
+
+host=$(echo "$@" | grep -oE 'compass-lma\.(\w+)\.volterra\.(us|io)') 
+environment=$(echo "$host" | cut -d'.' -f2) 
+if [[ "$environment" == "ves" ]]
+then
+	environment="prod" 
+fi
+user_cert="${HOME}/.ves-internal/${environment}/usercerts.p12" 
+if [[ -f "$user_cert" ]]
+then
+	curl --insecure --fail --no-progress-meter --cert-type P12 --cert "${user_cert}:volterra" "$@"
+else
+	echo "unknown environment $environment" >&2
+	return 1
+fi

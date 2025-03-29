@@ -1,0 +1,41 @@
+#!/usr/bin/env zsh
+
+local usage="usage:\nnioctl deployment-name|statefulset-name kubectl-args" 
+local service_name="$1" 
+if [[ ! -v service_name ]]
+then
+	echo "k8s name (pod prefix) is required" >&2
+	echo "$usage" >&2
+	return 1
+fi
+shift
+local service_json=$(kubectl -n ves-system get statefulset,daemonset,deployment "$service_name" -o json 2>/dev/null) 
+local service=$(printf '%s\n' "$service_json" | jq -r '.items|first' 2>/dev/null) 
+if [[ -z "$service" ]]
+then
+	echo "could not find a statefulset, daemonset, or deployment named $service_name" >&2
+	return 1
+fi
+local kind=$(printf '%s\n' "$service" | jq -r '.kind') 
+if [[ -z "$kind" ]]
+then
+	echo "could not determine kind of service $service_name" >&2
+	return 1
+fi
+GRPC_TLS_PORT=${NIO_GRPC_TLS_PORT:-$(kubectl -n ves-system get configmap "${service_name}-config" -o json \
+  | jq -r '.data."nio.yml"' \
+  | yq e '.GrpcTLSPort' -)} 
+SERVER_CN=${NIO_SERVER_CN:-$(printf '%s\n' "$service" \
+  | jq -r '.spec.template.spec.containers[]|select(.name=="wingman")|.env|from_entries|.serviceNames|split(",")|last')} 
+if [[ -n "$GRPC_TLS_PORT" ]]
+then
+	nio_pod=$(kubectl -n ves-system get pods --no-headers -l name="${service_name}" | awk '{print $1}' | head -1) 
+	if [[ -n "$nio_pod" ]]
+	then
+		kubectl -n ves-system exec -it "$nio_pod" -c nio -- nioctl -u "localhost:${GRPC_TLS_PORT}" --server-cn "$SERVER_CN" $@
+	else
+		echo "could not find a running nio pod for $kind $service_name" >&2
+	fi
+else
+	echo "could not determine nio's GRPC TLS port"
+fi

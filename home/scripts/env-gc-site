@@ -1,0 +1,30 @@
+#!/usr/bin/env zsh
+
+if [ ! -v 1 ]
+then
+	echo "must specify environment (demo1, crt, staging, prod)" >&2
+	return 1
+fi
+local environment="$1" 
+local site="${2:-gc}" 
+case $environment in
+	(demo1) if [[ "$site" == "gc" ]]
+		then
+			site=gc01 
+		fi ;;
+	(crt) if [[ "$site" == "gc" ]]
+		then
+			site=gc01 
+		fi ;;
+	(staging) if [[ "$site" == "gc" ]]
+		then
+			site=gc1-iad-01 
+		fi ;;
+	(prod) if [[ "$site" == "gc" ]]
+		then
+			site=gc01-cle 
+		fi ;;
+	(*) echo "unknown environment $environment" >&2
+		return 1 ;;
+esac
+echo "$site"

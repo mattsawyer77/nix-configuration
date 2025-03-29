@@ -1,0 +1,13 @@
+#!/usr/bin/env zsh
+
+local host=$1 
+if [[ -v 1 ]]
+then
+	host="$1" 
+else
+	echo "must specify ssh host to connect to" >&2
+	return 1
+fi
+shift
+local kubectl_commands=$@ 
+ssh -q $host sudo /opt/bin/kubectl --kubeconfig /root/.kube/config $kubectl_commands

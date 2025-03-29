@@ -1,0 +1,18 @@
+#!/usr/bin/env zsh
+
+if [[ $# -lt 2 ]]
+then
+	echo "ERROR: status object type and config object UID(s) required" >&2
+	echo "usage example: streak-get-status-objects ves.io.schema.site.StatusObject 4cbcf514-a024-4e95-a7bf-f9e9ffb0f4fa ce7d079e-5352-4571-a564-c2ccc1aa6fe0" >&2
+	return 1
+fi
+status_object_type="$1" 
+shift
+config_object_uids=() 
+while [[ -v 1 ]]
+do
+	config_object_uids+=(\"$1\") 
+	shift
+done
+config_objects_str="[$(print -R ${(j|,|)config_object_uids})]" 
+streakctl customAPI ves.io.streak.CustomAPI ListStatusObjects --json-data '{ "status_object_type": "'"$status_object_type"'", "config_object_uids": '"$config_objects_str"' }' | yq e '.'

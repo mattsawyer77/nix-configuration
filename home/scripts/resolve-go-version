@@ -1,0 +1,34 @@
+#!/usr/bin/env zsh
+
+local version=$(go version | awk '{print $3}') 
+local repo_root=$(git rev-parse --show-toplevel) 
+if [[ $? -ne 0 ]]
+then
+	echo "current dir is not in a git repo, default go version:" >&2
+	echo "$version"
+	return 0
+fi
+local go_builder_tag
+local override_version=$(yj <"${repo_root}/.gitlab-ci.yml" | jq -r '.variables' | pcregrep -o 'go-builder:[\w.-_]+' | sd 'go-builder:([\w.-_]+)' '$1') 
+if [[ -n "$override_version" ]]
+then
+	echo "go-builder version from .gitlab-ci.yml: $override_version" >&2
+	go_builder_tag=$override_version 
+else
+	local include_ref=$(yj <"${repo_root}/.gitlab-ci.yml" | jq -r '.include|map(select(.project|contains("cicd-deployment")))|map(.ref)|unique|flatten[0]') 
+	if [[ -z "$include_ref" ]]
+	then
+		include_ref=master 
+	fi
+	include_version=$(git archive --remote=git@gitlab.com:f5/volterra/ves.io/sre/cicd-deployment.git "$include_ref" pipelines/general-ci-include.yml | tar xO | pcregrep -o 'go-builder:([\w.-_]+)' | sd 'go-builder:([\w.-_]+)' '$1') 
+	if [[ -n "$include_version" ]]
+	then
+		echo "go-builder version from cicd-deployment: ${include_version}:" >&2
+		go_builder_tag=$include_version 
+	else
+		echo "error: could not determine go version for project" >&2
+		return 1
+	fi
+fi
+docker run -it --rm "volterra.azurecr.io/ves.io/go-builder:${go_builder_tag}" go version | awk '{print $3}' | pcregrep -o '1\.\d+(\.\d+)'
+echo >&2

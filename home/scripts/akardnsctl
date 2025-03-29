@@ -1,0 +1,16 @@
+#!/usr/bin/env zsh
+
+GRPC_TLS_PORT=${AKAR_GRPC_TLS_PORT:-$(kubectl -n ves-system get configmap akar-dnsdomain-config -o json | jq -r '.data."config.yml"' | yq e '.GrpcTLSPort' -)} 
+SERVER_CN=${AKAR_SERVER_CN:-$(kubectl -n ves-system get deployment akar-dnsdomain -o json | jq -r '.spec.template.spec.containers[]|select(.name=="wingman")|.env|from_entries|.serviceNames' | cut -d',' -f1)} 
+if [[ -n "$GRPC_TLS_PORT" ]]
+then
+	akar_pod=$(kubectl -n ves-system get pods -lname=akar-dnsdomain --no-headers | awk '{print $1}') 
+	if [[ -n "$akar_pod" ]]
+	then
+		kubectl -n ves-system -c akar exec -it "$akar_pod" -c akar -- akard client-ctl -u "localhost:${GRPC_TLS_PORT}" --server-cn "$SERVER_CN" $@
+	else
+		echo "could not find a running akar-dnsdomain pod" >&2
+	fi
+else
+	echo "could not determine akar-dnsdomain's GRPC TLS port"
+fi

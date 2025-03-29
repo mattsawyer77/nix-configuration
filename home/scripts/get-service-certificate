@@ -1,0 +1,63 @@
+#!/usr/bin/env zsh
+
+port_forward_pid='' 
+temp_cert_file='' 
+_cert_cleanup () {
+	local pid=$1 
+	local temp_file=$2 
+	echo "cleaning up..." >&2
+	if [[ -n "$pid" ]] && ps -fp "$pid" > /dev/null
+	then
+		echo "killing port forward process with pid $pid" >&2
+		kill "$port_forward_pid" > /dev/null || :
+	fi
+	if [[ -n "$temp_file" ]] && [[ -f "$temp_file" ]]
+	then
+		echo "cleaning up temp cert file $temp_file" >&2
+		rm -f "$temp_file" > /dev/null || :
+	fi
+}
+trap '_cert_cleanup $port_forward_pid $temp_cert_file; unset -f _cert_cleanup' EXIT
+if [ ! -v 1 ]
+then
+	echo "must specify a service" >&2
+	return 1
+fi
+service="$1" 
+if ! kubectl cluster-info > /dev/null
+then
+	echo "you must login to the cluster" >&2
+	return 1
+fi
+alias kv='kubectl -n ves-system'
+proxy_url=$(kv get cm "${service}-config" -o yaml \
+  | yq e '.data|to_entries|.0.value' \
+  | yq e '.tls.serverParams.tlsCertificates[0]'.certificateUrl \
+  | sd 'wingman://' 'http://') 
+pod_name=$(kv get pods -l"name=${service}" --no-headers | awk '{print $1}' | head -1) 
+if [[ $? -ne 0 ]]
+then
+	echo "failed to get a pod named ${service}" 2>&1
+	return 1
+fi
+wingman_port=$(echo "$proxy_url" \
+  | pcregrep -o 'http://[^:/]+:(\d+)' \
+  | cut -d':' -f3) 
+if [[ -z "$wingman_port" ]]
+then
+	echo "could not parse wingman port from '${proxy_url}'" >&2
+	return 1
+fi
+echo "port-forwarding to ${pod_name} 8070:${wingman_port}" >&2
+kv port-forward "$pod_name" "8070:${wingman_port}" > /dev/null &
+port_forward_pid=$! 
+if [[ $? -ne 0 ]]
+then
+	echo "could not port-forward to ${pod_name} port ${wingman_port}" >&2
+	return 1
+fi
+echo "requesting cert at url ${proxy_url}" >&2
+temp_cert_file="$(mktemp).crt" 
+sleep 1
+echo "downloading cert to $temp_cert_file"
+curl "$proxy_url" --no-progress-meter --fail -o "$temp_cert_file" && openssl x509 -in "$temp_cert_file" -text -noout -subject

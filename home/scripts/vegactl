@@ -1,0 +1,18 @@
+#!/usr/bin/env zsh
+
+local host
+local usage="usage:\nvegactl kubectl-args" 
+GRPC_TLS_PORT=${VEGA_GRPC_TLS_PORT:-$(kubectl -n ves-system describe cm ver-config | grep -E '^GrpcTLSPort' | cut -d' ' -f2)} 
+SERVER_CN=${VEGA_SERVER_CN:-$(kubectl -n ves-system describe cm ver-config | grep VegaCommonName | cut -d' ' -f2)} 
+if [[ -n "$GRPC_TLS_PORT" ]]
+then
+	vega_pod=$(kubectl -n ves-system get pods --no-headers -l "app=ver,cfg!=ver" | awk '{print $1}' | head -1) 
+	if [[ -n "$vega_pod" ]]
+	then
+		kubectl -n ves-system exec -it "$vega_pod" -c vega -- vegactl -u "localhost:${GRPC_TLS_PORT}" --server-cn "$SERVER_CN" $@
+	else
+		echo "could not find a running vega pod" >&2
+	fi
+else
+	echo "could not determine vega's GRPC TLS port"
+fi

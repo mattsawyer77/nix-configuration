@@ -1,0 +1,11 @@
+#!/usr/bin/env zsh
+
+GRPC_TLS_PORT=${STREAK_GRPC_TLS_PORT:-$(kubectl -n ves-system get configmap streak-config -o json | jq -r '.data."config.yml"' | yq e '.GrpcTLSPort' -)} 
+SERVER_CN=${STREAK_SERVER_CN:-$(kubectl -n ves-system get statefulset streak -o json | jq -r '.spec.template.spec.containers[]|select(.name=="wingman")|.env|from_entries|.serviceNames' | cut -d',' -f1)} 
+POD_NAME=${STREAK_POD:-"streak-0"} 
+if [[ -n "$GRPC_TLS_PORT" ]]
+then
+	kubectl -n ves-system -c streak exec -it "$POD_NAME" -c streak -- streakctl -u "localhost:${GRPC_TLS_PORT}" --server-cn "$SERVER_CN" $@
+else
+	echo "could not determine streak's GRPC TLS port"
+fi

@@ -1,0 +1,3 @@
+#!/usr/bin/env zsh
+
+az login --tenant ves.f5.com

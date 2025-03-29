@@ -1,0 +1,27 @@
+#!/usr/bin/env zsh
+
+if [[ ! -v 1 ]]
+then
+	echo "ERROR: site name required" >&2
+	echo "usage example: site-terraform-output ves-io-aws-vpc-site-my-site" >&2
+	return 1
+fi
+site_name="$1" 
+response=$(vulpixctl introspection list ves.io.vulpix.terraform_parameters.Object \
+  --page-limit 5000 \
+  --name-filter "$site_name" \
+  --store-only) 
+if [[ -n "$response" ]]
+then
+	tf_params_id=$(printf '%s\n' "$response" | yq e '.getResponses|keys|.[0]' - 2>/dev/null) 
+else
+	echo "ERROR: could not find terraform params ID for site named '$site_name'" >&2
+	return 1
+fi
+if [[ -n "$tf_params_id" ]]
+then
+	vulpixctl introspection get ves.io.schema.views.terraform_parameters.StatusObject "$tf_params_id" | yq e '.object.applyStatus.tfOutput' -
+else
+	echo "ERROR: could not get terraform output for site named '$site_name'" >&2
+	return 1
+fi

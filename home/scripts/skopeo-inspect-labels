@@ -1,0 +1,16 @@
+#!/usr/bin/env zsh
+
+if echo "$url" | grep '^docker://' > /dev/null
+then
+	url="$1" 
+else
+	url="docker://$1" 
+fi
+labels=$(skopeo inspect "$url" \
+  | jq -r '.Labels') 
+if [[ -z "$labels" ]] || [[ "$labels" == "null" ]]
+then
+	echo "could not find labels for $url" >&2
+	return 1
+fi
+echo $labels

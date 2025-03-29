@@ -1,0 +1,24 @@
+#!/usr/bin/env zsh
+
+git remote prune origin
+git branch --merged | pcregrep -v '\*|master|main' | cut -c3- | xargs git branch -d
+local branches=($(git branch | pcregrep -v '\*|master|main' | cut -c3-)) 
+local answer="" 
+for branch in $branches
+do
+	while [[ "$answer" != "n" ]] && [[ "$answer" != "y" ]]
+	do
+		echo -n "delete branch ${branch} [y/n/d(iff)/q(uit)]? "
+		read -r answer
+		if echo "$answer" | pcregrep '^d' > /dev/null
+		then
+			git log -p .."$branch"
+		elif echo "$answer" | pcregrep '^q' > /dev/null
+		then
+			return
+		elif [[ "$answer" == "y" ]]
+		then
+			git branch -D "$branch"
+		fi
+	done
+done

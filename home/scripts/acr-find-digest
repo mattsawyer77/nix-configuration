@@ -1,0 +1,23 @@
+#!/usr/bin/env zsh
+
+local repo=$1 
+if [[ -z "$repo" ]]
+then
+	echo "error: must specify repo and git ref to search for" >&2
+	return 1
+fi
+shift
+local digest=$1 
+if [[ -z "$digest" ]]
+then
+	echo "error: must specify image digest to search for" >&2
+	return 1
+fi
+shift
+digest=$(echo "$digest" | pcregrep -o 'sha256:[0-9a-f]{40}') 
+if [[ -z "$digest" ]]
+then
+	echo "error: invalid digest" >&2
+	return 1
+fi
+az acr repository show-tags --name volterra --repository "ves.io/${repo}" --detail --orderby time_desc --query "[?digest=='${digest}']" $@

@@ -1,0 +1,46 @@
+#!/usr/bin/env zsh
+
+local usage="usage:\ngenerate-tls-cert expiration-days domains...\n  (note: the first domain will be used as the CN and any subsequent domains will be used as SANs)" 
+if [[ $# -lt 2 ]]
+then
+	echo "error: must specify expiration-days and at least one domain" >&2
+	echo $usage >&2
+	return 1
+fi
+local days="$1" 
+shift
+local cn="$1" 
+local subject="/CN=${cn}" 
+shift
+local sans='' 
+if [[ -n "$1" ]]
+then
+	sans="subjectAltName=" 
+	while [[ $# -gt 0 ]]
+	do
+		sans="${sans}DNS:${1}" 
+		shift
+		if [[ -n "$1" ]]
+		then
+			sans="${sans}," 
+		fi
+	done
+fi
+local keyfile="${cn}.key" 
+local crtfile="${cn}.crt" 
+rm -rf "$keyfile" || :
+rm -rf "$crtfile" || :
+(
+	if [[ -n "$sans" ]]
+	then
+		openssl req -x509 -newkey rsa:4096 -sha256 -days "$days" -nodes -keyout "$keyfile" -out "$crtfile" -subj "$subject" -addext "$sans"
+	else
+		openssl req -x509 -newkey rsa:4096 -sha256 -days "$days" -nodes -keyout "$keyfile" -out "$crtfile" -subj "$subject"
+	fi
+) && certhash=$(openssl x509 -noout -modulus -in "$crtfile" | openssl md5)  && keyhash=$(openssl rsa -noout -modulus -in "$keyfile" | openssl md5)  && (
+	if [[ "$certhash" != "$keyhash" ]]
+	then
+		echo "error: certificate hash does not match key hash" >&2
+		return 1
+	fi
+) && echo "certificate generated successfully:\n - certificate: $crtfile\n - key: $keyfile"

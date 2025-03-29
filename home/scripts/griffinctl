@@ -1,0 +1,18 @@
+#!/usr/bin/env zsh
+
+GRPC_TLS_PORT=${GRIFFIN_GRPC_TLS_PORT:-$(kubectl -n ves-system get configmap griffin-config -o json | jq -r '.data."config.yml"' | yq e '.GrpcTLSPort' -)} 
+echo "griffin GRPC TLS port: $GRPC_TLS_PORT" >&2
+SERVER_CN=${GRIFFIN_SERVER_CN:-$(kubectl -n ves-system get deployment griffin -o json | jq -r '.spec.template.spec.containers[]|select(.name=="wingman")|.env|from_entries|.serviceNames' | cut -d',' -f1)} 
+echo "griffin CN: $SERVER_CN" >&2
+if [[ -n "$GRPC_TLS_PORT" ]]
+then
+	griffin_pod=$(kubectl -n ves-system get pods | grep griffin | awk '{print $1}') 
+	if [[ -n "$griffin_pod" ]]
+	then
+		kubectl -n ves-system -c griffin exec -it "$griffin_pod" -c griffin -- griffinctl -u "localhost:${GRPC_TLS_PORT}" --server-cn "$SERVER_CN" $@
+	else
+		echo "could not find a running griffin pod" >&2
+	fi
+else
+	echo "could not determine griffin's GRPC TLS port"
+fi

@@ -1,0 +1,49 @@
+#!/usr/bin/env zsh
+
+if [[ $# -lt 2 ]]
+then
+	echo "must specify environment for sre model (e.g., demo1, crt, prod, etc.) and service (e.g., akar, griffin, etc.)" >&2
+	return 1
+fi
+root_dir=${ROOT_DIR:-${HOME}/workspaces/f5/volterra/ves.io/sre} 
+environment=$1 
+shift
+sre_repo_dir=${root_dir}/sre-${environment}-model 
+if [[ ! -d $sre_repo_dir ]]
+then
+	echo "invalid environment $environment" >&2
+	return 1
+fi
+service=$1 
+shift
+if [[ -z "$service" ]]
+then
+	echo "must specify service (e.g., akar, griffin, etc.)" >&2
+	return 1
+fi
+(
+	git -C $sre_repo_dir checkout master && git -C $sre_repo_dir pull --quiet
+) || return 1
+export IFS=$'\n' 
+images=($(rg -g'render*' -o --no-filename --no-line-number "\b([\w]+_)?${service}_image:.*@sha256:[a-z0-9]+" | sort -u)) 
+for image in "${images[@]}"
+do
+	if [[ -n "$image" ]]
+	then
+		image_key=$(echo "${image}" | sd '([\w_]+_image).*' '$1' | sd '_image' '') 
+		image_url=$(echo "${image}" | sd '^\s*.*_image:\s*' '' | sd '\s*$' '') 
+		echo "\n${image_key}: "
+		if [[ $# -eq 0 ]]
+		then
+			skopeo-inspect-commit-log "$image_url" -n 1 -p
+		else
+			skopeo-inspect-commit-log "$image_url" $@
+		fi
+		echo "image url: $image_url"
+	fi
+done
+if [[ -z "$images" ]]
+then
+	echo "could not find ${service}_image in $sre_repo_dir" >&2
+	return 1
+fi

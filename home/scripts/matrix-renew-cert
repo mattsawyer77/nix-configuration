@@ -1,0 +1,37 @@
+#!/usr/bin/env zsh
+
+if [[ -z "$1" ]]
+then
+	echo "error: must specify an environment (demo1, crt, staging, prod)" >&2
+	return 1
+fi
+local env="$1" 
+shift
+if [[ ! -d ~/.ves-internal/${env} ]]
+then
+	echo "error: unknown environment $env" >&2
+	return 1
+fi
+local legacy_arg='' 
+if openssl version | grep 'OpenSSL 3' > /dev/null
+then
+	legacy_arg='-legacy' 
+fi
+local pass=volterra 
+local browser_arg='' 
+if ! grep -- '-b' <<< "$*" > /dev/null
+then
+	browser_arg="-b firefox" 
+fi
+matrix_output=$(matrix get-user-cert -b firefox -e "$env" $@) 
+echo "$matrix_output" >&2
+if [[ $? -eq 0 ]]
+then
+	if grep 'User Certificate is valid' <<< "$matrix_output" > /dev/null
+	then
+		return 0
+	fi
+	/usr/bin/openssl pkcs12 $legacy_arg -export -out ~/.ves-internal/${env}/usercerts-macos.p12 -inkey ~/.ves-internal/${env}/usercerts.key -in ~/.ves-internal/${env}/usercerts.crt -certfile ~/.ves-internal/${env}/usercerts.crt -password "pass:${pass}" && security import ~/.ves-internal/${env}/usercerts-macos.p12 -P "$pass"
+else
+	return 1
+fi

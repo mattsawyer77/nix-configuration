@@ -1,0 +1,34 @@
+#!/usr/bin/env zsh
+
+mkdir -p ~/.local/share
+local default_input_volume=87 
+local prev_audio_input_volume_file=~/.local/share/input-volume 
+current_input_volume=$(osascript \
+  -e 'tell application "System Events"' \
+  -e 'get volume settings' \
+  -e 'end tell' \
+  | sd ',' '\n' \
+  | grep 'input volume:' \
+  | cut -d':' -f2) 
+if [[ -z "$current_input_volume" ]]
+then
+	echo "error: could not determine current input volume" >&2
+	return 1
+fi
+if echo "$current_input_volume" | pcregrep '\D'
+then
+	echo "error: current input volume is unexpected: $current_input_volume" >&2
+	return 1
+fi
+if [[ $current_input_volume -eq 0 ]]
+then
+	if [[ -f $prev_audio_input_volume_file ]]
+	then
+		set-input-volume-percent $(cat $prev_audio_input_volume_file)
+	else
+		set-input-volume-percent $default_input_volume
+	fi
+else
+	echo -e $current_input_volume > $prev_audio_input_volume_file
+	set-input-volume-percent 0
+fi

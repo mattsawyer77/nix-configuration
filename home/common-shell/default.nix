@@ -10,7 +10,6 @@ let
     eza
     nix-direnv
     nix-zsh-completions
-    starship
     zoxide
     zsh
     zsh-autosuggestions
@@ -34,7 +33,6 @@ let
       enable = true;
       enableZshIntegration = true;
     };
-    starship = { enable = true; };
     zsh = {
       enable = true;
       autosuggestion.enable = true;

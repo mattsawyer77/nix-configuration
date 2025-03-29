@@ -1,0 +1,10 @@
+#!/usr/bin/env zsh
+
+jobset_eval_id=$(curl -sf --location --header "Accept: application/json" 'https://hydra.nix-community.org/jobset/emacs-overlay/stable/latest-finished' | jq -r '.jobsetevals|first') 
+if [[ -z "$jobset_eval_id" ]]
+then
+	echo "error: could not retrieve jobset info via 'https://hydra.nix-community.org/jobset/emacs-overlay/stable/latest-finished'" >&2
+	return 1
+else
+	curl -sf --location --header "Accept: application/json" 'https://hydra.nix-community.org/jobset/emacs-overlay/stable/evals' | jq -r ".evals[]|select(.id==${jobset_eval_id})|.jobsetevalinputs.src.revision"
+fi

@@ -1,0 +1,17 @@
+#!/usr/bin/env zsh
+
+local toml_section='metadata.ExternalSchemas' 
+local jq_query='map(select(.name|test("/schema$")))|map(.version)[]' 
+if [[ -v 1 ]]
+then
+	cat $1 | taplo get "$toml_section" -o json | jq -r "$jq_query"
+elif [[ -t 0 ]]
+then
+	taplo get "$toml_section" -o json | jq -r "$jq_query"
+elif [[ -f Gopkg.toml ]]
+then
+	cat Gopkg.toml | taplo get "$toml_section" -o json | jq -r "$jq_query"
+else
+	echo "error: no input specified, and no Gopkg.toml present" >&2
+	return 1
+fi

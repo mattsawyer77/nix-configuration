@@ -1,0 +1,84 @@
+#!/usr/bin/env zsh
+
+if ! command -v jq > /dev/null
+then
+	echo "sic requires jq to be installed" >&2
+	return 1
+fi
+local usage="sic <environment> <site> <service> <object type> [<object UID>] [--tenant <tenantname>]\nwhere:\n\tenvironment is one of demo1, crt, staging, or prod\n\tsite can be a site name (or 'gc', which will be transformed to the environment's gc site name automatically)" 
+if [[ $# -lt 4 ]]
+then
+	echo $usage >&2
+	return 1
+fi
+local environment="$1" 
+shift
+local site=$1 
+shift
+local service=$1 
+shift
+local site_fqdn=$(env-site-fqdn "$environment" "$site") 
+local compass_hostname=$(env-compass-hostname "$environment") 
+if echo "$service" | grep -E '.+/.+' > /dev/null
+then
+	site="$(echo $service | cut -d'/' -f1)" 
+	service="$(echo $service | cut -d'/' -f2)" 
+fi
+local object_type=$1 
+shift
+local uid='' 
+local tenant='' 
+if [[ -n "$1" ]] && [[ "$1" != "--tenant" ]]
+then
+	uid="$1" 
+	shift
+fi
+if [[ "$1" == "--tenant" ]] && [[ -n "$2" ]]
+then
+	tenant="$2" 
+fi
+local user_cert="${HOME}/.ves-internal/${environment}/usercerts.p12" 
+local url='' 
+local initial_jq_query='.' 
+if [[ -n "$uid" ]]
+then
+	url="https://${compass_hostname}/introspection/${site_fqdn}/${service}/ves.io.stdlib/introspect/read/object/${object_type}/${uid}" 
+else
+	url="https://${compass_hostname}/introspection/${site_fqdn}/${service}/ves.io.stdlib/introspect/read/object/${object_type}?response_format=1&page_start=0&page_limit=1000" 
+	if [[ -n "$tenant" ]]
+	then
+		url="${url}&tenant_filter=${tenant}" 
+	fi
+	initial_jq_query='.get_responses' 
+fi
+if [[ -f "$user_cert" ]]
+then
+	response=$(curl --insecure --fail --no-progress-meter --cert-type P12 --cert "${user_cert}:volterra" "$url") 
+	if [[ $? == 0 ]]
+	then
+		if [[ -z "$response" ]]
+		then
+			echo "no response returned by url: $url" >&2
+			return 1
+		fi
+		err=$(printf '%s\n' "$response" | jq -r '.err.message') 
+		if [[ -n "$err" ]] && [[ "$err" != "null" ]]
+		then
+			err_code=$(printf '%s\n' "$response" | jq -r '.err.code') 
+			if [[ -n "$err_code" ]]
+			then
+				echo -n "${err_code}: " >&2
+			fi
+			echo "$err" >&2
+			return 1
+		else
+			printf '%s\n' "$response" | jq -r '.get_responses|to_entries|map(.value.object|del(."@type"))'
+		fi
+	else
+		echo "failed to query url: $url" >&2
+		return 1
+	fi
+else
+	echo "unknown environment $environment" >&2
+	return 1
+fi

@@ -1,0 +1,12 @@
+- name: ollama/deepseek-r1:14
+  extra_params:
+    num_ctx: 131072
+- name: ollama/mistral-small:24b
+  extra_params:
+    num_ctx: 32768
+- name: ollama/gemma3:1b
+  extra_params:
+    num_ctx: 32768
+- name: ollama/qwen2.5-coder:latest
+  extra_params:
+    num_ctx: 32768

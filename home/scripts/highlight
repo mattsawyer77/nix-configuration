@@ -1,0 +1,13 @@
+#!/usr/bin/env zsh
+
+if [[ ! -v 1 ]]
+then
+	echo "PCRE regex required" >&2
+	return 1
+fi
+local regex=$1 
+local input
+read input
+set -x
+printf '%s\n' "$input" | pcregrep --color "^|$regex"
+set +x

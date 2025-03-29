@@ -1,0 +1,37 @@
+#!/usr/bin/env zsh
+
+if [[ ! -v 1 ]]
+then
+	echo "must specify ArgoCD workflow filename and optionally an output filename" >&2
+	return 1
+fi
+if [[ ! -f $1 ]]
+then
+	echo "input file: $1 not found" >&2
+	return 1
+fi
+input_file="$1" 
+if [[ "$input_file" =~ .*\.(json$) ]]
+then
+	json="$(cat $input_file)" 
+elif [[ "$input_file" =~ .*\.(ya?ml$) ]]
+then
+	json="$(yq e -o json $input_file)" 
+else
+	echo "only yaml or json input files are supported" >&2
+	return 1
+fi
+if [[ $? -ne 0 ]]
+then
+	echo "failed to convert $input_file to json -- is it valid YAML?" >&2
+	return 1
+fi
+jq_query='.spec.templates|map(select((.dag.tasks|length)>0))|map(.dag.tasks|map(select((.dependencies|length)>0)))|flatten|map(. as $task|(.dependencies|map("    "+.+" --> "+($task|.name))))|flatten[]' 
+dag="$(printf '%s\n' "$json" | jq -r $jq_query)" 
+if [[ $? -ne 0 ]]
+then
+	echo "failed to parse DAG tasks in $input_file" >&2
+	return 1
+fi
+printf '---\ntitle: %s\n---\n' "$input_file"
+printf '%s\n%s\n' "graph TD" "$dag"

@@ -1,0 +1,57 @@
+#!/usr/bin/env zsh
+
+usage="usage:\nprofile-service environment service_name [site] [pprof_type] [sample_time]" 
+if [ $# -lt 2 ]
+then
+	echo "must specify environment and service to profile" >&2
+	echo "$usage" >&2
+	return 1
+fi
+local environment="$1" 
+local service="$2" 
+local site="${3:-gc01}" 
+local pprof_type="${4:-cpu}" 
+local valid_profile=false 
+local debug_mode=1 
+for t in cpu block mutex goroutine heap allocs
+do
+	if [[ "$pprof_type" == "$t" ]]
+	then
+		valid_profile=true 
+	fi
+	if [[ "$pprof_type" == "goroutine" ]]
+	then
+		debug_mode=0 
+	fi
+	if [[ "$pprof_type" == "heap" ]]
+	then
+		debug_mode=0 
+	fi
+done
+if [[ "$valid_profile" == "false" ]]
+then
+	echo "invalid pprof profile type, valid types are cpu, block, mutex, goroutine, heap, or allocs" >&2
+	return 1
+fi
+local sample_time="${5:-15}" 
+local site_fqdn=$(env-site-fqdn "$environment" "$site") 
+local compass_hostname=$(env-compass-hostname "$environment") 
+output_filename_base="${service}-${site}.${environment}.${pprof_type}.$(date --iso-8601=seconds)" 
+url="https://${compass_hostname}/introspection/${site_fqdn}/${service}/ves.io.stdlib/introspect/read/pprof_profile?name=${pprof_type}&debug_mode=${debug_mode}&seconds=${sample_time}" 
+echo "starting profile of $service on $environment (url: $url) for ${sample_time}s..."
+curl --insecure --fail-with-body --no-progress-meter --cert-type P12 --cert "$HOME/.ves-internal/${environment}/usercerts.p12:volterra" -o "${output_filename_base}.json" "$url"
+if [[ $? -ne 0 ]]
+then
+	echo "error: introspect request to $url failed" >&2
+	return 1
+fi
+if [[ -n $(cat "${output_filename_base}.json" | jq -r 'select(.err!=null)') ]]
+then
+	echo -n "error: introspect request to $url returned an error: " >&2
+	cat "${output_filename_base}.json" | jq -r '.err' >&2
+	return 1
+fi
+cat "${output_filename_base}.json" | jq -r '.contents' | base64 --decode > "${output_filename_base}.pprof" && echo "profile saved at ${output_filename_base}.pprof" >&2
+go tool pprof -http localhost:8888 "${output_filename_base}.pprof"
+echo "cleaning up downloaded json file ${output_filename_base}.json" >&2
+rm "${output_filename_base}.json" || :

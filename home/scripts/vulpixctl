@@ -1,0 +1,10 @@
+#!/usr/bin/env zsh
+
+GRPC_TLS_PORT=${VULPIX_GRPC_TLS_PORT:-$(kubectl -n ves-system get configmap vulpix-config -o json | jq -r '.data."config.yml"' | yq e '.GrpcTLSPort' -)} 
+SERVER_CN=${VULPIX_SERVER_CN:-$(kubectl -n ves-system get deployment vulpix -o json | jq -r '.spec.template.spec.containers[]|select(.name=="wingman")|.env|from_entries|.serviceNames' | cut -d',' -f1)} 
+if [[ -n "$GRPC_TLS_PORT" ]]
+then
+	kubectl -n ves-system -c vulpix exec -it deploy/vulpix -c vulpix -- vulpixctl -u "localhost:${GRPC_TLS_PORT}" --server-cn "$SERVER_CN" $@ | pcregrep -v 'WARNING|golang/protobuf|which has long been excluded'
+else
+	echo "could not determine vulpix's GRPC TLS port"
+fi

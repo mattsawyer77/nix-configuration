@@ -1,0 +1,6 @@
+#!/usr/bin/env zsh
+
+prefix="$1" 
+objtype="$2" 
+key="$3" 
+kubectl -n etcd exec etcd-0 -c etcd -- etcdctl get "/${prefix}/db/${objtype}.default/primary/${key}" -w protobuf | protoc --decode_raw

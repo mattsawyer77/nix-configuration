@@ -1,0 +1,6 @@
+#!/usr/bin/env zsh
+
+run-docker && if ! az acr login -n volterra > /dev/null
+then
+	az-login
+fi && skopeo-acr-login

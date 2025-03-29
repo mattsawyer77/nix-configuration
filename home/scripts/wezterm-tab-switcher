@@ -1,0 +1,13 @@
+#!/usr/bin/env zsh
+
+hostname=$(hostname) 
+selection=$(wezterm cli list --format json \
+  | jq -r 'map((.tab_id|tostring)+":\t"+.tab_title+" @"+.cwd)[]' \
+  | sd --flags "i" "file://${hn}" '' \
+  | sd "$HOME" '~' \
+  | sk --height=50%) 
+if [[ -n "$selection" ]]
+then
+	tab_id=$(echo "$selection" | cut -d':' -f1) 
+	wezterm cli activate-tab --tab-id "$tab_id"
+fi

@@ -1,0 +1,10 @@
+#!/usr/bin/env zsh
+
+local url
+if echo "$url" | grep '^docker://' > /dev/null
+then
+	url="$1" 
+else
+	url="docker://$1" 
+fi
+skopeo inspect "$url" | jq -r '.Digest'

@@ -1,0 +1,24 @@
+#!/usr/bin/env zsh
+
+local png_file=$1 
+if [[ -z "$png_file" ]]
+then
+	echo "must specify a png filename" >&2
+	return 1
+fi
+file_info=$(file "$png_file") 
+if ! (
+		echo "$file_info" | grep 'PNG image data, 512 x 512' > /dev/null
+	) && ! (
+		echo "$file_info" | grep 'PNG image data, 1024 x 1024' > /dev/null
+	)
+then
+	echo "$png_file does not appear to be a valid 512 x 512 or 1024 x 1024 PNG file" >&1
+	return 1
+fi
+local icns_file=$(echo "$png_file" | sd '\.([^\.]+)$' '.icns') 
+local temp_dir=$(mktemp -d) 
+sips -z 16 16 "${png_file}" --out ${temp_dir}/icon_16x16.png && sips -z 32 32 "${png_file}" --out ${temp_dir}/icon_16x16@2x.png && sips -z 32 32 "${png_file}" --out ${temp_dir}/icon_32x32.png && sips -z 64 64 "${png_file}" --out ${temp_dir}/icon_32x32@2x.png && sips -z 128 128 "${png_file}" --out ${temp_dir}/icon_128x128.png && sips -z 256 256 "${png_file}" --out ${temp_dir}/icon_128x128@2x.png && sips -z 256 256 "${png_file}" --out ${temp_dir}/icon_256x256.png && sips -z 512 512 "${png_file}" --out ${temp_dir}/icon_256x256@2x.png && sips -z 512 512 "${png_file}" --out ${temp_dir}/icon_512x512.png
+cp "${png_file}" ${temp_dir}/icon_512x512@2x.png
+iconutil --convert icns ${temp_dir} -o "$icns_file" && echo "converted $png_file to $icns_file"
+rm -R ${temp_dir}

@@ -1,0 +1,19 @@
+#!/usr/bin/env zsh
+
+local port=${RAKAR_GRPC_TLS_PORT:-9501} 
+local host
+if [[ -v 1 ]]
+then
+	host="$1" 
+else
+	echo "must specify ssh host to connect to RE" >&2
+	return 1
+fi
+shift
+rakar_pod=$(ssh-kubectl $host -n ves-system get pods -lapp=rakar --no-headers | head -1 | awk '{print $1}') 
+if [[ -z "$rakar_pod" ]]
+then
+	echo "could not find rakar pod" >&2
+	return 1
+fi
+ssh-kubectl $host -n ves-system exec -it "$rakar_pod" -c rakar -- rakarctl --server-cn "rakar.ves-system.svc.cluster.local" -u "localhost:${port}" $@

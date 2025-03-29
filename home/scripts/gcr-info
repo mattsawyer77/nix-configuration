@@ -1,0 +1,11 @@
+#!/usr/bin/env zsh
+
+if [[ -v 1 ]]
+then
+	local repo="$1" 
+	local branch=${2:-master} 
+	gcloud container images list-tags "gcr.io/volterraio/$repo" --format=json --sort-by=timestamp | jq -r '.[]|last(select(.tags|index("branch-'"$branch"'")))'
+else
+	echo "ERROR: must specify a repo" >&2
+	false
+fi

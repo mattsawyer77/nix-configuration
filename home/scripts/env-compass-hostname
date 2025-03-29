@@ -1,0 +1,17 @@
+#!/usr/bin/env zsh
+
+if [ ! -v 1 ]
+then
+	echo "must specify environment (demo1, crt, staging, prod)" >&2
+	return 1
+fi
+local environment="$1" 
+case $environment in
+	(demo1) compass_hostname="compass-lma.demo1.volterra.us"  ;;
+	(crt) compass_hostname="compass-lma.crt.volterra.us"  ;;
+	(staging) compass_hostname="compass-lma.staging.volterra.us"  ;;
+	(prod) compass_hostname="compass-lma.ves.volterra.io"  ;;
+	(*) echo "unknown environment $environment" >&2
+		return 1 ;;
+esac
+echo "$compass_hostname"

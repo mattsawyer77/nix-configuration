@@ -1,0 +1,17 @@
+#!/usr/bin/env zsh
+
+local url
+if echo "$url" | grep '^docker://' > /dev/null
+then
+	url="$1" 
+else
+	url="docker://$1" 
+fi
+commit=$(skopeo inspect "$url" \
+  | jq -r '.Labels|to_entries|map(select(.key|contains("commit-sha")))|first|.value') 
+if [[ -z "$commit" ]] || [[ "$commit" == "null" ]]
+then
+	echo "could not find commit for $url" >&2
+	return 1
+fi
+echo $commit

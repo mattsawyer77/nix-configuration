@@ -1,0 +1,5 @@
+#!/usr/bin/env zsh
+
+declare -a jq_args
+jq_args=('["name", "clusterIP", "loadBalancerIPs", "ports", "selector"]' ', (.items[]|select(.spec.type=="LoadBalancer")|[' '.metadata.name' ', .spec.clusterIP' ', (.status.loadBalancer.ingress|map(.ip)|join(", "))' ', (.spec.ports|map(.protocol+" "+(.port|tostring)+":"+(.targetPort|tostring)+" ("+.name+")")|join(", "))' ', (.spec.selector|to_entries|map(.key+"="+.value)|join("∩"))' '])|@tsv') 
+kubectl get svc $@ -o json | jq -r "$jq_args" | column -s $'\t' -t

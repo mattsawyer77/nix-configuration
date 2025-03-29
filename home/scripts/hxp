@@ -1,0 +1,18 @@
+#!/usr/bin/env zsh
+
+if [[ ! -v 1 ]]
+then
+	echo "error: must specify a directory name or fragment for zoxide to query" >&2
+fi
+search="$1" 
+dir=$(zoxide query "$search" 2>/dev/null) 
+if [[ -z "$dir" ]]
+then
+	dir=$HOME 
+fi
+if tmux select-window -t "$search" 2> /dev/null
+then
+	tmux send-keys -t "$search" 'hx .' Enter
+else
+	tmux new-window -c "$dir" -n "$search" && tmux select-window -t "$search" && tmux send-keys -t "$search" 'hx .' Enter
+fi

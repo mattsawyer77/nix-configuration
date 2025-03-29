@@ -1,0 +1,22 @@
+#!/usr/bin/env zsh
+
+usage="usage: loki environment logcli-args\n  where\n    environment is one of demo1, crt, staging, prod, etc.\n    logcli-args are arguments to logcli (see logcli --help for more info)" 
+if [[ $# -lt 2 ]]
+then
+	echo "$usage" >&1
+	return 1
+fi
+local environment="$1" 
+local loki_data_source_id=${LOKI_DATA_SOURCE_ID:-5} 
+shift
+if [[ $# -lt 1 ]]
+then
+	echo "$usage" >&1
+	return 1
+fi
+local compass_hostname=$(env-compass-hostname "$environment") 
+if [[ $? -ne 0 ]]
+then
+	return 1
+fi
+LOKI_CA_CERT=${HOME}/.ves-internal/${environment}/cacerts/server_ca_with_compass.crt LOKI_CLIENT_CERT_PATH=${HOME}/.ves-internal/${environment}/usercerts.crt LOKI_CLIENT_KEY_PATH=${HOME}/.ves-internal/${environment}/usercerts.key LOKI_TLS_SKIP_VERIFY=1 LOKI_ADDR="https://${compass_hostname}/analytics/api/datasources/proxy/${LOKI_DATA_SOURCE_ID:-5}" logcli $@

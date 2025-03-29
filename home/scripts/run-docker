@@ -1,0 +1,13 @@
+#!/usr/bin/env zsh
+
+if ! pgrep -flai Applications/Docker.app > /dev/null
+then
+	echo -n "starting docker..."
+	open -a ~/Applications/Docker.app && while true
+	do
+		docker system info > /dev/null 2>&1 && break
+		echo -n "."
+		sleep 1
+	done
+	echo ""
+fi

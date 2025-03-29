@@ -1,0 +1,10 @@
+#!/usr/bin/env zsh
+
+if [[ ! -v 2 ]]
+then
+	echo "error: must specify environment and site where vega (ver) is running" >&2
+	return 1
+fi
+local env=$1 
+local site=$2 
+sic introspect "$env" "$site" ver ves.io.vega.cfg.ver_instance.Object | jq -rc 'to_entries|map(.value.object)|map({name: .metadata.name, state: .spec.ver_spec.node_running_state})|sort[]'

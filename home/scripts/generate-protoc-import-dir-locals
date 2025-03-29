@@ -1,0 +1,18 @@
+#!/usr/bin/env zsh
+
+local username=$(whoami) 
+local repo_dir=$(git rev-parse --show-toplevel) 
+export IFS=$'\n' 
+declare -a rel_proto_roots
+rel_proto_roots+=($(fd -p -H -t d --no-ignore-vcs --prune '(_extschema|_protoschema)/[^/]+/(schema|proto)' ${repo_dir} | sd '/$' '')) 
+test -d "${repo_dir}/schema" && rel_proto_roots+=("${repo_dir}/schema") 
+test -d "${repo_dir}/proto" && rel_proto_roots+=("${repo_dir}/proto") 
+cat > "${repo_dir}/.dir-locals.el" <<EOF
+((protobuf-mode .
+((flycheck-protoc-import-path .
+(
+  "/Users/${username}/.local/share/protobuf-extras"
+  "/Users/${username}/.local/share/protobuf-extras/protobuf"
+  $(printf '"%s"\n    ' "$rel_proto_roots[@]")
+)))))
+EOF

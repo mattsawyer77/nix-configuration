@@ -1,0 +1,37 @@
+#!/usr/bin/env zsh
+
+if ! (
+		shortcuts list | grep 'zoom focus' > /dev/null
+	)
+then
+	echo "'zoom focus' shortcut missing" >&2
+	return 1
+fi
+if ! (
+		shortcuts list | grep 'zoom unfocus' > /dev/null
+	)
+then
+	echo "'zoom unfocus' shortcut missing" >&2
+	return 1
+fi
+zoom_running=0 
+while true
+do
+	if pgrep CptHost > /dev/null
+	then
+		if [[ $zoom_running -eq 0 ]]
+		then
+			echo "$(date): zoom meeting detected, enabling zoom focus..." >&2
+			zoom_running=1 
+			shortcuts run "zoom focus"
+		fi
+	else
+		if [[ $zoom_running -eq 1 ]]
+		then
+			echo "$(date): zoom meeting ended, disabling zoom focus..." >&2
+			zoom_running=0 
+			shortcuts run "zoom unfocus"
+		fi
+		sleep 30
+	fi
+done

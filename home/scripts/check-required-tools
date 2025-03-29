@@ -1,0 +1,23 @@
+#!/usr/bin/env zsh
+
+local message="$1" 
+declare -a tools
+declare -a missing
+while true
+do
+	shift
+	if [[ -z "$1" ]]
+	then
+		break
+	fi
+	tools+=("$1") 
+	if ! command -v "$1" > /dev/null
+	then
+		missing+=("$1") 
+	fi
+done
+if [[ -n "$missing" ]]
+then
+	echo "$message requires ${tools// /, }, but the following are missing: ${missing// /, }" >&2
+	return 1
+fi

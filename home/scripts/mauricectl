@@ -1,0 +1,18 @@
+#!/usr/bin/env zsh
+
+GRPC_TLS_PORT=${MAURICE_GRPC_TLS_PORT:-6002} 
+echo "maurice GRPC TLS port: $GRPC_TLS_PORT" >&2
+SERVER_CN=${MAURICE_SERVER_CN:-maurice.ves-system.svc.cluster.local} 
+echo "maurice CN: $SERVER_CN" >&2
+if [[ -n "$GRPC_TLS_PORT" ]]
+then
+	maurice_pod=$(kubectl -n ves-system get pods | grep maurice | awk '{print $1}') 
+	if [[ -n "$maurice_pod" ]]
+	then
+		kubectl -n ves-system -c maurice exec -it "$maurice_pod" -c maurice -- mauricectl -u "localhost:${GRPC_TLS_PORT}" --server-cn "$SERVER_CN" $@
+	else
+		echo "could not find a running maurice pod" >&2
+	fi
+else
+	echo "could not determine maurice's GRPC TLS port"
+fi

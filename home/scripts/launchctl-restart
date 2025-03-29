@@ -1,0 +1,15 @@
+#!/usr/bin/env zsh
+
+if [[ -v 1 ]]
+then
+	pattern="$1" 
+	services=($(launchctl list | pcregrep "$pattern" | awk '{print $3}')) 
+	for service in $services
+	do
+		plist=($(find /Library/Launch* ~/Library/LaunchAgents -name "${service}.plist" | head -1 || :)) 
+		echo "stopping service $service..."
+		launchctl unload "$plist" && echo "service $service stopped, restarting..." && launchctl load "$plist" && echo "service $service restarted successfully."
+	done
+else
+	echo "must specify a pattern for a service to restart" >&2
+fi
