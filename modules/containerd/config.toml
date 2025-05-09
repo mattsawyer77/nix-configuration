@@ -1,0 +1,3 @@
+[plugin."io.containerd.grpc.v1.cri".registry.mirrors]
+  [plugin."io.containerd.grpc.v1.cri".registry.mirrors."*"]
+    endpoint = ["http://localhost:5001"]

@@ -360,7 +360,7 @@ rakarctl() {
     rakar_pod=$(kubectl -n "$site_ns" get pods -lname=rakar | tail -1 | awk '{print $1}')
     if [[ -n "$rakar_pod" ]]; then
       kubectl -n "$site_ns" exec -it "$rakar_pod" -c rakar -- \
-        "rakarctl -t -u "localhost:#{GRPC_PORT}" --cookie "${COOKIE}" $@"
+        rakarctl -t -u "localhost:${GRPC_PORT}" --cookie "${COOKIE}" $@
     else
       echo "could not find a running rakar pod" >&2
     fi
@@ -752,18 +752,19 @@ nix-config-update() {
     nix flake update)
 }
 
-podman-login() {
-  az acr login -n volterra --expose-token |
-    jq -r '.accessToken' |
-    podman login volterra.azurecr.io \
-      --username 00000000-0000-0000-0000-000000000000 \
-      --password-stdin
-}
 # workaround for https://github.com/containers/skopeo/issues/1534
 skopeo-acr-login() {
   az acr login -n volterra --expose-token |
     jq -r '.accessToken' |
     skopeo login volterra.azurecr.io \
+      --username 00000000-0000-0000-0000-000000000000 \
+      --password-stdin
+}
+
+podman-acr-login() {
+  az acr login -n volterra --expose-token |
+    jq -r '.accessToken' |
+    podman login volterra.azurecr.io \
       --username 00000000-0000-0000-0000-000000000000 \
       --password-stdin
 }
@@ -790,11 +791,11 @@ run-docker() {
 }
 
 acr-login() {
-  run-docker &&
-    if ! az acr login -n volterra >/dev/null; then
-      az-login
-    fi &&
-    skopeo-acr-login
+  # run-docker &&
+  if ! az acr login -n volterra >/dev/null; then
+    az-login
+  fi &&
+    skopeo-acr-login #&& podman-acr-login
 }
 
 # find an image with the given tag name (i.e. name is equal to the git commit hash or branch name)
@@ -841,4 +842,62 @@ gc-crt-login() {
   k cluster-info 2>/dev/null ||
     (gcloud auth login --project=crt-env &&
       gcloud container clusters get-credentials gc01-crt-int-ves-io --region us-east4)
+}
+
+# given a string, check if a wezterm window with that name exists, if so, switch to it
+# otherwise, find the most commonly used working directory that matches, create a new wezterm window and switch to that dir
+# if that failed, just create a new wezterm window with the given name
+wz() {
+  if [[ ! -v 1 ]]; then
+    echo >&2 "error: must specify a directory name or fragment for zoxide to query"
+  fi
+  local search="$1"
+  local dir=$(zoxide query "$search" 2>/dev/null)
+  if [[ -z "$dir" ]]; then
+    dir=$HOME
+  fi
+  local tab_id=$(wezterm cli list --format json | jq -r "map(select(.tab_title==\"${search}\"))|map(.tab_id)[]")
+  if [[ -z "$tab_id" ]]; then
+    wezterm cli spawn --cwd "$dir" sh -c "wezterm cli set-tab-title $search; zsh -i"
+    sleep 1
+    tab_id=$(wezterm cli list --format json | jq -r "map(select(.tab_title==\"${search}\"))|map(.tab_id)[]")
+  fi
+  wezterm cli activate-tab --tab-id "$tab_id"
+}
+
+wezterm-tab-switcher() {
+  selection=$(wezterm cli list --format json |
+    jq -r 'map((.tab_id|tostring)+":\t"+.tab_title+" @"+.cwd)[]' |
+    sk)
+  if [[ -n "$selection" ]]; then
+    tab_id=$(echo "$selection" | cut -d':' -f1)
+    wezterm cli activate-tab --tab-id "$tab_id"
+  fi
+}
+
+generate-lcov() {
+  export IFS=$'\n'
+  root_dir=$(git rev-parse --show-toplevel)
+  (
+    cd $root_dir &&
+      mod_info=$(grep '^module' go.mod) &&
+      root_module=$(echo "$mod_info" | sd 'module\s*[^/]+/(.*)$' '$1') &&
+      root_package=$(echo "$mod_info" | sd 'module\s*' '')
+    # stdlib
+    if [[ "$root_module" == "stdlib" ]]; then
+      packages=($(GOTOOLCHAIN=$GOTOOLCHAIN go list ./... | grep -vE 'stdlib/test|pb$'))
+    # standard service repo
+    elif [[ -d ./cmd ]] && [[ -d ./pkg ]]; then
+      packages=($(GOTOOLCHAIN=$GOTOOLCHAIN go list ./cmd/... ./pkg/... | grep -vE 'pbgo|pb$'))
+    # default to all packages
+    else
+      packages=($(GOTOOLCHAIN=$GOTOOLCHAIN go list ./...))
+    fi
+    for pkg in $packages; do
+      dir=$(echo $pkg | sd "${root_package}/" './')
+      echo "$(date -Iseconds): getting coverage for ${pkg} in ${dir}..."
+      GOTOOLCHAIN=$GOTOOLCHAIN go test -coverprofile "${dir}/coverage.out" $pkg &&
+        GOTOOLCHAIN=$GOTOOLCHAIN gcov2lcov --use-absolute-source-path -infile="${dir}/coverage.out" -outfile="${dir}/lcov.info"
+    done
+  )
 }

@@ -17,13 +17,16 @@ let
     bash
     bat
     bat-extras.batman
+    bear
     bind
     boost
+    btop
     cairo
     ccls
     certigo
     curlFull
     delve
+    devenv
     docker
     docker-compose
     dos2unix
@@ -32,6 +35,7 @@ let
     eternal-terminal
     file
     flamegraph
+    gcc
     gdb
     gdbm
     ghostscript
@@ -48,6 +52,7 @@ let
     k3s
     kluctl
     libsndfile
+    mosh
     msgpack
     ncurses
     netperf
@@ -56,7 +61,6 @@ let
     # openssl # conflicts with libressl
     pinentry
     pkg-config
-    podman
     redis
     scons
     sd
@@ -74,6 +78,7 @@ let
   envVars = {
     BAT_THEME = "1337";
     COLORTERM = "truecolor";
+    # DOCKER_HOST = "unix:///run/user/1001/podman/podman.sock";
     EDITOR = "hx";
     GO111MODULE = "on";
     GOPATH = (homeDirectory + "/" + goPathSuffix);
