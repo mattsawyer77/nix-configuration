@@ -38,11 +38,23 @@
       url = "github:grafana/loki";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # rust-overlay = {
+    #   url = "github:oxalica/rust-overlay";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
+    # wezterm = {
+    #   url = "github:wez/wezterm?dir=nix";
+    #   inputs.rust-overlay.follows = "rust-overlay";
+    #   # inputs.nixpkgs.follows = "nixpkgs-stable";
+    #   # XXX: following nixos/nixpkgs/master results in build errors
+    #   # inputs.nixpkgs.follows = "nixpkgs";
+    # };
   };
   outputs = { self, nixpkgs, darwin, flake-utils, home-manager, ... }@inputs: {
     # mac
     darwinConfigurations =
       let
+        # TODO: integrate into emacs/wezterm somehow
         fontConfig = {
           monospaceFamily = "PragmataPro Liga";
         };
