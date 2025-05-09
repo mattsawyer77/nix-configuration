@@ -112,7 +112,7 @@
        ;;grammar           ; tasing grammar mistake every you make
 
        :tools
-       (debugger +lsp)          ; FIXME stepping through code, to help you add bugs
+       ;; (debugger +lsp)          ; FIXME stepping through code, to help you add bugs
        ;; direnv ;; disabled due to https://github.com/wbolster/emacs-direnv/issues/17
        (docker +lsp)
        editorconfig      ; let someone else argue about tabs vs spaces
@@ -137,21 +137,21 @@
 
        :lang
        ;;agda              ; types of types of types of types...
-       (cc +lsp)                ; C/C++/Obj-C madness
+       (cc +lsp +tree-sitter)                ; C/C++/Obj-C madness
        ;;common-lisp       ; if you've seen one lisp, you've seen them all
        ;;coq               ; proofs-as-programs
                                         ;crystal           ; ruby at the speed of c
        data              ; config/data formats
        emacs-lisp        ; drown in parentheses
        ;;ess               ; emacs speaks statistics
-       (go +lsp)         ; the hipster dialect
+       (go +lsp +tree-sitter)         ; the hipster dialect
        ;; (haskell +lsp)  ; a language that's lazier than I am
        ;;idris             ;
-       (json +lsp)              ; At least it ain't XML
+       (json +lsp +tree-sitter)              ; At least it ain't XML
        ;;(java +meghanada) ; the poster child for carpal tunnel syndrome
-       javascript        ; all(hope(abandon(ye(who(enter(here))))))
+       (javascript +tree-sitter)        ; all(hope(abandon(ye(who(enter(here))))))
        ;;latex             ; writing papers in Emacs has never been so fun
-       lua               ; one-based indices? one-based indices
+       (lua +lsp +tree-sitter)               ; one-based indices? one-based indices
        (markdown +grip)          ; writing docs for people to ignore
        (nix +tree-sitter +lsp)               ; I hereby declare "nix geht mehr!"
        ;;ocaml             ; an objective camel
@@ -160,9 +160,9 @@
        (python +lsp +pyenv +pyright +tree-sitter)            ; beautiful is better than ugly
        ;;(racket +lsp +xp)            ; a DSL for DSLs
        ;;ruby              ; 1.step {|i| p "Ruby is #{i.even? ? 'love' : 'life'}"}
-       (rust +lsp)             ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
+       (rust +lsp +tree-sitter)             ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
        ;;scala             ; java, but good
-       (sh +lsp)                ; she sells {ba,z,fi}sh shells on the C xor
+       (sh +lsp +tree-sitter)                ; she sells {ba,z,fi}sh shells on the C xor
        ;;swift             ; who asked for emoji variables?
        (web +lsp +tree-sitter)               ; the tubes
        (yaml +lsp +tree-sitter)              ; JSON, but readable

@@ -96,6 +96,27 @@ end
 -- overrides = window:get_config_overrides(); overrides.color_scheme = "iceberg-dark"; window:set_config_overrides(overrides)
 -- overrides = window:get_config_overrides(); overrides.color_scheme = "nightfox"; window:set_config_overrides(overrides)
 
+-- from https://github.com/wezterm/wezterm/discussions/4138#discussioncomment-6711346
+local DOMAIN_TO_SCHEME = {
+  -- the keys correspond to your ssh and/or tls domain names
+  ["main"] = "Kanagawa (Gogh)",
+  ["haystack-f5"] = "iceberg-dark",
+  ["haystack-ts"] = "iceberg-dark",
+}
+
+w.on('update-status', function(window, pane)
+  local domain = pane:get_domain_name()
+
+  -- show the domain name in the right status area to aid in debugging/understanding
+  window:set_right_status(window:active_workspace())
+
+  local overrides = window:get_config_overrides() or {}
+  -- resolve the scheme for the domain. If there is no mapping, then the overridden
+  -- scheme is cleared and your default colors will be used
+  overrides.color_scheme = DOMAIN_TO_SCHEME[domain]
+  window:set_config_overrides(overrides)
+end)
+
 local config = {
   ---@diagnostic disable-next-line: undefined-global
   font = w.font_with_fallback {
@@ -137,17 +158,6 @@ local config = {
     bottom = "10pt",
   },
   window_decorations = "INTEGRATED_BUTTONS|RESIZE",
-  keys = {
-    {key="f", mods="CMD|CTRL", action="ToggleFullScreen"},
-    -- Theme Cycler (favorite schemes only)
-    { key = "t", mods = "ALT", action = w.action_callback(function(window) themeCycler(window, true) end) },
-    -- Theme Cycler (all schemes)
-    { key = "t", mods = "CMD|ALT", action = w.action_callback(function(window) themeCycler(window, false) end) },
-    { key = "F9", action = w.action_callback(function(window) themeCycler(window, true) end) },
-
-    -- Look up Scheme you switched to
-    { key = "Escape", mods = "CTRL", action = w.action.ShowDebugOverlay },
-  }
 }
 
 -- local gpus = w.gui.enumerate_gpus()
@@ -155,7 +165,7 @@ local config = {
 --   config.webgpu_preferred_adapter = gpus[1]
 -- seems WebGpu is required, make it unconditional for now
 -- see https://github.com/wez/wezterm/issues/6005
-  config.front_end = "WebGpu"
+config.front_end = "WebGpu"
 -- end
 config.ssh_domains = {
   {
@@ -194,9 +204,29 @@ config.unix_domains = {
     name = "main",
   },
 }
-config.default_gui_startup_args = { 'connect', 'main' }
+-- XXX: sometimes causes issues and the mux process has to be killed from another terminal app
+-- config.default_gui_startup_args = { 'connect', 'main' }
 config.leader = { key = ' ', mods = 'CTRL', timeout_milliseconds = 1000 }
 config.keys = {
+  { key = "f",      mods = "CMD|CTRL",
+    action = "ToggleFullScreen" },
+  -- Theme Cycler (favorite schemes only)
+  { key = "t",      mods = "ALT",
+    action = w.action_callback(function(
+      window) themeCycler(window, true) end)
+  },
+  -- Theme Cycler (all schemes)
+  { key = "t",      mods = "CMD|ALT",
+    action = w.action_callback(function(
+      window) themeCycler(window, false) end)
+  },
+  { key = "F9",
+    action = w.action_callback(function(window) themeCycler(window, true) end)
+  },
+  -- Look up Scheme you switched to
+  { key = "Escape", mods = "CTRL",
+    action = w.action.ShowDebugOverlay
+  },
   {
     mods   = "LEADER",
     key    = "\"",
@@ -215,7 +245,7 @@ config.keys = {
   {
     mods   = "LEADER",
     key    = "w",
-    action = wezterm.action.ShowTabNavigator,
+    action = w.action.ShowTabNavigator,
   },
   {
     mods = "LEADER",
@@ -335,10 +365,6 @@ config.colors = {
 --     },
 --   },
 -- }
-
-wezterm.on('update-right-status', function(window, pane)
-  window:set_right_status(window:active_workspace())
-end)
 
 -- XXX broken
 -- w.on('update-right-status', function(window, pane)

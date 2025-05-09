@@ -57,7 +57,7 @@ let
         kv = "kubecolor -n ves-system";
         l = "eza";
       };
-      initExtra = ''
+      initContent = ''
         zstyle ':completion:*:*:*:default' menu yes select search
         command -v kubectl >/dev/null && source <(kubectl completion zsh)
         command -v zoxide >/dev/null && eval "$(zoxide init zsh)"

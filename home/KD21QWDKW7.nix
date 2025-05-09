@@ -2,9 +2,10 @@
 , lib
 , pkgs
 , nixpkgs-stable
-, nixpkgs-emacs
+# , nixpkgs-emacs
 , username
 , mkalias
+# , wezterm
 , ...
 }:
 
@@ -90,7 +91,11 @@ in
     (import ./common-shell {
       inherit pkgs homeDirectory goPathSuffix;
     })
-    ./wezterm
+    (import ./wezterm {
+      inherit pkgs;
+      # weztermPackage = nixpkgs-stable.outputs.legacyPackages.aarch64-darwin.wezterm;
+    })
+    # while wezterm is having some flakiness
     (import ./tmux {
       inherit pkgs;
       optionOverrides = [
@@ -103,19 +108,18 @@ in
     })
     ./karabiner
     (import ./doom {
-      inherit pkgs username envVars;
+      inherit lib pkgs username envVars;
       doomDir = doomDirectory;
       # we'll run doom commands manually
       runDoomCommands = false;
       # emacsPackage = pkgs.emacs29-macport;
-      emacsPackage = nixpkgs-emacs.outputs.legacyPackages.aarch64-darwin.emacs29-macport;
-    })
-    (import ./git {
-      inherit config pkgs lib;
-      defaultEmail = "m.sawyer@f5.com";
-      defaultUser = "Matt Sawyer";
+      # disabled while trying out jimeh build installed externally
+      # emacsPackage = nixpkgs-emacs.outputs.legacyPackages.aarch64-darwin.emacs29-macport;
     })
     ./helix
+    # ./broot
+    # ./aider
+    ./powerlevel10k
   ];
   home = {
     homeDirectory = homeDirectory;
@@ -190,11 +194,14 @@ in
   programs.home-manager.enable = true;
   programs.zsh = {
     envExtra = builtins.readFile ./.zshenv-KD21QWDKW7;
-    initExtra = ''
+    initContent = ''
     # hack to fix emacs/eat
     if [ -n "$INSIDE_EMACS" ]; then
       export TERM=xterm
+      # disable vi key bindings
+      bindkey -e
     fi
+    export POWERLEVEL9K_CONFIG_FILE=~/workspaces/nix-configuration/home/powerlevel10k/.p10k.zsh
     # '';
     # initExtra = ''
     #   command -v npm >/dev/null && npm config set prefix ${npmPackagePath} && export PATH=$PATH:$HOME/${npmPackagePath}/bin

@@ -8,7 +8,7 @@
 (map!
  :map general-override-mode-map
  :g "C-s" #'basic-save-buffer
- :g "<f8>" #'eat-project
+ :g "s-t" #'eat-project
  :n "C-," (lambda ()
             (interactive)
             (dired-other-window "~/workspaces/nix-configuration/home/doom/emacs"))
@@ -56,13 +56,13 @@
    :desc "Repeat last Vertico search" "\"" #'vertico-repeat-select))
  )
 
-(after! evil-nerd-commenter
+;;; XXX: not working
+;; (after! (evil-nerd-commenter evil-commands)
+(add-hook! prog-mode
   (map! :map general-override-mode-map
-        :nv "#" #'evilnc-comment-or-uncomment-lines)
-  )
+        :nv "#" #'evilnc-comment-or-uncomment-lines))
 
-;; (after! (general evil projectile consult)
-(after! (general evil consult projectile simple)
+(after! general
   (map! :map general-override-mode-map
         :nv "g d" #'+lookup/definition
         :nv "g t" #'+lookup/type-definition

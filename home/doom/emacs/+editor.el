@@ -13,6 +13,7 @@
 (setq-default scroll-margin 3)
 (setq-default maximum-scroll-margin 0.15)
 (setq-default sh-basic-offset 2)
+(setq sh-basic-offset 2)
 (setq scroll-margin 3)
 
 ;; (when (and (display-graphic-p) (featurep :system 'macos))
@@ -36,12 +37,13 @@
 (add-to-list 'auto-mode-alist '("\\\.aws/*" . toml-ts-mode))
 (add-to-list 'auto-mode-alist '("\\\.saml2aws" . toml-ts-mode))
 (add-to-list 'auto-mode-alist '("\\\.kube/config.*" . yaml-ts-mode))
-(add-to-list 'auto-mode-alist '("\\\.hpp$" . c++-ts-mode))
-(add-to-list 'auto-mode-alist '("\\\.h$" . c++-ts-mode))
+(add-to-list 'auto-mode-alist '("\\\.hpp$" . c++-mode))
+(add-to-list 'auto-mode-alist '("\\\.h$" . c++-mode))
 ;; make SSH authorized keys files more readable
 (add-to-list 'auto-mode-alist '("\\SConscript". python-mode))
 (add-to-list 'auto-mode-alist '("\\SConstruct". python-mode))
 (add-to-list 'auto-mode-alist '("\\go\.mod". go-mod-ts-mode))
+(add-to-list 'auto-mode-alist '("\\\.go". go-ts-mode))
 ;; use GNU Makefile mode instead of BSD
 (add-to-list 'auto-mode-alist '("\\Makefile" . makefile-gmake-mode))
 ;; jsonnet
@@ -53,6 +55,8 @@
 (add-to-list 'auto-mode-alist '("\\\.md$" . gfm-mode))
 ;; CODEOWNERS
 (add-to-list 'auto-mode-alist '("\\CODEOWNERS$" . conf-mode))
+;; json5-ish
+(add-to-list 'auto-mode-alist '("\\\.hujson$" . jsonc-mode))
 
 (after! evil
   ;; prevent paste from its default behavior of replacing the clipboard register with the replaced contents
@@ -77,27 +81,29 @@
   (setq ws-butler-global-exempt-modes (add-to-list 'ws-butler-global-exempt-modes 'makefile-gmake-mode t))
   (setq ws-butler-global-exempt-modes (add-to-list 'ws-butler-global-exempt-modes 'makefile-bsdmake-mode t)))
 
-(add-hook! go-mode
-  (tree-sitter-hl-mode 1))
+;; (add-hook! go-mode
+;;   (tree-sitter-hl-mode 1))
 
 ;; use tree-sitter for syntax highlighting for modes that don't have native tree-sitter support
-(after! tree-sitter
-  ;; (setf tree-sitter-major-mode-language-alist
-  ;;       (cl-remove 'go-mode tree-sitter-major-mode-language-alist :key #'car))
-  (require 'tree-sitter-langs)
-  ;; (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
-  ;; (add-hook! go-mode #'tree-sitter-mode)
-  (add-hook! go-mode #'+word-wrap-mode)
-  ;; (setq-default tree-sitter-hl-use-font-lock-keywords nil)
-  ;; (add-hook! go-mode
-  ;; (setq-local tree-sitter-hl-use-font-lock-keywords t)
-  ;; (tree-sitter-mode 1)
-  ;; (go-ts-mode)
-  ;; (add-function :before-while (local 'tree-sitter-hl-face-mapping-function)
-  ;;               (lambda (capture-name)
-  ;;                 (string= capture-name "type"))
-  ;; )
-  )
+;; (after! tree-sitter
+;;   ;; (setf tree-sitter-major-mode-language-alist
+;;   ;;       (cl-remove 'go-mode tree-sitter-major-mode-language-alist :key #'car))
+;;   (require 'tree-sitter-langs)
+;;   ;; (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
+;;   ;; (add-hook! go-mode #'tree-sitter-mode)
+;;   ;; (setq-default tree-sitter-hl-use-font-lock-keywords nil)
+;;   ;; (add-hook! go-mode
+;;   ;; (setq-local tree-sitter-hl-use-font-lock-keywords t)
+;;   ;; (tree-sitter-mode 1)
+;;   ;; (go-ts-mode)
+;;   ;; (add-function :before-while (local 'tree-sitter-hl-face-mapping-function)
+;;   ;;               (lambda (capture-name)
+;;   ;;                 (string= capture-name "type"))
+;;   ;; )
+;;   )
+
+(add-hook! go-mode #'+word-wrap-mode)
+(add-hook! go-ts-mode #'+word-wrap-mode)
 
 ;; (global-treesit-auto-mode 1)
 ;; don't use tree-sitter for go until one or both of the following are fixed:
@@ -159,6 +165,7 @@
 ;;   )
 
 ;; (after! (go-mode lsp-mode)
+(add-hook! go-ts-mode #'lsp)
 ;; (require 'dap-go)
 ;; (dap-go-setup)
 ;; (setq flycheck-golangci-lint-fast t)
@@ -285,7 +292,9 @@ wheel."
 
 (after! projectile
   (setq projectile-project-search-path '("~/workspaces"
-                                         "~/workspaces/volterra/ves.io")))
+                                         "~/workspaces/f5/volterra/ves.io"
+                                         "~/workspaces/f5/volterra/ves.io/sre"
+                                         )))
 
 (after! persp
   (setq uniquify-buffer-name-style 'forward))
@@ -447,6 +456,7 @@ wheel."
   ;; lsp-terraform is broken and breaks other lsp clients,
   ;; see https://github.com/emacs-lsp/lsp-mode/issues/3577
   (delete 'lsp-terraform lsp-client-packages)
+  (delete 'lsp-copilot lsp-client-packages)
   ;; (setq lsp-golangci-lint-fast t)
   )
 
@@ -582,6 +592,7 @@ wheel."
   )
 
 (after! org
+  (setq org-export-body-only t)
   (cond ((equal (system-name) "SEA-ML-00059144")
          (setq org-agenda-files '("/Users/sawyer/Documents/OneDrive - F5 Networks/notes")))
         ((equal (system-name) "KD21QWDKW7")
@@ -653,26 +664,26 @@ wheel."
 
 (add-hook! makefile-mode #'+word-wrap-mode)
 
-(after! (lsp-mode tramp ccls)
-  (lsp-register-client
-   (make-lsp-client
-    ;; :new-connection (lsp-stdio-connection (lambda () (cons ccls-executable ccls-args)))
-    :new-connection (lsp-tramp-connection (lambda () (cons ccls-executable ccls-args)))
-    :remote? t
-    :major-modes '(c++-ts-mode cpp-mode c-mode c++-mode cuda-mode objc-mode)
-    :server-id 'ccls
-    :multi-root nil
-    :notification-handlers
-    (lsp-ht ("$ccls/publishSkippedRanges" #'ccls--publish-skipped-ranges)
-            ("$ccls/publishSemanticHighlight" #'ccls--publish-semantic-highlight))
-    :initialization-options (lambda () ccls-initialization-options)
-    :library-folders-fn ccls-library-folders-fn))
-  (setq ccls-initialization-options '(:index (:comments 2) :completion (:detailedLabel t))))
+;; (after! (lsp-mode tramp ccls)
+;;   (lsp-register-client
+;;    (make-lsp-client
+;;     ;; :new-connection (lsp-stdio-connection (lambda () (cons ccls-executable ccls-args)))
+;;     :new-connection (lsp-tramp-connection (lambda () (cons ccls-executable ccls-args)))
+;;     :remote? t
+;;     :major-modes '(c++-ts-mode cpp-mode c-mode c++-mode cuda-mode objc-mode)
+;;     :server-id 'ccls
+;;     :multi-root nil
+;;     :notification-handlers
+;;     (lsp-ht ("$ccls/publishSkippedRanges" #'ccls--publish-skipped-ranges)
+;;             ("$ccls/publishSemanticHighlight" #'ccls--publish-semantic-highlight))
+;;     :initialization-options (lambda () ccls-initialization-options)
+;;     :library-folders-fn ccls-library-folders-fn))
+;;   (setq ccls-initialization-options '(:index (:comments 2) :completion (:detailedLabel t))))
 
 
-(after! ccls
-  (setq ccls-initialization-options '(:index (:comments 2) :completion (:detailedLabel t)))
-  (set-lsp-priority! 'ccls 2)) ; optional as ccls is the default in Doom
+;; (after! ccls
+;;   (setq ccls-initialization-options '(:index (:comments 2) :completion (:detailedLabel t)))
+;;   (set-lsp-priority! 'ccls 2)) ; optional as ccls is the default in Doom
 ;; (add-hook! ccls #'tree-sitter-mode)
 
 (add-hook! protobuf-mode #'display-line-numbers-mode)
@@ -714,12 +725,12 @@ wheel."
 (after! magit
   (setq auto-revert-check-vc-info t)
   (setq auto-revert-interval 30)
-  (setq magit-refresh-status-buffer nil)
-  (setq magit-diff-highlight-indentation nil)
-  (setq magit-diff-highlight-trailing nil)
-  (setq magit-diff-paint-whitespace nil)
-  (setq magit-diff-highlight-hunk-body nil)
-  (setq magit-diff-refine-hunk nil)
+  ;; (setq magit-refresh-status-buffer nil)
+  ;; (setq magit-diff-highlight-indentation nil)
+  ;; (setq magit-diff-highlight-trailing nil)
+  ;; (setq magit-diff-paint-whitespace nil)
+  ;; (setq magit-diff-highlight-hunk-body nil)
+  ;; (setq magit-diff-refine-hunk nil)
   (setq-default git-commit-summary-max-length 100)
   (setq git-commit-summary-max-length 100)
   ;; (remove-hook 'magit-status-sections-hook 'magit-insert-tags-header)
@@ -1008,3 +1019,135 @@ wheel."
 
 (after! envrc
   (envrc-global-mode))
+
+(after! lsp-clangd
+  (setq lsp-clients-clangd-args
+        '("-j=3"
+          "--background-index"
+          ;; "--clang-tidy"
+          "--completion-style=detailed"
+          "--header-insertion=never"
+          "--header-insertion-decorators=0"
+          "--log=verbose"
+          ))
+  (set-lsp-priority! 'clangd 2))
+
+(defvar sawyer/org-mode-left-margin-width 2
+  "The `left-margin-width' to be used in `org-mode' buffers.")
+(defvar sawyer/org-mode-right-margin-width 2
+  "The `right-margin-width' to be used in `org-mode' buffers.")
+
+;; (defun sawyer/setup-org-mode-margins ()
+;;   (when (and (derived-mode-p 'org-mode)
+;;              (eq (current-buffer) ; Check current buffer is active.
+;;                  (window-buffer (frame-selected-window))))
+;;     (setq left-margin-width (if display-line-numbers
+;;                                 0 sawyer/org-mode-left-margin-width))
+;;     (setq right-margin-width (if display-line-numbers
+;;                                  0 sawyer/org-mode-right-margin-width))
+;;     (set-window-buffer (get-buffer-window (current-buffer))
+;;                        (current-buffer))))
+;; (add-hook! window-configuration-change #'sawyer/setup-org-mode-margins)
+;; (add-hook! display-line-numbers-mode #'sawyer/setup-org-mode-margins)
+;; (add-hook! org-mode #'sawyer/setup-org-mode-margins)
+
+;; (after! spacious-padding
+;;   (setq spacious-padding-widths '(:internal-border-width 0 :header-line-width 4 :mode-line-width 6 :tab-width 4 :right-divider-width 30 :scroll-bar-width 8 :fringe-width 30)))
+;; (add-hook! org-mode #'spacious-padding-mode)
+
+(add-hook! c++-mode 'lsp)
+
+(after! lab
+  ;; Required.
+  (setq lab-host "https://gitlab.com")
+
+  ;; Required.
+  ;; See the following link to learn how you can gather one for yourself:
+  ;; https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html#create-a-personal-access-token
+  (setq lab-token (getenv "GITLAB_API_TOKEN"))
+
+  ;; Optional, but useful. See the variable documentation.
+  (setq lab-group "12645129") ;; F5/volterra
+  )
+
+(after! chatgpt-shell
+  (setq chatgpt-shell-openai-key (getenv "OPENAI_API_KEY"))
+  ;; (setq chatgpt-shell-model-version "gpt-4o")
+  (setq chatgpt-shell-model-version "gpt-4o")
+  (setq chatgpt-shell-api-url-base "https://f5ai.pd.f5net.com/api")
+  ;; (setq chatgpt-shell-model-version "gemma2:2b")
+  ;; (setq chatgpt-shell-model-version "qwen2.5-coder")
+  ;; (setq chatgpt-shell-model-version "mistral-small:24b")
+  ;; (setq chatgpt-shell-ollama-api-url-base "http://haystack-ts:11434")
+  ;; (setq chatgpt-shell-model-temperature 0.15)
+  (setq chatgpt-shell-logging t)
+  )
+
+;; (after! aider
+;;   (aider-doom-enable)
+;;   ;; For latest claude sonnet model
+;;   ;; (setq aider-args '("--model" "sonnet"))
+;;   ;; (setq aider-args `(
+;;   ;;                    "--model-settings-file" ,(expand-file-name "~/.aider.model.settings.yml")
+;;   ;;                    ;; "--model" "ollama_chat/deepseek-r1:14"
+;;   ;;                    "--model" "ollama_chat/mistral-small:24b"
+;;   ;;                    ;; "--model" "ollama_chat/gemma3:1b"
+;;   ;;                    ;; "--model" "ollama_chat/qwen2.5-coder:latest"
+;;   ;;                    ))
+;;   (setenv "OPENAI_API_BASE" "https://f5ai.pd.f5net.com/api")
+;;   (setenv "AIDER_OPENAI_API_KEY" (getenv "OPENAI_API_KEY"))
+;;   ;; (setenv "ANTHROPIC_API_KEY" anthropic-api-key)
+;;   ;; Or chatgpt model
+;;   ;; (setq aider-args '("--model" "o3-mini"))
+;;   ;; (setq aider-args '("--model" "openai/gpt-4.5-preview"))
+;;   (setq aider-args '("--model" "gpt-4o"))
+;;   ;; (setq aider-args '("--model" "openai/gpt-4.5-preview-2025-02-27"))
+;;   ;; (setenv "OPENAI_API_KEY" <your-openai-api-key>)
+;;   (setenv "OLLAMA_API_BASE" "http://haystack-ts:11434")
+;;   (setenv "AIDER_OPENAI_API_BASE" "https://f5ai.pd.f5net.com/api")
+
+;;   ;; Or use your personal config file
+;;   ;; ;;
+;;   ;; Optional: Set a key binding for the transient menu
+;;   )
+
+;; (after! gitlab-lsp
+;;   ;; speed up completions
+;;   (setq gitlab-lsp-show-completions-with-other-clients nil)
+;;   (setq gitlab-lsp-token (getenv "GITLAB_LSP_TOKEN"))
+
+;;   (add-hook 'gitlab-lsp-complete-before-complete-hook
+;;             (lambda ()
+;;               ;; scroll to top so preview can show the snippet
+;;               (recenter-top-bottom 4)
+
+;;               ;; Show something, since we can not spin ...
+;;               (message "Asking for suggestions ...")))
+
+;;   (define-key global-map
+;;               (kbd "C-*") '("Complete with Gitlab Duo" . gitlab-lsp-complete))
+;;   )
+
+(after! treesit
+  (setq treesit-extra-load-path '("~/.config/emacs/.local/cache/tree-sitter"))
+  (setq treesit-language-source-alist '(
+                                        (bash "https://github.com/tree-sitter/tree-sitter-bash")
+                                        (cmake "https://github.com/uyha/tree-sitter-cmake")
+                                        (css "https://github.com/tree-sitter/tree-sitter-css")
+                                        (elisp "https://github.com/Wilfred/tree-sitter-elisp")
+                                        (go "https://github.com/tree-sitter/tree-sitter-go" "v0.23.4")
+                                        (gomod "https://github.com/camdencheek/tree-sitter-go-mod" "v1.1.0")
+                                        (html "https://github.com/tree-sitter/tree-sitter-html")
+                                        (javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
+                                        (json "https://github.com/tree-sitter/tree-sitter-json")
+                                        (make "https://github.com/alemuller/tree-sitter-make")
+                                        (markdown "https://github.com/ikatyang/tree-sitter-markdown")
+                                        (python "https://github.com/tree-sitter/tree-sitter-python")
+                                        (rust "https://github.com/tree-sitter/tree-sitter-rust")
+                                        (toml "https://github.com/tree-sitter/tree-sitter-toml")
+                                        (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
+                                        (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
+                                        (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
+  (setq treesit-font-lock-level 4))
+;; (add-hook! go-ts-mode
+;;   (setq-local treesit-font-lock-level 3))

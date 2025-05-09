@@ -7,6 +7,7 @@
   emacsPackage ? pkgs.emacs,
   runDoomCommands ? true,
   launchDaemon ? false,
+  installEmacs ? false,
   ...
 }:
 let
@@ -58,9 +59,8 @@ let
   };
   # '';
   home.packages = [
-    emacsPackage
     pkgs.emacs-lsp-booster
-  ];
+  ] ++ (if installEmacs then [emacsPackage] else []);
   # make packages available to file.onChange and activation scripts
   home.extraActivationPath = with pkgs; [
     sd

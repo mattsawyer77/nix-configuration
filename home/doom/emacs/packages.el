@@ -92,6 +92,12 @@
            :repo "mattsawyer77/kanagawa-theme"
            :branch "main"))
 
+;; XXX: package doesn't seem to load
+;; (package! json5
+;;   :recipe (:host github
+;;            :repo "nbfalcon/json5.el"
+;;            :files ("json5.el")))
+
 (package! apheleia)
 
 (package! just-mode)
@@ -106,16 +112,19 @@
                    (:exclude ".dir-locals.el" "*-tests.el"))))
 (package! envrc)
 (package! cov)
+(package! spacious-padding)
 
 ;; gitlab integration
 (package! lab
   :recipe (:host github
-           :repo "mattsawyer77/lab.el"
+           ;; :repo "mattsawyer77/lab.el"
+           :repo "isamert/lab.el"
            :branch "main"))
 
 (disable-packages! hl-line)
 
 (package! just-mode)
+(package! org-super-agenda)
 (package! emacs-eat
   :recipe (:host codeberg
            :repo "akib/emacs-eat"
@@ -124,3 +133,15 @@
                    ("terminfo/65" "terminfo/65/*")
                    ("integration" "integration/*")
                    (:exclude ".dir-locals.el" "*-tests.el"))))
+
+(package! chatgpt-shell)
+
+(package! aider :recipe
+  (:host github
+   :repo "tninja/aider.el"
+   :files ("*.el")))
+
+(package! gitlab-lsp :recipe
+  (:host github
+   :repo "kassick/gitlab-lsp.el"
+   :files ("*.el")))

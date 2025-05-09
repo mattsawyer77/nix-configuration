@@ -19,9 +19,9 @@
     fontconfig
     fzf
     # gdb # broken as of 2023-01-20
-    gdbm
+    # gdbm
     gettext
-    ghostscript
+    # ghostscript
     glib
     # gmp6
     gnumake
@@ -31,12 +31,12 @@
     gopls
     graphviz
     grpcurl
-    gvproxy
-    harfbuzzFull
-    html-tidy
-    htop
+    # gvproxy
+    # harfbuzzFull
+    # html-tidy
+    # htop
     ijq
-    jansson
+    # jansson
     jq
     kubecolor
     kubectl
@@ -56,13 +56,12 @@
     # lua-language-server # broken as of 2024-05-14
     # luajit
     # most
-    msgpack
+    # msgpack
     # mu
     # multitail
     # mutagen # broken as of 2022-05-13
     ncurses
     neovim # customized in ./neovim.nix overlay
-    nerdfonts
     netcat
     # netperf # broken as of 2023-11-27
     # nim
@@ -75,24 +74,24 @@
     nix-zsh-completions
     nixpkgs-fmt
     nmap
-    node2nix
+    # node2nix
     nodejs
     oniguruma
     # opam # broken as of 2023-11-27
-    openapi-generator-cli
+    # openapi-generator-cli
     pandoc
-    pcre
+    # pcre
     pcre2
     pkg-config
-    poetry
+    # poetry
     protobuf
-    prototool
-    pyenv
-    pyright
+    # prototool
+    # pyenv
+    # pyright
     # python3
-    python311Packages.grip
-    python311Packages.xmltodict
-    pywal
+    python312Packages.grip
+    python312Packages.xmltodict
+    # pywal
     readline
     # redis
     ripgrep
@@ -115,15 +114,14 @@
     tree
     # trivy # broken as of 2022-05-24
     # ttfautohint
-    unixtools.watch
-    upx
+    # unixtools.watch
+    # upx
     # vmtouch
     wget
-    xsv
     yaml-language-server
     yarn
     yj
-    yt-dlp
+    # yt-dlp
     yq-go
     zlib
     zoxide

@@ -71,9 +71,11 @@
 (defface sawyer/variable-face
   `((t :inherit default
      ;; :family "Lexend"
-     :family "IBM Plex Sans"
+     ;; :family "IBM Plex Sans"
      ;; :family "Roboto"
-     ;; :family "Fira Sans"
+     ;; :family "Chivo" :weight light
+     ;; :family "Fira Sans" ;; :weight normal
+     :family "Galvji" ;; :weight normal
      ;; :family "Avenir Next"
      ;; :weight thin
      ;; :weight extra-light ;; (a.k.a. ultra-light)
@@ -101,14 +103,14 @@
 ;; TODO: figure out how to make the family dynamic
 (defface org-face
   `((t :inherit sawyer/variable-face
-     :height 1.1
-     :weight normal
+     :height 1.2
+     ;; :weight normal
      ))
   "org-face")
 (defface org-code-face
   `((t :inherit code-face
      :height 0.8
-     :weight normal
+     ;; :weight normal
      ))
   "org-code-face")
 
@@ -161,6 +163,7 @@
   "setup faces for kanagawa, since it is not a doom theme"
   (when (-contains? custom-enabled-themes 'kanagawa)
     (message "setting up kanagawa theme...")
+    (set-face-attribute 'mode-line-inactive nil :background 'unspecified)
     ;; (autothemer-colorize)
     ;; (setq doom-themes--colors '(
     ;;                             (grey katanaGray "black" "black")
@@ -256,7 +259,7 @@
       (font-spec
        :family (face-attribute 'sawyer/variable-face :family)
        :size 18
-       :weight 'normal
+       :weight 'light
        ))
 
 ;; disable solaire mode on GUI
@@ -280,6 +283,7 @@
     `(lsp-flycheck-warning-unnecessary-category :inherit default :background ,(doom-color 'bg) :foreground warning)
     `(lsp-lens-face :foreground ,(doom-darken 'fg 0.1) :height 0.8)
     `(lsp-ui-doc-header :foreground ,(doom-color 'fg) :background ,(doom-color 'bg))
+    `(lsp-inlay-hint-face :height 0.8 :foreground ,(face-attribute 'font-lock-type-face :foreground) :family ,(face-attribute 'sawyer/variable-face :family))
     )
   )
 
@@ -312,31 +316,31 @@
     `(treemacs-root-face
       :inherit treemacs-window-background-face
       :height 1.2
-      :weight medium
+      :weight normal
       :slant normal
       :family ,(face-attribute 'sawyer/variable-face :family)
       )
-    `(treemacs-directory-collapsed-face :weight medium :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-directory-face :foreground ,(doom-darken 'fg 0.2) :weight medium :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-file-face :foreground ,(doom-darken 'fg 0.2) :weight medium :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-fringe-indicator-face :weight medium :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-git-added-face :weight medium :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-directory-collapsed-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-directory-face :foreground ,(doom-darken 'fg 0.2) :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-file-face :foreground ,(doom-darken 'fg 0.2) :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-fringe-indicator-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-git-added-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
     `(treemacs-git-commit-diff-face :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-git-conflict-face :weight medium :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-git-ignored-face :weight medium :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-git-modified-face :weight medium :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-git-renamed-face :weight medium :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-git-unmodified-face :foreground ,(doom-darken 'fg 0.2) :weight medium :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-git-untracked-face :weight medium :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-git-conflict-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-git-ignored-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-git-modified-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-git-renamed-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-git-unmodified-face :foreground ,(doom-darken 'fg 0.2) :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-git-untracked-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
     `(treemacs-header-button-face :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-help-column-face :weight medium :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-help-title-face :weight medium :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-help-column-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-help-title-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
     `(treemacs-marked-file-face :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-on-failure-pulse-face :weight medium :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-on-success-pulse-face :weight medium :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-on-failure-pulse-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-on-success-pulse-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
     `(treemacs-peek-mode-indicator-face :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-tags-face :weight medium :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
-    `(treemacs-term-node-face :weight medium :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-tags-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
+    `(treemacs-term-node-face :weight normal :slant normal :height 1.0 :family ,(face-attribute 'sawyer/variable-face :family))
     `(treemacs-nerd-icons-file-face :height 1.0)
     `(doom-themes-treemacs-root-face :foreground ,(face-attribute 'treemacs-root-face :foreground) :background ,(face-attribute 'default :background))
     )
@@ -430,13 +434,13 @@
 (after! org
   (custom-set-faces!
     `(org-table :family ,(face-attribute 'sawyer/mono-face :family) :height 1.0)
-    `(org-block :inherit 'org-code-face :background ,(doom-lighten 'bg 0.1))
-    `(org-block-begin-line :inherit 'org-face :background ,(doom-lighten 'bg 0.05) :foreground ,(doom-lighten 'bg 0.3) :height 0.8)
-    `(org-block-end-line :inherit 'org-face :background ,(doom-lighten 'bg 0.05) :foreground ,(doom-lighten 'bg 0.3) :height 0.8)
-    `(org-formula :inherit 'org-code-face :background ,(doom-color 'bg))
-    `(org-quote :inherit 'org-face :background ,(doom-lighten 'bg 0.1) :slant italic)
-    `(org-tag :foreground ,(doom-blend (doom-color 'magenta) (doom-color 'grey) 0.4))
-    `(org-modern-symbol :foreground ,(doom-color 'red))
+    ;; `(org-block :inherit 'org-code-face :background ,(doom-lighten 'bg 0.1))
+    ;; `(org-block-begin-line :inherit 'org-face :background ,(doom-lighten 'bg 0.05) :foreground ,(doom-lighten 'bg 0.3) :height 0.8)
+    ;; `(org-block-end-line :inherit 'org-face :background ,(doom-lighten 'bg 0.05) :foreground ,(doom-lighten 'bg 0.3) :height 0.8)
+    ;; `(org-formula :inherit 'org-code-face :background ,(doom-color 'bg))
+    ;; `(org-quote :inherit 'org-face :background ,(doom-lighten 'bg 0.1) :slant italic)
+    ;; `(org-tag :foreground ,(doom-blend (doom-color 'magenta) (doom-color 'grey) 0.4))
+    ;; `(org-modern-symbol :foreground ,(doom-color 'red))
     `(org-level-8 :family ,(face-attribute 'sawyer/variable-face :family) :height 0.9)
     `(org-level-7 :family ,(face-attribute 'sawyer/variable-face :family) :height 0.9)
     `(org-level-6 :family ,(face-attribute 'sawyer/variable-face :family) :height 0.9)
@@ -447,8 +451,9 @@
     `(org-level-1 :family ,(face-attribute 'sawyer/variable-face :family) :height 1.2 :weight normal)
     `(org-document-title :inherit 'org-face :height 1.1 :weight bold)
     ;; make leading hidden indentation consistent
-    `(org-hide :family ,(face-attribute 'sawyer/mono-face :family))
+    `(org-hide :inherit default :family ,(face-attribute 'sawyer/mono-face :family))
     `(org-checkbox :family "Fira Code" :height 1.2 :weight normal)
+    `(org-quote :inherit org-block :family ,(face-attribute 'sawyer/variable-face :family))
     )
   )
 
@@ -580,6 +585,8 @@
     `(tree-sitter-hl-face:operator :foreground ,(doom-darken (doom-color 'red) 0.2))
     `(tree-sitter-hl-face:number :inherit highlight-numbers-number)
     ;; `(tree-sitter-hl-face:type :inherit font-lock-type-face)
+    `(vertical-border :foreground ,(doom-darken 'bg 0.15) :background ,(doom-darken 'bg 0.15))
+    `(treemacs-window-background-face :background ,(doom-darken "#E5E9F0" 0.05))
     )
   (custom-theme-set-faces! 'doom-monokai-pro
     `(tree-sitter-hl-face:variable :foreground ,(doom-lighten (doom-color 'cyan) 0.5))
@@ -680,7 +687,7 @@
     (setq textsize-monitor-size-thresholds
           '(
             (286 . -2)    ;; 14" MBP
-            (345 . 0.0)    ;; 16" MBP
+            (344 . 0.0)    ;; 16" MBP
             (531 . -0.1)   ;; 24" 4K (full-res)
             (802 . 0)    ;; 34" superwide
             ))
@@ -810,7 +817,7 @@
     `(doom-dashboard-menu-desc :inherit font-lock-builtin-face :height 1.0)
     `(doom-dashboard-loaded :inherit font-lock-docface :height 1.0)
     ;; `(tooltip :background ,(doom-lighten 'bg 0.1) :family ,(face-attribute 'sawyer/variable-face :family) :weight normal)
-    `(font-lock-string-face :background ,(doom-lighten 'bg 0.05))
+    ;; `(font-lock-string-face :background ,(doom-lighten 'bg 0.05))
     `(line-number :slant normal)
     `(line-number-current-line :slant normal)
     `(mode-line :family ,(face-attribute 'sawyer/variable-face :family) :weight bold)

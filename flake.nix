@@ -14,10 +14,7 @@
     nixpkgs.url = "github:nixos/nixpkgs/master";
     nixpkgs-stable.url = "github:nixos/nixpkgs/release-24.05";
     darwin = {
-      # commit after c9c2d40f7172747823dc9c5ab16b9bb541cf3c0d is broken due to trying to overwrite /etc/hosts(!)
-      # see https://github.com/LnL7/nix-darwin/issues/1351
-      # revert PR: https://github.com/LnL7/nix-darwin/pull/1353
-      url = "github:LnL7/nix-darwin/c9c2d40f7172747823dc9c5ab16b9bb541cf3c0d";
+      url = "github:LnL7/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     home-manager = {

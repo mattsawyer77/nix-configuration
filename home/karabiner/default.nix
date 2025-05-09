@@ -51,10 +51,14 @@ let
               ctrlToCMDKeys);
           }
           {
-            description = "firefox/orion customization";
+            description = "firefox/zen customization";
             manipulators = [{
               conditions = [{
-                bundle_identifiers = [ "^org\\.mozilla\\." "^com\\.kagi\\.kagimacOS" ];
+                bundle_identifiers = [
+                  "^org\\.mozilla\\."
+                  "^com\\.kagi\\.kagimacOS"
+                  "^app\\.zen-browser\\.zen"
+                ];
                 type = "frontmost_application_if";
               }];
               description = "reload the page with ctrl+r";
@@ -190,11 +194,14 @@ let
 
           {
             description =
-              "map ctrl+space to tab search in Firefox";
+              "map ctrl+space to tab search in Firefox/Zen";
             manipulators = [{
               conditions = [{
                 type = "frontmost_application_if";
-                bundle_identifiers = [ "^org\\.mozilla\\." ];
+                bundle_identifiers = [
+                  "^org\\.mozilla\\."
+                  "^app\\.zen-browser\\.zen"
+                ];
               }];
               from = {
                 modifiers = { mandatory = [ "left_control" ]; };
