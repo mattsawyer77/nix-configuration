@@ -241,7 +241,7 @@ in
   programs.zoxide = { enable = true; };
   programs.zsh = {
     envExtra = builtins.readFile ./.zshenv-haystack;
-    initExtra = ''
+    initContent = ''
       command -v npm >/dev/null && npm config set prefix ${npmPackagePath} && export PATH=$PATH:$HOME/${npmPackagePath}/bin
       # source <(kubectl completion zsh)
       printf '\e]2;'$(hostname)'\a'

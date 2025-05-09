@@ -5,10 +5,12 @@
     bat
     bat-extras.batman
     btop
-    cachix
+    # cachix
     cask
     cmake
     coreutils
+    delta
+    # devenv # broken due to https://github.com/NixOS/nixpkgs/issues/404506
     direnv
     dos2unix
     editorconfig-core-c
@@ -41,8 +43,8 @@
     kubecolor
     kubectl
     less
-    libcxx
-    libgccjit
+    # libcxx
+    # libgccjit
     libiconv
     libressl
     libsndfile
@@ -130,7 +132,41 @@
     zsh-syntax-highlighting
     zsh-z
     zstd
-  ] ++ (if pkgs.stdenv.isDarwin then [
+  ]
+  # XXX: this approach to install treesitter grammars is broken
+  # ++ (with pkgs.tree-sitter-grammars; [
+  #   tree-sitter-bash
+  #   tree-sitter-c
+  #   tree-sitter-comment
+  #   tree-sitter-cpp
+  #   tree-sitter-dockerfile
+  #   tree-sitter-dot
+  #   tree-sitter-elisp
+  #   tree-sitter-go
+  #   tree-sitter-gomod
+  #   tree-sitter-haskell
+  #   tree-sitter-hjson
+  #   tree-sitter-html
+  #   tree-sitter-http
+  #   tree-sitter-javascript
+  #   tree-sitter-json
+  #   tree-sitter-json5
+  #   tree-sitter-jsonnet
+  #   tree-sitter-just
+  #   tree-sitter-make
+  #   tree-sitter-markdown
+  #   tree-sitter-nickel
+  #   tree-sitter-nix
+  #   tree-sitter-proto
+  #   tree-sitter-python
+  #   tree-sitter-sql
+  #   tree-sitter-toml
+  #   tree-sitter-twig
+  #   tree-sitter-typescript
+  #   tree-sitter-yaml
+  #   tree-sitter-zig
+  # ])
+  ++ (if pkgs.stdenv.isDarwin then [
     discord
     dockutil
     reattach-to-user-namespace
