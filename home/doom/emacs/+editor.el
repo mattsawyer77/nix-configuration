@@ -37,8 +37,8 @@
 (add-to-list 'auto-mode-alist '("\\\.aws/*" . toml-ts-mode))
 (add-to-list 'auto-mode-alist '("\\\.saml2aws" . toml-ts-mode))
 (add-to-list 'auto-mode-alist '("\\\.kube/config.*" . yaml-ts-mode))
-(add-to-list 'auto-mode-alist '("\\\.hpp$" . c++-mode))
-(add-to-list 'auto-mode-alist '("\\\.h$" . c++-mode))
+(add-to-list 'auto-mode-alist '("\\\.hpp$" . c++-ts-mode))
+(add-to-list 'auto-mode-alist '("\\\.h$" . c++-ts-mode))
 ;; make SSH authorized keys files more readable
 (add-to-list 'auto-mode-alist '("\\SConscript". python-mode))
 (add-to-list 'auto-mode-alist '("\\SConstruct". python-mode))
@@ -680,7 +680,6 @@ wheel."
 ;;     :library-folders-fn ccls-library-folders-fn))
 ;;   (setq ccls-initialization-options '(:index (:comments 2) :completion (:detailedLabel t))))
 
-
 ;; (after! ccls
 ;;   (setq ccls-initialization-options '(:index (:comments 2) :completion (:detailedLabel t)))
 ;;   (set-lsp-priority! 'ccls 2)) ; optional as ccls is the default in Doom
@@ -1056,6 +1055,7 @@ wheel."
 ;; (add-hook! org-mode #'spacious-padding-mode)
 
 (add-hook! c++-mode 'lsp)
+(add-hook! c++-ts-mode 'lsp)
 
 (after! lab
   ;; Required.
@@ -1133,6 +1133,8 @@ wheel."
   (setq treesit-language-source-alist '(
                                         (bash "https://github.com/tree-sitter/tree-sitter-bash")
                                         (cmake "https://github.com/uyha/tree-sitter-cmake")
+                                        (c "https://github.com/tree-sitter/tree-sitter-c")
+                                        (cpp "https://github.com/tree-sitter/tree-sitter-cpp")
                                         (css "https://github.com/tree-sitter/tree-sitter-css")
                                         (elisp "https://github.com/Wilfred/tree-sitter-elisp")
                                         (go "https://github.com/tree-sitter/tree-sitter-go" "v0.23.4")
