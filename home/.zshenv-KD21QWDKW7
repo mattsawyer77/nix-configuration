@@ -1,20 +1,22 @@
 #!/usr/bin/env zsh
 
 nix-config-check() {
-  caffeinate -i darwin-rebuild check --flake ~/workspaces/nix-configuration
+  sudo caffeinate -i darwin-rebuild check --flake ~/workspaces/nix-configuration
+  notify "nix config check"
 }
 
 nix-config-switch() {
-  caffeinate -i darwin-rebuild switch --flake ~/workspaces/nix-configuration
+  sudo caffeinate -i darwin-rebuild switch --flake ~/workspaces/nix-configuration
+  notify "nix config switch"
 }
 
 nix-config-update() {
-  (cd ~/workspaces/nix-configuration; \
+  (cd ~/workspaces/nix-configuration &&
     if [[ -n "$(git status --porcelain flake.lock)" ]]; then
-      echo "flake.lock is dirty, please commit or revert before updating the flake";
+      echo "flake.lock is dirty, please commit or revert before updating the flake"
       false
-    fi \
-    && nix flake update)
+    fi &&
+    nix flake update)
 }
 
 check-color() {

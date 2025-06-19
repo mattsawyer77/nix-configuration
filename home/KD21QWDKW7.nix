@@ -1,5 +1,4 @@
-{ config
-, lib
+{ lib
 , pkgs
 , nixpkgs-stable
 # , nixpkgs-emacs
@@ -12,6 +11,7 @@
 let
   homeDirectory = "/Users/" + username;
   doomDirectory = ".doom.d";
+  emacsAppDirectory = "${homeDirectory}/Applications/Emacs.app";
   goPathSuffix = "gocode";
   localBinPath = ".local/bin";
   npmPackagePath = ".config/npm-packages";
@@ -29,46 +29,64 @@ let
     (pkgs.writeShellScriptBin "gtar" ''exec ${pkgs.gnutar}/bin/tar "$@"'')
   ];
   homePackages = (with pkgs; [
+    (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
     aws-iam-authenticator
     awscli
-    # azure-cli # broken on unstable, so using nixpkgs stable
-    bazel
+    azure-cli
+    bazelisk
     buf
+    cachix
     ccls
     certigo
-    # curlFull # nixpkgs curl builds with openssl 3 which breaks legacy PKCS12 cert auth
+    cmake
+    coreutils
     delve
-    etcd
+    devenv
+    glab
     gnused
     gnutar
-    golangci-lint
-    (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
     gocyclo
+    golangci-lint
     golint
-    kluctl
-    kubectl
-    kubecolor
     jsonnet
     jsonnet-language-server
     just
-    mockgen
-    openfortivpn
-    openldap
-    python311
-    ripgrep
-    pcre
+    kluctl
+    kubecolor
+    kubectl
     libiconv
-    libgccjit
+    mockgen
+    nix-tree
+    open-webui
+    openldap
+    pcre
     pkg-config
-    cmake
-    coreutils
+    python312
+    python312Packages.chromadb
+    ripgrep
+    vendir
+    wireshark
+    xq-xml
+    yamllint
+    # aider-chat
+    # azure-cli # broken on unstable, so using nixpkgs stable
+    # colima
+    # curlFull # nixpkgs curl builds with openssl 3 which breaks legacy PKCS12 cert auth
+    # docker-client
+    # etcd # broken as of 2025-03-16?
+    # libgccjit
+    # open-webui # broken due to python3.12-colbert-ai-0.2.21 being broken on macOS
+    # openfortivpn # maybe broken as of 2024-10-31
+    # qemu
+    # sshfs
   ])
   # wrappers for homebrew compatibility, etc.
   ++ shellScriptWrappers
   # flakes outside nixpkgs (that don't have overlays)
   # TODO: how to make this more idiomatic without specifying the system arch
-  ++ [ mkaliasPackage ]
-  ++ [ nixpkgs-stable.outputs.legacyPackages.aarch64-darwin.azure-cli ];
+  ++ [ mkaliasPackage ];
+  # ++ (with nixpkgs-stable.outputs.legacyPackages.aarch64-darwin; []);
+  # ++ (builtins.filter lib.attrsets.isDerivation (builtins.attrValues pkgs.nerd-fonts));
   envVars = {
     EDITOR = "hx";
     VISUAL = "hx";
@@ -76,13 +94,18 @@ let
     SAML2AWS_USER_AGENT =
       "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.00) Gecko/20100101 Firefox/82.0";
     LSP_USE_PLISTS = "true";
+    EMACS = "${emacsAppDirectory}/Contents/MacOS/Emacs";
   };
   extraPaths = [
     (homeDirectory + "/" + localBinPath)
     (homeDirectory + "/.cargo/bin")
-    (homeDirectory + "/.docker/bin")
+    # (homeDirectory + "/.docker/bin")
+    # "/Applications/Docker.app/Contents/Resources/bin"
     (homeDirectory + "/" + goPathSuffix + "/bin")
     (homeDirectory + "/" + npmPackagePath + "/bin")
+    (emacsAppDirectory + "/Content/MacOS")
+    # rancher desktop
+    (homeDirectory + "/" + ".rd/bin")
   ];
 in
 {
@@ -151,48 +174,23 @@ in
       $DRY_RUN_CMD /usr/bin/killall -m Dock
       set +x
     '';
-    file."registries.config" = {
-      target = homeDirectory + "/.config/containers/registries.config";
-      text = ''
-        unqualified-search-registries = ["docker.io", "quay.io","voltera.azurecr.io"]
-      '';
+    file.".gitconfig" = {
+      source = ./git/config;
+      target = homeDirectory + "/.config/git/config";
+      force = true;
     };
-    file."policy.json" = {
-      target = homeDirectory + "/.config/containers/policy.json";
-      text = ''
-        {
-          "default": [
-            {
-              "type": "reject"
-            }
-          ],
-          "transports": {
-            "dir": {
-              "": [
-                {
-                  "type": "insecureAcceptAnything"
-                }
-              ]
-            },
-            "docker": {
-              "docker.io": [
-                {
-                  "type": "insecureAcceptAnything"
-                }
-              ],
-              "volterra.azurecr.io": [
-                {
-                  "type": "insecureAcceptAnything"
-                }
-              ]
-            }
-          }
-        }
-      '';
+    file.".gitignore" = {
+      source = ./git/ignore;
+      target = homeDirectory + "/.config/git/ignore";
+      force = true;
     };
   };
   programs.home-manager.enable = true;
   programs.zsh = {
+    shellAliases = {
+      sia = "nohup ~/Applications/sia.app/Contents/MacOS/sia >/dev/null 2>&1 &";
+      tailscale = "/Applications/Tailscale.app/Contents/MacOS/Tailscale";
+    };
     envExtra = builtins.readFile ./.zshenv-KD21QWDKW7;
     initContent = ''
     # hack to fix emacs/eat
