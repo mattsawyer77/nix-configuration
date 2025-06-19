@@ -3,7 +3,6 @@
 (when (fboundp 'up-slightly) (map! "<mouse-4>" 'up-slightly))
 (when (fboundp 'down-slightly) (map! "<mouse-5>" 'down-slightly))
 
-
 ;; TODO: unmap +/- keys in view-mode-map
 (map!
  :map general-override-mode-map
@@ -20,19 +19,18 @@
    (:prefix ("o" . "open")
     :desc "lsp-ui-imenu" "i" #'lsp-ui-imenu))
   )
- (:after centaur-tabs
-  :nv "S-<left>" #'centaur-tabs-backward
-  :nv "S-<right>" #'centaur-tabs-forward
-  :nv "C-SPC" #'centaur-tabs-switch-group
-  :nv "C-t" #'centaur-tabs--create-new-tab
-  :nv "s-{" #'centaur-tabs-backward
-  :nv "s-}" #'centaur-tabs-forward
+ (:after tabspaces
+  :nv "C-SPC" #'tabspaces-switch-or-create-workspace
+  :nv "C-t" #'tabspaces-open-or-create-project-and-workspace
+  :nv "s-}" #'tab-bar-switch-to-next-tab
+  :nv "s-{" #'tab-bar-switch-to-prev-tab
   (:leader
    (:prefix ("TAB" . "Tab")
-    :desc "Switch Tab" "TAB" #'centaur-tabs-switch-group
-    :desc "Close Tab" "x" #'centaur-tabs-kill-all-buffers-in-current-group
-    :desc "New Tab" "n" #'centaur-tabs--create-new-tab
-    )))
+    :desc "Switch Tab" "TAB" #'tab-bar-switch-to-recent-tab
+    :desc "Close Tab" "x" #'tabspaces-kill-buffers-close-workspace)
+   (:prefix ("p" . "+project")
+    :desc "Switch project" "p" #'tabspaces-switch-or-create-workspace
+    :desc "Add new project" "a" #'tabspaces-open-or-create-project-and-workspace)))
  (:after emacs-eat
   :nv "<f8>" #'eat-project
   (:leader

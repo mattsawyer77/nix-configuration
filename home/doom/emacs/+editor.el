@@ -895,7 +895,7 @@ wheel."
   (centaur-tabs-group-by-projectile-project)
   )
 
-(add-hook! after-init #'centaur-tabs-mode)
+;;(add-hook! after-init #'centaur-tabs-mode)
 
 ;; XXX: the following runs but something else re-enables ws-butler...
 (add-hook! makefile-mode
@@ -1151,3 +1151,22 @@ wheel."
   (setq treesit-font-lock-level 4))
 ;; (add-hook! go-ts-mode
 ;;   (setq-local treesit-font-lock-level 3))
+
+(after! modern-tab-bar
+  (setq modern-tab-bar-separator "")
+  )
+(after! tabspaces
+  (setq
+   tabspaces-use-filtered-buffers-as-default t
+   ;; tabspaces-default-tab "Default"
+   tabspaces-remove-to-default nil
+   tabspaces-exclude-buffers '("^\\*.*" "^ \\*.*")
+   tabspaces-include-buffers '("*scratch*")
+   tabspaces-initialize-project-with-todo nil
+   ;; sessions
+   ;; tabspaces-session t
+   ;; tabspaces-session-auto-restore t
+   )
+  (setq tab-bar-new-tab-choice "*scratch*"))
+(add-hook! after-init #'modern-tab-bar-mode)
+(add-hook! after-init #'tabspaces-mode)

@@ -64,7 +64,7 @@
 (package! textsize)
 (package! org-modern)
 ;; (unpin! centaur-tabs)
-(package! centaur-tabs :pin "d6009c295a4363930247ae9a4d1125aea4d3fd74")
+;; (package! centaur-tabs :pin "d6009c295a4363930247ae9a4d1125aea4d3fd74")
 (package! ewal)
 (package! git-auto-commit-mode)
 ;; (package! doom-nano-modeline
@@ -135,6 +135,8 @@
                    (:exclude ".dir-locals.el" "*-tests.el"))))
 
 (package! chatgpt-shell)
+(package! tabspaces :recipe (:host github :repo "mclear-tools/tabspaces"))
+(package! modern-tab-bar :recipe (:host github :repo "aaronjensen/emacs-modern-tab-bar"))
 
 (package! aider :recipe
   (:host github
