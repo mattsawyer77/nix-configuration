@@ -42,6 +42,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url =  "github:mattsawyer77/duckduckgo-mcp-server";
     };
+    # nixpkgs-emacs = {
+    #   url = "sawyer-nixpkgs";
+    # };
     nil = {
       url = "github:oxalica/nil";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -228,10 +231,11 @@
         modules = [
           ./hardware/haystack.nix
           ./modules/nixos.nix
-          ({ pkgs, ... }: import ./modules/k3s {
-            inherit pkgs;
-            listenerURL = "https://0.0.0.0:6443";
-          })
+          # ({ pkgs, ... }: import ./modules/k3s {
+          #   inherit pkgs;
+          #   listenerURL = "https://0.0.0.0:6443";
+          # })
+          # disable for now in case it's causing issues
           ({ config, pkgs, ... }: import ./modules/tailscale.nix {
             inherit config pkgs;
             needFirewall = false;
@@ -269,14 +273,15 @@
             networking = {
               networkmanager.enable = true;
               hostName = "haystack";
-              nameservers = [ "172.27.1.1" "1.0.0.1" "8.8.4.4" ];
+              nameservers = [ "1.0.0.1" "8.8.4.4" "172.27.1.1" ];
               firewall = {
                 enable = true;
                 allowPing = true;
                 allowedTCPPorts = [
+                  11434 # ollama
                   22 # ssh
                   2022 # et
-                  6443 # k3s
+                  # 6443 # k3s
                 ];
               };
             };
