@@ -32,7 +32,7 @@
 ;;   )
 ;; (package! treesit-auto)
 (package! uuidgen)
-(package! dap-mode)
+;; (package! dap-mode)
 ;; protobuf-mode repo contains way more than just the emacs package, including annoying git submodules,
 ;; and changes frequently, though protobuf-mode.el changes very seldom
 (unpin! protobuf-mode)
@@ -78,12 +78,6 @@
   :recipe (:host github
            :repo "foxfriday/evil-ts"
            :branch "main"))
-(package! lilypond-mode
-  :recipe (:repo "https://gitlab.com/lilypond/lilypond.git"
-           :branch "master"
-           :files ("elisp/*.el")
-           ))
-(package! flycheck-lilypond)
 ;; (package! vertico-posframe
 ;;     :recipe (:host github :repo "tumashu/vertico-posframe"))
 (package! autothemer)
@@ -99,9 +93,7 @@
 ;;            :files ("json5.el")))
 
 (package! apheleia)
-
 (package! just-mode)
-
 (package! emacs-eat
   :recipe (:host codeberg
            :repo "akib/emacs-eat"
@@ -112,7 +104,7 @@
                    (:exclude ".dir-locals.el" "*-tests.el"))))
 (package! envrc)
 (package! cov)
-(package! spacious-padding)
+;; (package! spacious-padding)
 
 ;; gitlab integration
 (package! lab
@@ -124,7 +116,7 @@
 (disable-packages! hl-line)
 
 (package! just-mode)
-(package! org-super-agenda)
+;; (package! org-super-agenda)
 (package! emacs-eat
   :recipe (:host codeberg
            :repo "akib/emacs-eat"
@@ -134,16 +126,19 @@
                    ("integration" "integration/*")
                    (:exclude ".dir-locals.el" "*-tests.el"))))
 
-(package! chatgpt-shell)
 (package! tabspaces :recipe (:host github :repo "mclear-tools/tabspaces"))
 (package! modern-tab-bar :recipe (:host github :repo "aaronjensen/emacs-modern-tab-bar"))
 
-(package! aider :recipe
-  (:host github
-   :repo "tninja/aider.el"
-   :files ("*.el")))
+(when (featurep :system 'macos)
+  (package! ns-keychain
+    :recipe (:host github :repo "yaqubroli/ns-keychain.el")))
+
+(package! gptel :recipe (:nonrecursive t))
 
 (package! gitlab-lsp :recipe
   (:host github
    :repo "kassick/gitlab-lsp.el"
    :files ("*.el")))
+
+;; (package! rg)
+(package! ultra-scroll :recipe (:host github :repo "jdtsmith/ultra-scroll" :branch "main"))

@@ -16,7 +16,10 @@
 (setq sh-basic-offset 2)
 (setq scroll-margin 3)
 
-;; (when (and (display-graphic-p) (featurep :system 'macos))
+(when (and
+       (display-graphic-p)
+       (featurep :system 'macos))
+  (add-hook! after-init #'ultra-scroll-mode))
 ;; (setq doom-modeline-icon t)
 ;; (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
 ;; (add-to-list 'default-frame-alist '(ns-appearance . dark)))
@@ -37,13 +40,15 @@
 (add-to-list 'auto-mode-alist '("\\\.aws/*" . toml-ts-mode))
 (add-to-list 'auto-mode-alist '("\\\.saml2aws" . toml-ts-mode))
 (add-to-list 'auto-mode-alist '("\\\.kube/config.*" . yaml-ts-mode))
+(add-to-list 'auto-mode-alist '("\\\.cc$" . c++-ts-mode))
 (add-to-list 'auto-mode-alist '("\\\.hpp$" . c++-ts-mode))
 (add-to-list 'auto-mode-alist '("\\\.h$" . c++-ts-mode))
 ;; make SSH authorized keys files more readable
 (add-to-list 'auto-mode-alist '("\\SConscript". python-mode))
 (add-to-list 'auto-mode-alist '("\\SConstruct". python-mode))
 (add-to-list 'auto-mode-alist '("\\go\.mod". go-mod-ts-mode))
-(add-to-list 'auto-mode-alist '("\\\.go". go-ts-mode))
+;; (add-to-list 'auto-mode-alist '("\\\.go". go-ts-mode))
+(add-to-list 'auto-mode-alist '("\\\.go". go-mode))
 ;; use GNU Makefile mode instead of BSD
 (add-to-list 'auto-mode-alist '("\\Makefile" . makefile-gmake-mode))
 ;; jsonnet
@@ -57,6 +62,9 @@
 (add-to-list 'auto-mode-alist '("\\CODEOWNERS$" . conf-mode))
 ;; json5-ish
 (add-to-list 'auto-mode-alist '("\\\.hujson$" . jsonc-mode))
+;; custom protobuf mode to provide some missing navigation functionality
+(after! protobuf-plus-mode
+  (add-to-list 'auto-mode-alist '("\\.proto\\'" . protobuf-plus-mode)))
 
 (after! evil
   ;; prevent paste from its default behavior of replacing the clipboard register with the replaced contents
@@ -103,7 +111,9 @@
 ;;   )
 
 (add-hook! go-mode #'+word-wrap-mode)
-(add-hook! go-ts-mode #'+word-wrap-mode)
+;; XXX: tree sitter seems to be terribly slow, force it back to legacy go-mode
+(add-hook! go-ts-mode #'go-mode)
+;; (add-hook! go-ts-mode #'+word-wrap-mode)
 
 ;; (global-treesit-auto-mode 1)
 ;; don't use tree-sitter for go until one or both of the following are fixed:
@@ -165,7 +175,8 @@
 ;;   )
 
 ;; (after! (go-mode lsp-mode)
-(add-hook! go-ts-mode #'lsp)
+;; (add-hook! go-ts-mode #'lsp)
+(add-hook! go-mode #'lsp)
 ;; (require 'dap-go)
 ;; (dap-go-setup)
 ;; (setq flycheck-golangci-lint-fast t)
@@ -175,7 +186,6 @@
 (add-hook! toml-ts-mode #'lsp)
 
 (add-hook! emacs-lisp-mode #'+word-wrap-mode)
-(add-hook! emacs-lisp-mode #'rainbow-delimiters-mode-enable)
 (add-hook! emacs-lisp-mode #'rainbow-mode)
 (add-hook! emacs-lisp-mode #'flycheck-mode)
 
@@ -185,8 +195,6 @@
 ;; (add-hook! go-ts-mode
 ;;   (setq go-ts-mode-indent-offset 2))
 
-;; (after! (go-mode rainbow-delimiters)
-;;   (add-hook! go-mode #'rainbow-delimiters-mode))
 ;; override LSP's default diagnostic checker and use golangci-lint instead
 ;; (add-hook! lsp-diagnostics-mode
 ;;   (when (eq major-mode 'go-mode)
@@ -205,82 +213,6 @@
     )
   )
 
-(when (and (display-graphic-p) (featurep :system 'macos) (fboundp 'pixel-scroll-precision-mode))
-  ;; taken from https://maximzuriel.nl/physics-and-code/emacs-mac-smooth-scroll/article
-  (setq scroll-margin 0
-        scroll-conservatively 101)
-
-  (global-set-key (kbd "<wheel-down>") #'pixel-scroll-precision)
-  (global-set-key (kbd "<wheel-up>") #'pixel-scroll-precision)
-
-  (pixel-scroll-precision-mode +1)
-
-  (with-eval-after-load 'pixel-scroll
-    (defun pixel-scroll-precision (event)
-      "Scroll the display vertically by pixels according to EVENT.
-Move the display up or down by the pixel deltas in EVENT to
-scroll the display according to the user's turning the mouse
-wheel."
-      (interactive "e")
-      (let ((window (mwheel-event-window event))
-            (current-window (selected-window)))
-        (when (framep window)
-          (setq window (frame-selected-window window)))
-        (if (and (nth 3 event))
-            (let ((delta
-                   (* -1
-                      (let ((dy (plist-get (nth 3 event) :scrolling-delta-y))
-                            pending-events)
-                        ;; Coalesce vertical mouse wheel events.
-                        (while (setq event (read-event nil nil 1e-5))
-                          (if (and (memq (event-basic-type event)
-                                         '(wheel-up wheel-down))
-                                   (eq window
-                                       (if mouse-wheel-follow-mouse
-                                           (posn-window (event-start event)))))
-                              (setq dy
-                                    (+ dy (plist-get (nth 3 event) :scrolling-delta-y)))
-                            (push event pending-events)))
-                        (if pending-events
-                            (setq unread-command-events (nconc (nreverse pending-events)
-                                                               unread-command-events)))
-                        (round (- dy))))))
-              (unless (zerop delta)
-                (if (> (abs delta) (window-text-height window t))
-                    (mwheel-scroll event nil)
-                  (with-selected-window window
-                    (if (or (and pixel-scroll-precision-interpolate-mice
-                                 (eq (device-class last-event-frame
-                                                   last-event-device)
-                                     'mouse))
-                            (and pixel-scroll-precision-large-scroll-height
-                                 (> (abs delta)
-                                    pixel-scroll-precision-large-scroll-height)
-                                 (let* ((kin-state (pixel-scroll-kinetic-state))
-                                        (ring (aref kin-state 0))
-                                        (time (aref kin-state 1)))
-                                   (or (null time)
-                                       (> (- (float-time) time) 1.0)
-                                       (and (consp ring)
-                                            (ring-empty-p ring))))))
-                        (progn
-                          (let ((kin-state (pixel-scroll-kinetic-state)))
-                            (aset kin-state 0 (make-ring 30))
-                            (aset kin-state 1 nil))
-                          (pixel-scroll-precision-interpolate delta current-window))
-                      (condition-case nil
-                          (progn
-                            (if (< delta 0)
-	                        (pixel-scroll-precision-scroll-down (- delta))
-                              (pixel-scroll-precision-scroll-up delta))
-                            (pixel-scroll-accumulate-velocity delta))
-                        ;; Do not ding at buffer limits.  Show a message instead.
-                        (beginning-of-buffer
-                         (message (error-message-string '(beginning-of-buffer))))
-                        (end-of-buffer
-                         (message (error-message-string '(end-of-buffer))))))))))
-          (mwheel-scroll event nil)))))
-  )
 
 (after! undo-tree
   (setq undo-tree-auto-save-history t)
@@ -405,7 +337,8 @@ wheel."
            ;; (flycheck-posframe-mode -1)
            ;; (flycheck-mode -1)
            ;; (tree-sitter-hl-mode 1)
-           (lsp-inlay-hints-mode 1)
+           (lsp-inlay-hints-mode -1)
+           (setq lsp-enable-symbol-highlighting nil)
            )
 
 (after! highlight-indent-guides
@@ -688,9 +621,30 @@ wheel."
 (add-hook! protobuf-mode #'display-line-numbers-mode)
 (add-hook! protobuf-mode #'flycheck-mode)
 (add-hook! protobuf-mode #'+word-wrap-mode)
+(add-hook! protobuf-plus-proto-root
+  (setq-local proto-search-path (vc-git-root
+                                 (file-name-as-directory
+                                  (or (buffer-file-name) default-directory)))))
 
 ;; disable autoformat for protobuf-mode
 (add-hook! protobuf-mode (apheleia-mode -1))
+
+;; buf format only seems to work when run from the project root dir
+;; see https://github.com/radian-software/apheleia/issues/30#issuecomment-778150037
+;; (defun sawyer/fix-apheleia-project-dir (orig-fn &rest args)
+;;   (let ((project (project-current)))
+;;     ;; if protobuf mode, change working dir to root before running buf format
+;;     (if (and (eq major-mode 'protobuf-mode) (not (null project)))
+;;         (let ((default-directory (project-root project))) (apply orig-fn args))
+;;       (apply orig-fn args))))
+
+;; (after! apheleia-mode
+;;   (add-to-list `apheleia-formatters '(buf . ("buf" "format" "-w" "--debug" "--path" "file")))
+;;   (advice-add 'apheleia-format-buffer :around #'sawyer/fix-apheleia-project-dir))
+
+;; (add-hook! protobuf-mode
+;;   (setq-local apheleia-formatter 'buf))
+
 (put 'flycheck-protoc-import-path 'safe-local-variable #'listp)
 
 ;; (after! (yaml-mode lsp-mode)
@@ -724,12 +678,12 @@ wheel."
 (after! magit
   (setq auto-revert-check-vc-info t)
   (setq auto-revert-interval 30)
-  ;; (setq magit-refresh-status-buffer nil)
-  ;; (setq magit-diff-highlight-indentation nil)
-  ;; (setq magit-diff-highlight-trailing nil)
-  ;; (setq magit-diff-paint-whitespace nil)
-  ;; (setq magit-diff-highlight-hunk-body nil)
-  ;; (setq magit-diff-refine-hunk nil)
+  (setq magit-refresh-status-buffer nil)
+  (setq magit-diff-highlight-indentation nil)
+  (setq magit-diff-highlight-trailing nil)
+  (setq magit-diff-paint-whitespace nil)
+  (setq magit-diff-highlight-hunk-body nil)
+  (setq magit-diff-refine-hunk nil)
   (setq-default git-commit-summary-max-length 100)
   (setq git-commit-summary-max-length 100)
   ;; (remove-hook 'magit-status-sections-hook 'magit-insert-tags-header)
@@ -820,10 +774,24 @@ wheel."
   :size 0.50
   )
 
+(set-popup-rule! "^\\*jq-json\\*"
+  :side 'right
+  :slot 5
+  :vslot 5
+  :size 0.50
+  )
+
 (after! go-guru)
 (set-popup-rule! "^\\*go-guru-output.*"
   :side 'bottom
   :size 5
+  )
+
+(set-popup-rule! "\\*gpt:*"
+  :side 'right
+  :slot 5
+  :vslot 5
+  :size 0.40
   )
 
 (after! centaur-tabs
@@ -1070,17 +1038,42 @@ wheel."
   (setq lab-group "12645129") ;; F5/volterra
   )
 
-(after! chatgpt-shell
-  (setq chatgpt-shell-openai-key (getenv "OPENAI_API_KEY"))
-  ;; (setq chatgpt-shell-model-version "gpt-4o")
-  (setq chatgpt-shell-model-version "gpt-4o")
-  (setq chatgpt-shell-api-url-base "https://f5ai.pd.f5net.com/api")
-  ;; (setq chatgpt-shell-model-version "gemma2:2b")
-  ;; (setq chatgpt-shell-model-version "qwen2.5-coder")
-  ;; (setq chatgpt-shell-model-version "mistral-small:24b")
-  ;; (setq chatgpt-shell-ollama-api-url-base "http://haystack-ts:11434")
-  ;; (setq chatgpt-shell-model-temperature 0.15)
-  (setq chatgpt-shell-logging t)
+(when (featurep :system 'macos)
+  (require 'ns-keychain))
+
+(defun sawyer/get-creds (hostname account)
+  "get credentials securely"
+  (if (fboundp 'ns-keychain-get-internet-password)
+      (ns-keychain-get-internet-password hostname account)
+    (error "TODO: implement sawyer/get-creds for non-macOS")))
+
+(after! gptel
+  (setq gptel-model '04-mini
+        gptel-default-mode 'org-mode
+        gptel-track-media t
+        gptel-org-set-properties t
+        gptel-prompt-prefix-alist '((markdown-mode . "# ")
+                                    (org-mode . "* ")
+                                    (text-mode . "### "))
+        gptel-response-prefix-alist
+        '((markdown-mode . "")
+          (org-mode . "** 🤖:\n")
+          (text-mode . ""))
+        gptel-backend (gptel-make-openai "gpt: Local OpenWebUI"
+                        :host "127.0.0.1:3000"
+                        :protocol "http"
+                        :endpoint "/api/chat/completions"
+                        :key (sawyer/get-creds "127.0.0.1" "matt.sawyer@gmail.com")
+                        :stream t
+                        :models '(o4-mini gpt-4.1)))
+
+  ;; (setq gptel-model   '04-mini
+  ;;       gptel-backend (gptel-make-openai "gpt: F5GPT"
+  ;;                       :host "f5ai.pd.f5net.com"
+  ;;                       :endpoint "/api/chat/completions"
+  ;;                       :stream t
+  ;;                       :key (sawyer/get-creds "f5ai.pd.f5net.com" "sawyer")
+  ;;                       :models '(o4-mini gpt-4.1)))
   )
 
 ;; (after! aider
@@ -1170,5 +1163,6 @@ wheel."
    ;; tabspaces-session-auto-restore t
    )
   (setq tab-bar-new-tab-choice "*scratch*"))
+
 (add-hook! after-init #'modern-tab-bar-mode)
 (add-hook! after-init #'tabspaces-mode)

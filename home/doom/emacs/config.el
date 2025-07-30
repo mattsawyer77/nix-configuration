@@ -14,6 +14,7 @@
 ;; (load! "+cloudformation-mode")
 ;; (load! "+ghcid")
 (load! "+go-template-mode")
+(load! "+proto-search")
 (load! "+editor")
 (load! "+ui")
 (load! "+keybindings")
