@@ -54,6 +54,8 @@
      ;; :family "Victor Mono" :weight thin
      ;; :family "Berkeley Mono"
      ;; :family "Iosevka" :weight extra-light
+     ;; :family "Recursive Monospace" :weight normal
+     ;; :family "Maple Mono" :weight normal
      ;; :weight thin
      ;; :weight extra-light ;; (a.k.a. ultra-light)
      ;; :weight semi-light ;; (a.k.a. demi-light)
@@ -95,7 +97,7 @@
 ;; TODO can height be defined with a var?
 (defface code-face
   `((t :inherit sawyer/mono-face
-     :height 1.2 ;; for pragmata
+     :height 1.2 ;; for pragmata, recursive
      ;; :height 1.1 ;; for jetbrains mono
      ;; :weight extra-light
      ))
