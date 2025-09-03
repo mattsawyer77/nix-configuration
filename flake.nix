@@ -12,7 +12,7 @@
   };
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/master";
-    nixpkgs-stable.url = "github:nixos/nixpkgs/release-24.05";
+    nixpkgs-stable.url = "github:nixos/nixpkgs/release-25.05";
     darwin = {
       url = "github:LnL7/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -22,17 +22,33 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     # custom nixpkgs: added via nix registry
-    nixpkgs-emacs = {
-      url = "sawyer-nixpkgs";
+    # nixpkgs-emacs = {
+    #   url = "sawyer-nixpkgs";
+    # };
+    # custom mcpo
+    mcpo = {
+      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:mattsawyer77/mcpo";
+    };
+    # custom mcp-server-tree-sitter
+    mcp-server-tree-sitter = {
+      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:mattsawyer77/mcp-server-tree-sitter";
+    };
+    # custom duckduckgo mcp server
+    duckduckgo-mcp-server = {
+      inputs.nixpkgs.follows = "nixpkgs";
+      url =  "github:mattsawyer77/duckduckgo-mcp-server";
     };
     nil = {
       url = "github:oxalica/nil";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    mkalias = {
-      url = "github:reckenrode/mkalias";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    # appears to be broken due to dependency on darwin/apple-sdk
+    # mkalias = {
+    #   url = "github:reckenrode/mkalias";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
     # for loki's logcli
     loki = {
       url = "github:grafana/loki";
@@ -50,7 +66,7 @@
     #   # inputs.nixpkgs.follows = "nixpkgs";
     # };
   };
-  outputs = { self, nixpkgs, darwin, flake-utils, home-manager, ... }@inputs: {
+  outputs = { self, nixpkgs, darwin, flake-utils, mcpo, mcp-server-tree-sitter, duckduckgo-mcp-server, home-manager, ... }@inputs: {
     # mac
     darwinConfigurations =
       let
@@ -95,7 +111,7 @@
                 home-manager.users."${username}" = ({ config, lib, pkgs, ... }:
                   import ./home/mmbpm1.nix {
                     inherit config lib pkgs username fontConfig;
-                    mkalias = inputs.mkalias;
+                    # mkalias = inputs.mkalias;
                   });
               }
               ./modules/mac.nix
@@ -144,10 +160,10 @@
                 home-manager.useUserPackages = true;
                 home-manager.users."${username}" = ({ config, lib, pkgs, ... }:
                   import ./home/KD21QWDKW7.nix {
-                    inherit config lib pkgs username fontConfig;
-                    mkalias = inputs.mkalias;
-                    poetry2nix = inputs.poetry2nix;
-                    nixpkgs-emacs = inputs.nixpkgs-emacs;
+                    inherit config lib pkgs username fontConfig mcpo mcp-server-tree-sitter duckduckgo-mcp-server;
+                    # mkalias = inputs.mkalias;
+                    # poetry2nix = inputs.poetry2nix;
+                    # nixpkgs-emacs = inputs.nixpkgs-emacs;
                     nixpkgs-stable = inputs.nixpkgs-stable;
                   });
               }
