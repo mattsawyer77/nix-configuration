@@ -1,13 +1,19 @@
-font-family = "PragmataPro Liga"
+# font-family = "PragmataPro Liga"
 # font-family = "Recursive Monospace"
-# font-family = "JetBrains Mono"
+font-family = "JetBrains Mono"
 # font-family = "Maple Mono"
 # font-family = "Atkinson Hyperlegible Mono"
-font-size = 21
+font-size = 19
+# disable italics
+font-style-italic = false
+font-thicken = true
+font-thicken-strength = 128
 # theme = "dark:Kanagawa Wave,light:ayu_light"
 # theme = "dark:Ghostty Default StyleDark,light:ayu_light"
 # theme = "dark:Argonaut,light:ayu_light"
-theme = "dark:kanagawabones,light:ayu_light"
+theme = "dark:kanagawabones,light:github"
+# window-theme = "light"
+# window-theme = "dark"
 window-padding-x = 10,10
 window-padding-y = 5,0
 adjust-cell-height = 25%
