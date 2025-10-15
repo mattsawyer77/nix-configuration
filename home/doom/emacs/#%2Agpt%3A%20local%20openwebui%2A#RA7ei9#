@@ -1,0 +1,43 @@
+* Can you write an emacs lisp function that checks if there is a file in the current buffer's dir called lcov.info? If it exists, and its last modifed timestamp is greater than all of the go files in the directory, then the function should simply enable cov-mode. Otherwise it should call another elisp function, sawyer/go-generate-test-coverage.
+
+
+Absolutely! Here’s an Emacs Lisp function that does what you describe:
+
+#+begin_src elisp
+(defun sawyer/check-and-enable-cov-mode ()
+  "Enable `cov-mode` if lcov.info is newer than all Go files in the current buffer's directory.
+Otherwise, call `sawyer/go-generate-test-coverage`."
+  (interactive)
+  (let* ((dir (file-name-directory (or buffer-file-name default-directory)))
+         (lcov-file (expand-file-name "lcov.info" dir))
+         (go-files (directory-files dir t "\\.go\\'")))
+
+    (if (not (file-exists-p lcov-file))
+        ;; lcov.info doesn't exist, so generate coverage
+        (sawyer/go-generate-test-coverage)
+
+      (let* ((lcov-mod (nth 5 (file-attributes lcov-file)))
+             (newer-go-file
+              (cl-some (lambda (file)
+                         (let ((mod-time (nth 5 (file-attributes file))))
+                           (when (time-less-p lcov-mod mod-time)
+                             file)))
+                       go-files)))
+        (if newer-go-file
+            ;; A Go file is newer; regenerate coverage
+            (sawyer/go-generate-test-coverage)
+          ;; lcov.info is up to date; enable cov-mode
+          (when (fboundp 'cov-mode)
+            (cov-mode 1)))))))
+#+end_src
+
+*Key points:*
+- Looks for =lcov.info= in the current buffer's directory.
+- If it’s missing, calls =sawyer/go-generate-test-coverage=.
+- If it exists, compares its modtime to all =.go= files in the directory.
+- If any Go file is *newer*, calls =sawyer/go-generate-test-coverage=.
+- Otherwise, (and if =cov-mode= is available), enables =cov-mode=.
+
+Let me know if you need tweaks or further explanation!
+
+* 

@@ -1,0 +1,28 @@
+* I have some emacs lisp code that needs to be updated since defadvice has been deprecated. Can you rewrite this to use either advice-add or define-advice?
+#+BEGIN_SRC elisp
+(defadvice flycheck-error-list-refresh (around shrink-error-list activate)
+    ad-do-it
+    (-when-let (window (flycheck-get-error-list-window t))
+      (with-selected-window window
+        (fit-window-to-buffer window 5))))
+#+END_SRC
+
+Certainly! Here is the rewritten code using =advice-add= with a =:around= advice function:
+
+#+begin_src elisp
+(defun my/flycheck-error-list-refresh-around (orig-fun &rest args)
+  (apply orig-fun args)
+  (when-let ((window (flycheck-get-error-list-window t)))
+    (with-selected-window window
+      (fit-window-to-buffer window 5))))
+
+(advice-add 'flycheck-error-list-refresh :around #'my/flycheck-error-list-refresh-around)
+#+end_src
+
+*Notes:*
+- =:around= advises receive the original function as the first argument.
+- You no longer need =ad-do-it=; instead, call =orig-fun= with =apply=.
+- The use of =when-let= is standard in recent Emacs; if you're on an older version, use =-when-let= from dash.el as before.
+- Remove the deprecated =defadvice=/=ad-do-it= pattern.
+
+* Can you 

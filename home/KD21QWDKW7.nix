@@ -3,15 +3,20 @@
 , nixpkgs-stable
 # , nixpkgs-emacs
 , username
-, mkalias
+# , mkalias
+, mcpo
+, mcp-server-tree-sitter
+, duckduckgo-mcp-server
 # , wezterm
+# , ghostty
 , ...
 }:
 
 let
   homeDirectory = "/Users/" + username;
   doomDirectory = ".doom.d";
-  emacsAppDirectory = "${homeDirectory}/Applications/Emacs.app";
+  homeAppDirectory = "${homeDirectory}/Applications";
+  emacsAppDirectory = "${homeAppDirectory}/Emacs.app";
   ghosttyAppDirectory ="${homeAppDirectory}/Ghostty.app";
   goPathSuffix = "gocode";
   localBinPath = ".local/bin";
@@ -28,12 +33,15 @@ let
     (pkgs.writeShellScriptBin "gxargs" ''exec ${pkgs.findutils}/bin/xargs "$@"'')
     # enable `gtar` alias which calls gnu tar for compatibility with homebrew
     (pkgs.writeShellScriptBin "gtar" ''exec ${pkgs.gnutar}/bin/tar "$@"'')
-  ];
+    # enable `emacs` alias which calls Emacs
+    (pkgs.writeShellScriptBin "emacs" ''exec ${emacsAppDirectory}/Contents/MacOS/Emacs "$@"'')
+    (pkgs.writeShellScriptBin "ghostty" ''exec ${ghosttyAppDirectory}/Contents/MacOS/ghostty "$@"'')
+  ] ++ localScripts;
   homePackages = (with pkgs; [
     (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
     aws-iam-authenticator
-    awscli
-    azure-cli
+    awscli2
+    # azure-cli # broken as of 2025-08-29
     bazelisk
     buf
     cachix
@@ -43,6 +51,10 @@ let
     coreutils
     delve
     devenv
+    duf
+    dust
+    git
+    github-mcp-server
     glab
     gnused
     gnutar
@@ -56,6 +68,7 @@ let
     kubecolor
     kubectl
     libiconv
+    mcp-nixos
     mockgen
     nix-tree
     open-webui
@@ -63,11 +76,14 @@ let
     pcre
     pkg-config
     python312
-    python312Packages.chromadb
+    # python312Packages.chromadb
+    # repomix # too old at 1.3.0, install via npm
     ripgrep
+    terraform
     vendir
     wireshark
     xq-xml
+    xquartz
     yamllint
     # aider-chat
     # azure-cli # broken on unstable, so using nixpkgs stable
@@ -85,8 +101,12 @@ let
   ++ shellScriptWrappers
   # flakes outside nixpkgs (that don't have overlays)
   # TODO: how to make this more idiomatic without specifying the system arch
-  ++ [ mkaliasPackage ];
-  # ++ (with nixpkgs-stable.outputs.legacyPackages.aarch64-darwin; []);
+  ++ (with nixpkgs-stable.outputs.legacyPackages.aarch64-darwin; [
+    azure-cli
+    mcpo-package
+    mcp-server-tree-sitter-package
+    duckduckgo-mcp-server-package
+  ]);
   # ++ (builtins.filter lib.attrsets.isDerivation (builtins.attrValues pkgs.nerd-fonts));
   envVars = {
     EDITOR = "hx";
@@ -117,7 +137,8 @@ in
     })
     (import ./wezterm {
       inherit pkgs;
-      # weztermPackage = nixpkgs-stable.outputs.legacyPackages.aarch64-darwin.wezterm;
+      theme = "kanagawa_wave";
+    })
     (import ./ghostty {
       # ghosttyPackage = ghostty.outputs.packages.aarch64-darwin.ghostty;
       inherit pkgs lib;
@@ -157,28 +178,29 @@ in
     sessionPath = extraPaths;
     sessionVariables = envVars;
     # setup application aliases and add them to the Dock
-    activation.setupAliases = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      #/usr/bin/env zsh
-      set -xe
-      echo "setting up ~/Applications..." >&2
+    # TODO: find another way to do this
+    # activation.setupAliases = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    #   #/usr/bin/env zsh
+    #   set -xe
+    #   echo "setting up ~/Applications..." >&2
 
-      # Needs to be writable by the user so that home-manager can create aliases there
-      $DRY_RUN_CMD chown ${username} ~/Applications
-      $DRY_RUN_CMD chmod u+w ~/Applications
+    #   # Needs to be writable by the user so that home-manager can create aliases there
+    #   $DRY_RUN_CMD chown ${username} ~/Applications
+    #   $DRY_RUN_CMD chmod u+w ~/Applications
 
-      find ~/Applications/Home\ Manager\ Apps/* -maxdepth 0 -mindepth 0 -wholename '*.app' -exec readlink '{}' + |
-        while read app; do
-          # Spotlight does not recognize symlinks, it will ignore directory we link to the applications folder.
-          # It does understand MacOS aliases though, a unique filesystem feature. Sadly they cannot be created
-          # from bash (as far as I know), so we use a custom utility called mkalias.
-          app_name=$(basename "$app" | ${pkgs.sd}/bin/sd '\.[^\.]+$' $''')
-          $DRY_RUN_CMD ${mkaliasPackage}/bin/mkalias $app ~/Applications/$app_name
-          $DRY_RUN_CMD ${pkgs.dockutil}/bin/dockutil --add "$app" --replacing "$app_name" --no-restart ~${username}
-      done
-      # only restart the Dock once, instead of per app in the above loop
-      $DRY_RUN_CMD /usr/bin/killall -m Dock
-      set +x
-    '';
+    #   find ~/Applications/Home\ Manager\ Apps/* -maxdepth 0 -mindepth 0 -wholename '*.app' -exec readlink '{}' + |
+    #     while read app; do
+    #       # Spotlight does not recognize symlinks, it will ignore directory we link to the applications folder.
+    #       # It does understand MacOS aliases though, a unique filesystem feature. Sadly they cannot be created
+    #       # from bash (as far as I know), so we use a custom utility called mkalias.
+    #       app_name=$(basename "$app" | ${pkgs.sd}/bin/sd '\.[^\.]+$' $''')
+    #       $DRY_RUN_CMD ${mkaliasPackage}/bin/mkalias $app ~/Applications/$app_name
+    #       $DRY_RUN_CMD ${pkgs.dockutil}/bin/dockutil --add "$app" --replacing "$app_name" --no-restart ~${username}
+    #   done
+    #   # only restart the Dock once, instead of per app in the above loop
+    #   $DRY_RUN_CMD /usr/bin/killall -m Dock
+    #   set +x
+    # '';
     file.".gitconfig" = {
       source = ./git/config;
       target = homeDirectory + "/.config/git/config";
@@ -205,9 +227,22 @@ in
       bindkey -e
     fi
     export POWERLEVEL9K_CONFIG_FILE=~/workspaces/nix-configuration/home/powerlevel10k/.p10k.zsh
-    # '';
-    # initExtra = ''
-    #   command -v npm >/dev/null && npm config set prefix ${npmPackagePath} && export PATH=$PATH:$HOME/${npmPackagePath}/bin
-    # '';
+    # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+    # Initialization code that may require console input (password prompts, [y/n]
+    # confirmations, etc.) must go above this block; everything else may go below.
+    if [[ -r "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh" ]]; then
+      source "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh"
+    fi
+    autoload -Uz compinit && compinit
+    if command -v aws_completer >/dev/null; then
+      complete -C 'aws_completer' aws
+    fi
+    if command -v kubectl >/dev/null; then
+      source <(kubectl completion zsh)
+      # alias has to be setup after the above source for completion to work
+      alias k=kubectl
+    fi
+    command -v npm >/dev/null && npm config set prefix ${npmPackagePath} && export PATH=$PATH:$HOME/${npmPackagePath}/bin
+    '';
   };
 }

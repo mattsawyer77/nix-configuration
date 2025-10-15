@@ -1,0 +1,110 @@
+* Can you write an emacs lisp function to run a shell command to generate test coverage for the current buffer file's go package? The function should only work if the current major mode is go-mode or go-ts-mode. It should figure out the package name of the current go file, and then it should run a shell command like the following: `go test -coverprofile <current buffer's dir>/coverage.out <package name>`. If that succeeds, then it should run a 2nd command like the following: `gcov2lcov --use-absolute-source-path -infile=<current buffer's dir>/coverage.out -outfile <current buffer's dir>/lcov.info`.
+
+
+#+begin_src emacs-lisp
+(defun my/go-generate-test-coverage ()
+  "Generate test coverage for the current Go package.
+Runs `go test -coverprofile` and converts the result using `gcov2lcov`."
+  (interactive)
+  (unless (memq major-mode '(go-mode go-ts-mode))
+    (error "Not in a Go buffer"))
+  (let* ((file (buffer-file-name))
+         (dir (file-name-directory file))
+         ;; Use go list -f '{{.ImportPath}}' to get the import path of the current dir
+         (pkg (string-trim
+               (with-temp-buffer
+                 (let ((default-directory dir))
+                   (call-process "go" nil (current-buffer) nil "list" "-f" "{{.ImportPath}}"))
+                 (buffer-string))))
+         (cov-file (expand-file-name "coverage.out" dir))
+         (lcov-file (expand-file-name "lcov.info" dir))
+         (cov-cmd (format "go test -coverprofile=%s %s" cov-file pkg))
+         (lcov-cmd (format "gcov2lcov --use-absolute-source-path -infile=%s -outfile %s" cov-file lcov-file)))
+    (message "Running: %s" cov-cmd)
+    (let ((default-directory dir))
+      (if (eq 0 (call-process-shell-command cov-cmd))
+          (progn
+            (message "Running: %s" lcov-cmd)
+            (if (eq 0 (call-process-shell-command lcov-cmd))
+                (message "Coverage generated: %s" lcov-file)
+              (error "gcov2lcov failed")))
+        (error "go test failed")))))
+#+end_src
+
+*How it works:*
+- Only runs in =go-mode= or =go-ts-mode=.
+- Gets the Go package import path using =go list -f '{{.ImportPath}}'=.
+- Runs =go test -coverprofile ...= for that package.
+- If successful, runs =gcov2lcov= to convert the output.
+- Both commands run in the directory of the current buffer's file.
+
+*Usage*:  
+Open a Go source file, then call =M-x my/go-generate-test-coverage=.
+
+*Dependencies*:  
+- =go= and =gcov2lcov= must be installed and in =PATH=.
+
+* This seems to work well. But the test runs can be pretty long. Can the function be modified to run asynchronously in the background and notify me when done?
+
+
+Absolutely! You can use [=make-process=](https://www.gnu.org/software/emacs/manual/html_node/elisp/Asynchronous-Processes.html) or [=start-process=](https://www.gnu.org/software/emacs/manual/html_node/elisp/Asynchronous-Processes.html#Asynchronous-Processes) for true asynchronous behavior.  
+Below is an updated version using =make-process= and its sentinel, so you’ll get a notification (and error reporting) when each step completes:
+
+#+begin_src emacs-lisp
+(defun my/go-generate-test-coverage ()
+  "Asynchronously generate test coverage for the current Go package and notify on completion."
+  (interactive)
+  (unless (memq major-mode '(go-mode go-ts-mode))
+    (error "Not in a Go buffer"))
+  (let* ((file (buffer-file-name))
+         (dir (file-name-directory file))
+         (default-directory dir)
+         (pkg (string-trim
+               (with-temp-buffer
+                 (call-process "go" nil (current-buffer) nil "list" "-f" "{{.ImportPath}}")
+                 (buffer-string))))
+         (cov-file (expand-file-name "coverage.out" dir))
+         (lcov-file (expand-file-name "lcov.info" dir))
+         (cov-cmd (format "go test -coverprofile=%s %s" cov-file pkg))
+         (lcov-cmd (format "gcov2lcov --use-absolute-source-path -infile=%s -outfile %s" cov-file lcov-file)))
+    ;; Asynchronously run `go test`
+    (message "Running: %s" cov-cmd)
+    (make-process
+     :name "go-test-coverage"
+     :buffer "*go-test-coverage*"
+     :command (list "sh" "-c" cov-cmd)
+     :noquery t
+     :sentinel
+     (lambda (proc event)
+       (when (string= event "finished\n")
+         ;; Now run gcov2lcov, also async
+         (message "Running: %s" lcov-cmd)
+         (make-process
+          :name "gcov2lcov"
+          :buffer "*gcov2lcov*"
+          :command (list "sh" "-c" lcov-cmd)
+          :noquery t
+          :sentinel
+          (lambda (p e)
+            (if (string= e "finished\n")
+                (progn
+                  (message "Coverage generated: %s" lcov-file)
+                  (when (fboundp 'notifications-notify)
+                    (notifications-notify
+                     :title "Go Coverage"
+                     :body (format "Generated: %s" lcov-file))))
+              (message "gcov2lcov failed: %s (see *gcov2lcov*)" e))))))))))
+#+end_src
+
+*Features:*
+- Both steps (=go test= and =gcov2lcov=) run asynchronously in the background.
+- You are notified via =message= and, if supported, =notifications-notify= when done. (The latter uses libnotify (=notify-send=) so it works on Linux, etc.)
+- If a command fails, check the respective =*go-test-coverage*= or =*gcov2lcov*= buffer for output/errors.
+
+*Usage:*  
+Open a Go file and run =M-x my/go-generate-test-coverage=.  
+You may want to =M-x require RET notifications RET= if you want desktop notifications.
+
+Let me know if you'd like further customizations!
+
+* 

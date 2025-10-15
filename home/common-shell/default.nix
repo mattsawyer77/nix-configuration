@@ -57,11 +57,45 @@ let
         kv = "kubecolor -n ves-system";
         l = "eza";
       };
-      initContent = ''
-        zstyle ':completion:*:*:*:default' menu yes select search
-        command -v kubectl >/dev/null && source <(kubectl completion zsh)
+      completionInit = ''
+        autoload -U compinit && compinit
+        command -v kubectl >/dev/null && source <(kubectl completion zsh) && alias k=kubectl
         command -v zoxide >/dev/null && eval "$(zoxide init zsh)"
         command -v az >/dev/null && source ${pkgs.azure-cli}/share/bash-completion/completions/az.bash
+      '';
+      initContent = ''
+        # Case-insensitive completion
+        zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+
+        # Menu selection for completions
+        zstyle ':completion:*' menu select
+
+        # Use colors in completion menus
+        zstyle ':completion:*' list-colors "$${(s.:.)LS_COLORS}"
+
+        # Group completions by category
+        zstyle ':completion:*' group-name '''
+
+        # Add descriptions to completions
+        zstyle ':completion:*:descriptions' format '%B%d%b'
+
+        # Use cache for faster completions
+        zstyle ':completion:*' use-cache on        zstyle ':completion:*' cache-path ~/.zsh/cache
+        # fix some contrast issues with ZSH syntax highlighting
+        ZSH_HIGHLIGHT_STYLES[reserved-word]="fg=magenta"
+        ZSH_HIGHLIGHT_STYLES[precommand]="fg=red"
+        ZSH_HIGHLIGHT_STYLES[commandseparator]="fg=magenta"
+        ZSH_HIGHLIGHT_STYLES[globbing]="fg=magenta"
+        ZSH_HIGHLIGHT_STYLES[history-expansion]="fg=magenta"
+        ZSH_HIGHLIGHT_STYLES[single-quoted-argument]="fg=green"
+        ZSH_HIGHLIGHT_STYLES[double-quoted-argument]="fg=green"
+        ZSH_HIGHLIGHT_STYLES[dollar-quoted-argument]="fg=green"
+        ZSH_HIGHLIGHT_STYLES[rc-quote]="fg=magenta"
+        ZSH_HIGHLIGHT_STYLES[dollar-double-quoted-argument]="fg=black"
+        ZSH_HIGHLIGHT_STYLES[back-double-quoted-argument]="fg=magenta"
+        ZSH_HIGHLIGHT_STYLES[back-dollar-quoted-argument]="fg=magenta"
+        ZSH_HIGHLIGHT_STYLES[redirection]="fg=magenta"
+        ZSH_HIGHLIGHT_STYLES[comment]="fg=244"
         printf '\e]2;'$(hostname)'\a'
       '';
     };

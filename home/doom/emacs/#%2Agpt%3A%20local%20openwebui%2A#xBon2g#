@@ -1,0 +1,17 @@
+* Can you write a simple emacs lisp function that has 1 optional argument? If the argument is passed in, return the argument. If the argument is not passed in, return some hardcoded  value.
+
+* - Emacs Lisp function with optional argument
+
+#+BEGIN_SRC emacs-lisp
+(defun my-simple-func (&optional arg)
+  "Return ARG if provided, else return 'default-value."
+  (if arg
+      arg
+    'default-value))
+#+END_SRC
+
+- Usage examples
+- (my-simple-func 42) ⇒ 42
+- (my-simple-func)    ⇒ default-value
+
+* * 

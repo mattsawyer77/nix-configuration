@@ -1,0 +1,58 @@
+* Can you write an emacs lisp code that finds all README.me files recursively from the current buffer's project root directory? I want to programatically use this to create context for gptel.
+
+Certainly! Here’s a simple Emacs Lisp function that finds all =README.me= files recursively from the current buffer’s project root, using Doom/projectile or built-in project.el if available:
+
+#+begin_src elisp
+(defun sawyer/find-readme-me-files ()
+  "Recursively find all README.me files from the current project's root."
+  (interactive)
+  (let* ((project-root (or (and (fboundp 'projectile-project-root)
+                                (projectile-project-root))
+                           (when (fboundp 'project-current)
+                             (when-let (proj (project-current))
+                               (car (project-roots proj))))
+                           default-directory))
+         (readme-files (when project-root
+                         (directory-files-recursively project-root "README\\.me\\'"))))
+    (if (called-interactively-p 'any)
+        (if readme-files
+            (progn
+              (with-output-to-temp-buffer "*README.me Files*"
+                (princ (string-join readme-files "\n"))))
+          (message "No README.me files found."))
+      readme-files)))
+#+end_src
+
+*Usage:*
+- You can call =(sawyer/find-readme-me-files)= programmatically, and it will return a list of matching files.
+- Interactively (=M-x sawyer/find-readme-me-files=), it displays results in =*README.me Files*=.
+
+*For GPTel context:*
+You can use the returned list for further processing, e.g., loading their contents as context.
+
+Let me know if you want an example of using these file paths to combine their text for GPTel input!
+
+* Yes, I want to call gptel-context-add-file on the results, so the content of the files doesn't show up in the gptel buffer along with the chat session text.
+
+Perfect! Here’s an Emacs Lisp snippet to combine the previous code with =gptel-context-add-file=, ensuring that each =README.me= file is registered as a context file—so its content is available to GPTel, but does *not* show up in your chat buffer.
+
+#+begin_src elisp
+(defun sawyer/add-readme-me-files-to-gptel-context ()
+  "Find all README.me files in the project root and add them to GPTel context."
+  (interactive)
+  (let* ((files (sawyer/find-readme-me-files)))
+    (if files
+        (progn
+          (dolist (f files)
+            (gptel-context-add-file f))
+          (message "Added %d README.me files to GPTel context." (length files)))
+      (message "No README.me files found."))))
+#+end_src
+
+*Usage:*
+- Run =M-x sawyer/add-readme-me-files-to-gptel-context=
+- All =README.me= files are registered for GPTel context, and won’t clutter your chat area.
+
+Let me know if you want to automatically run this when starting a GPTel session, or for arbitrary filename patterns!
+
+* Thinking more generically, I'd like to consider having 

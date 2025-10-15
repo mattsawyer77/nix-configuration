@@ -1,0 +1,38 @@
+* Can you write an emacs lisp function to take a list directories which can be duplicates, absolute paths, and relative paths to the current working dir, and returns a sorted, deduplicated list of directories that are
+
+Here’s a small Emacs-Lisp snippet that takes a list of directory names (absolute or relative), filters out anything that isn’t a directory, normalizes them to absolute paths, deduplicates and finally returns them in sorted order:
+
+#+begin_src elisp
+;; we use cl-delete-duplicates for de-duplication
+(require 'cl-lib)
+
+(defun my/normalize-dirs (dirs)
+  "Given a list DIRS of directories (absolute or relative),
+return a sorted, deduplicated list of their absolute paths.
+Non-existent or non-directory entries are dropped."
+  (let ((canon
+         ;; Step 1: expand each to an absolute path and drop if not a directory
+         (delq nil
+               (mapcar (lambda (d)
+                         (let ((abs (expand-file-name d)))
+                           (when (file-directory-p abs)
+                             ;; normalize by removing any trailing slash
+                             (directory-file-name abs))))
+                       dirs))))
+    ;; Step 2: remove duplicates (string=) and sort by string<
+    (sort (cl-delete-duplicates canon :test #'string=) #'string<)))
+
+;; Example
+(my/normalize-dirs '("./" "/etc/" "../" "/etc" "non-exist"))
+;; => ("/etc" "/home/you" ...)
+#+end_src
+
+Explanation of the steps:
+
+1. =expand-file-name= turns relative names into absolute ones.
+2. =file-directory-p= filters out anything that isn’t an existing directory.
+3. =directory-file-name= strips any trailing slash so that “/foo/” and “/foo” compare equal.
+4. =cl-delete-duplicates :test #'string== removes exact string duplicates.
+5. =sort … #'string<= returns the final list in lexicographic order.
+
+*  transformed to relative paths to the current working directory?

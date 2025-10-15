@@ -2,79 +2,6 @@
 let
   # map the following keys from ctrl to cmd
   ctrlToCMDKeys = [ "c" "v" "x" "f" "g" "t" "n" "z" ];
-  functionKeySimpleMods = [
-    # for some reason, can't figure out why the macOS setting
-    # to use function keys as f1, f2, etc. is not taking effect --
-    # so map them back to those keys here:
-    {
-      from = { consumer_key_code = "display_brightness_decrement"; };
-      to = [{ key_code = "f1"; }];
-    }
-    {
-      from = { consumer_key_code = "display_brightness_increment"; };
-      to = [{ key_code = "f2"; }];
-    }
-    # TODO: figure out why f3, f4, f5, f6 are not registering
-    {
-      from = { consumer_key_code = "scan_previous_track"; };
-      to = [{ key_code = "f7"; }];
-    }
-    {
-      from = { consumer_key_code = "play_or_pause"; };
-      to = [{ key_code = "f8"; }];
-    }
-    {
-      from = { consumer_key_code = "scan_next_track"; };
-      to = [{ key_code = "f9"; }];
-    }
-    {
-      from = { consumer_key_code = "mute"; };
-      to = [{ key_code = "f10"; }];
-    }
-    {
-      from = { consumer_key_code = "volume_decrement"; };
-      to = [{ key_code = "f11"; }];
-    }
-    {
-      from = { consumer_key_code = "volume_increment"; };
-      to = [{ key_code = "f12"; }];
-    }
-  ];
-  fnFunctionKeys = [
-    # map hardware fn modifier + function key to apple functionality
-    {
-      from = { key_code = "f1"; };
-      to = [{ consumer_key_code = "display_brightness_decrement"; }];
-    }
-    {
-      from = { key_code = "f2"; };
-      to = [{ consumer_key_code = "display_brightness_increment"; }];
-    }
-    {
-      from = { key_code = "f7"; };
-      to = [{ consumer_key_code = "scan_previous_track"; }];
-    }
-    {
-      from = { key_code = "f8"; };
-      to = [{ consumer_key_code = "play_or_pause"; }];
-    }
-    {
-      from = { key_code = "f9"; };
-      to = [{ consumer_key_code = "scan_next_track"; }];
-    }
-    {
-      from = { key_code = "f10"; };
-      to = [{ consumer_key_code = "mute"; }];
-    }
-    {
-      from = { key_code = "f11"; };
-      to = [{ consumer_key_code = "volume_decrement"; }];
-    }
-    {
-      from = { key_code = "f12"; };
-      to = [{ consumer_key_code = "volume_increment"; }];
-    }
-  ];
   karabinerConfig = {
     global = {
       check_for_updates_on_startup = true;
@@ -322,37 +249,60 @@ let
               type = "basic";
             }];
           }
+          {
+            description =
+              "map cmd+y to history sidebar in Firefox";
+            manipulators = [{
+              conditions = [{
+                type = "frontmost_application_if";
+                bundle_identifiers = [
+                  "^org\\.mozilla\\."
+                  "^app\\.zen-browser\\.zen"
+                ];
+              }];
+              from = {
+                modifiers = { mandatory = [ "left_command" ]; };
+                key_code = "y";
+              };
+              to = [
+                {
+                  modifiers = [ "right_shift" "right_command" ];
+                  key_code = "h";
+                }
+              ];
+              type = "basic";
+            }];
+          }
+
+          {
+            description =
+              "map cmd+shift+y to history window in Firefox";
+            manipulators = [{
+              conditions = [{
+                type = "frontmost_application_if";
+                bundle_identifiers = [
+                  "^org\\.mozilla\\."
+                  "^app\\.zen-browser\\.zen"
+                ];
+              }];
+              from = {
+                modifiers = [ "left_shift" "left_command" ];
+                key_code = "h";
+              };
+              to = [
+                {
+                  modifiers = [ "right_command" ];
+                  key_code = "y";
+                }
+              ];
+              type = "basic";
+            }];
+          }
         ];
       };
       devices = [
         {
           disable_built_in_keyboard_if_exists = false;
-          # fn_function_keys = [
-          #   {
-          #     from = { key_code = "f1"; };
-          #     to = [{ consumer_key_code = "mute"; }];
-          #   }
-          #   {
-          #     from = { key_code = "f2"; };
-          #     to = [{ consumer_key_code = "volume_decrement"; }];
-          #   }
-          #   {
-          #     from = { key_code = "f3"; };
-          #     to = [{ consumer_key_code = "volume_increment"; }];
-          #   }
-          #   {
-          #     from = { key_code = "f4"; };
-          #     to = [{ consumer_key_code = "rewind"; }];
-          #   }
-          #   {
-          #     from = { key_code = "f5"; };
-          #     to = [{ consumer_key_code = "play_or_pause"; }];
-          #   }
-          #   {
-          #     from = { key_code = "f6"; };
-          #     to = [{ consumer_key_code = "fastforward"; }];
-          #   }
-          # ];
           identifiers = {
             is_keyboard = true;
             is_pointing_device = false;
@@ -362,10 +312,6 @@ let
           ignore = false;
           manipulate_caps_lock_led = false;
           simple_modifications = [
-            # {
-            #   from = { key_code = "caps_lock"; };
-            #   to = [{ key_code = "left_control"; }];
-            # }
             {
               from = { key_code = "left_command"; };
               to = [{ key_code = "left_option"; }];
@@ -419,12 +365,12 @@ let
           ignore_vendor_events = true;
           manipulate_caps_lock_led = true;
           # seems that the "pointing device" keychron q1 is what matters here?
-          fn_function_keys = fnFunctionKeys;
-          simple_modifications = functionKeySimpleMods;
+          # fn_function_keys = fnFunctionKeys;
+          # simple_modifications = [];
         }
         {
           disable_built_in_keyboard_if_exists = false;
-          fn_function_keys = fnFunctionKeys;
+          # fn_function_keys = fnFunctionKeys;
           identifiers = {
             is_keyboard = true;
             is_pointing_device = false;
@@ -500,64 +446,10 @@ let
           simple_modifications = [ ];
         }
       ];
-      # fn_function_keys = [
-      #   {
-      #     from = { key_code = "f1"; };
-      #     to = [{ consumer_key_code = "display_brightness_decrement"; }];
-      #   }
-      #   {
-      #     from = { key_code = "f2"; };
-      #     to = [{ consumer_key_code = "display_brightness_increment"; }];
-      #   }
-      #   {
-      #     from = { key_code = "f3"; };
-      #     to = [{ key_code = "mission_control"; }];
-      #   }
-      #   {
-      #     from = { key_code = "f4"; };
-      #     to = [{ key_code = "launchpad"; }];
-      #   }
-      #   {
-      #     from = { key_code = "f5"; };
-      #     to = [{ key_code = "illumination_decrement"; }];
-      #   }
-      #   {
-      #     from = { key_code = "f6"; };
-      #     to = [{ key_code = "illumination_increment"; }];
-      #   }
-      #   {
-      #     from = { key_code = "f7"; };
-      #     to = [{ consumer_key_code = "rewind"; }];
-      #   }
-      #   {
-      #     from = { key_code = "f8"; };
-      #     to = [{ consumer_key_code = "play_or_pause"; }];
-      #   }
-      #   {
-      #     from = { key_code = "f9"; };
-      #     to = [{ consumer_key_code = "fastforward"; }];
-      #   }
-      #   {
-      #     from = { key_code = "f10"; };
-      #     to = [{ consumer_key_code = "mute"; }];
-      #   }
-      #   {
-      #     from = { key_code = "f11"; };
-      #     to = [{ consumer_key_code = "volume_decrement"; }];
-      #   }
-      #   {
-      #     from = { key_code = "f12"; };
-      #     to = [{ consumer_key_code = "volume_increment"; }];
-      #   }
-      # ];
       name = "Default profile";
       parameters = { delay_milliseconds_before_open_device = 1000; };
       selected = true;
       simple_modifications = [
-        # {
-        #   from = { key_code = "caps_lock"; };
-        #   to = [{ key_code = "left_control"; }];
-        # }
         {
           # toggle between light/dark mode
           from = { key_code = "f9"; };

@@ -118,6 +118,7 @@
        editorconfig      ; let someone else argue about tabs vs spaces
        ;;ein               ; tame Jupyter notebooks with emacs
        (eval +overlay)     ; run code, run (also, repls)
+       ;; llm
        (lookup +dictionary +offline)             ; navigate your code and its documentation
        ;; (lsp +peek)
        lsp
@@ -127,7 +128,7 @@
        make              ; run make tasks from Emacs
        ;;pass              ; password manager for nerds
        ;; pdf               ; pdf enhancements
-       ;;terraform         ; infrastructure as code
+       (terraform +lsp)         ; infrastructure as code
        tree-sitter
        ;;tmux              ; an API for interacting with tmux
 

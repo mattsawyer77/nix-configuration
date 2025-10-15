@@ -1,125 +1,88 @@
 ;;;  -*- lexical-binding: t; -*-
 ;;; Commentary: emacs package to provide finding proto definitions, since there is no lsp server that really works
 
-(define-derived-mode protobuf-plus-mode protobuf-mode
-  "protobuf-plus-mode"
+(define-derived-mode proto-nav-mode protobuf-mode
+  "proto-nav-mode"
   "minor mode for finding the definition of a protobuf message.")
 
-(add-to-list 'auto-mode-alist '("\\.proto\\'" . protobuf-plus-mode))
-(require 'vc-git)
-(defcustom protobuf-plus-proto-root nil
-  "path to search for proto files
+(add-to-list 'auto-mode-alist '("\\.proto\\'" . proto-nav-mode))
+
+(defcustom proto-nav-proto-roots nil
+  "path(s) to search for proto files
 -- defaults to the current buffer's git root directory"
-  :type '(string))
+  :type '(list))
 
-(defun protobuf-plus-find-message-def (name)
-  "Find the .proto file that defines message NAME.
-If exactly one hit, jump there.  If multiple, use completing-read (Vertico)
-so you can pick one."
-  (interactive "sProto message name: ")
-  (let* ((search-dir (if (eq protobuf-plus-proto-root nil)
-                         (vc-git-root (file-name-as-directory (or (buffer-file-name) default-directory)))
-                       protobuf-plus-proto-root
-                       ))
-         ;; (_ (message "resolved search-dir: %s" search-dir))
-         (cmd
-          (if (executable-find "rg")
-              (format "rg --color=never --glob '*.proto' --no-heading --line-number --sort=path --only-matching '^message\\s+%s\\b' %s"
-                      (shell-quote-argument name)
-                      search-dir)
-            (format "grep -R -n -w --include='*.proto' -E '^message[[:space:]]+%s\\b' %s"
-                    (shell-quote-argument name) search-dir)))
-         ;; (_ (message "about to search using command: %s" cmd))
-         (raw (shell-command-to-string cmd))
-         ;; (_ (message "search output: %s" raw))
-         (lines (split-string raw "\n" t))
-         ;; build (display-string . (file . line-num))
-         (cands
-          (mapcar
-           (lambda (ln)
-             (let* ((parts    (split-string ln ":" t))
-                    (file     (car parts))
-                    (lnum     (string-to-number (cadr parts)))
-                    (content  (string-trim (mapconcat #'identity (cddr parts) ":")))
-                    (disp     (format "%s:%d: %s" file lnum content)))
-               (cons disp (cons file lnum))))
-           lines)))
-    (cond
-     ((null cands)
-      (user-error "No message '%s' found under %s" name search-dir))
-     ((= 1 (length cands))
-      (let* ((target (cdar cands)))
-        (find-file (car target))
-        (goto-char (point-min))
-        (forward-line (1- (cdr target)))))
-     (t
-      (let* ((choice (completing-read "Pick proto: " (mapcar #'car cands) nil t))
-             (target (cdr (assoc choice cands))))
-        (find-file (car target))
-        (goto-char (point-min))
-        (forward-line (1- (cdr target))))))))
+(require 'cl-lib)
+(require 'vc-git)
+(require 'consult)
+(require 'vertico)
 
-(defun protobuf-plus-find-message-def-at-point ()
-  "Call `protobuf-plus-find-message-def` on the symbol at point."
+(defun proto-nav--root-dirs ()
+  "get a list of candidate directories to search for proto files based on
+the buffer's directory"
+  (if (and (boundp 'flycheck-protoc-import-path)
+           (not (eq flycheck-protoc-import-path nil)))
+      flycheck-protoc-import-path
+    (list (vc-git-root (file-name-as-directory
+                        (or (buffer-file-name) default-directory))))))
+
+(defun proto-nav--normalize-dirs (dirs)
+  "Given a list DIRS of directories (absolute or relative),
+return a sorted, deduplicated list of their absolute paths.
+Non-existent or non-directory entries are dropped."
+  (let ((canon
+         ;; Step 1: expand each to an absolute path and drop if not a directory
+         (delq nil
+               (mapcar (lambda (d)
+                         (let ((abs (expand-file-name d)))
+                           (when (file-directory-p abs)
+                             ;; normalize by removing any trailing slash
+                             (directory-file-name abs))))
+                       dirs))))
+    ;; Step 2: remove duplicates (string=) and sort by string<
+    (sort (cl-delete-duplicates canon :test #'string=) #'string<)))
+
+(defun proto-nav-project-find-message-def (&optional initial-query directory)
+  "Performs a live project search for the proto message definition from the
+project root dir (and any proto root dirs defined in
+flycheck-protoc-import-path) using ripgrep."
+  (interactive "s")
+  (let* ((extra-args '("--type-add=proto:*.proto" "--type=proto" "--only-matching"))
+         (extra-dirs (proto-nav--root-dirs))
+         (final-dirs (proto-nav--normalize-dirs extra-dirs))
+         (all-args (append extra-args final-dirs))
+         (query (format "^message\\s+%s\\b" (regexp-quote initial-query))))
+    (+vertico-file-search
+      :query query
+      :in directory
+      :args all-args)))
+
+(defun proto-nav-project-find-message-refs (&optional initial-query directory)
+  "Performs a live project search for references to the proto message
+definition from the project root using ripgrep."
+  (interactive "s")
+  (let* ((extra-args '("--type-add=proto:*.proto" "--type=proto" "--only-matching"))
+         (extra-dirs (proto-nav--root-dirs))
+         (final-dirs (proto-nav--normalize-dirs extra-dirs))
+         (all-args (append extra-args final-dirs))
+         (query (format "^\\s*[\\w\\._]*\\b%s\\b.*=\\s*\\d+" (regexp-quote initial-query))))
+    (+vertico-file-search
+      :query query
+      :in directory
+      :args all-args)))
+
+(defun proto-nav-project-find-message-def-at-point ()
+  "Performs a live project search for the definition of the proto message at point."
   (interactive)
-  (let ((sym (thing-at-point 'symbol t)))
-    (if (and sym (not (string-empty-p sym)))
-        (protobuf-plus-find-message-def sym)
-      (user-error "No symbol at point"))))
+  (proto-nav-project-find-message-def (thing-at-point 'symbol)))
 
-;;; Search for *references* to a proto message, not its definition.
-(defun protobuf-plus-find-message-references (name)
-  "Find references to proto message NAME in all .proto files under
-`protobuf-plus-proto-root`. Uses `rg` (ripgrep) if available,
-otherwise falls back to `grep -R`. On a single hit, jump there.
-On multiple hits, prompt with `completing-read`."
-  (interactive "sProto message to search for: ")
-  (let* ((quoted-name (shell-quote-argument name))
-         (search-dir (if (eq protobuf-plus-proto-root nil)
-                         (vc-git-root (file-name-as-directory (or (buffer-file-name) default-directory)))
-                       protobuf-plus-proto-root
-                       ))
-         (cmd
-          (if (executable-find "rg")
-              (format "rg --line-number --no-heading --color never --glob '*.proto' --sort=path --only-matching '^\s*[\\w\\._]*\\b%s\\b.*=\\s*\\d+' %s"
-                      quoted-name search-dir)
-            (format "grep -R -n -w --include='*.proto' '^[[:space:]]*[\\w\\._]*\\b%s\\b.*=[[:space:]]*\\d+' %s"
-                    quoted-name search-dir)))
-         (_ (message "about to execute command: %s" cmd))
-         )
-    (let* ((raw-lines (split-string (shell-command-to-string cmd) "\n" t))
-           (cands
-            (mapcar
-             (lambda (ln)
-               (let* ((parts   (split-string ln ":" t))
-                      (file    (car parts))
-                      (lnum    (string-to-number (cadr parts)))
-                      (txt     (mapconcat #'identity (cddr parts) ":"))
-                      (summary (string-trim txt))
-                      (disp    (format "%s:%d: %s" file lnum summary)))
-                 ;; each candidate is (DISPLAY . (FILE . LINENUM))
-                 (cons disp (cons file lnum))))
-             raw-lines)))
-      (cond
-       ((null cands)
-        (user-error "No references to '%s' found under %s" name protobuf-plus-proto-root))
-       ((= (length cands) 1)
-        (let* ((target (cdar cands)))
-          (find-file (car target))
-          (goto-char (point-min))
-          (forward-line (1- (cdr target)))))
-       (t
-        (let* ((choice (completing-read "Choose reference: "
-                                        (mapcar #'car cands) nil t))
-               (target (cdr (assoc choice cands))))
-          (find-file (car target))
-          (goto-char (point-min))
-          (forward-line (1- (cdr target)))))))))
-
-(defun protobuf-plus-find-message-references-at-point ()
-  "Call `protobuf-plus-find-message-references` on the symbol at point."
+(defun proto-nav-project-find-message-refs-at-point ()
+  "Performs a live project search for refs to the proto message at point."
   (interactive)
-  (let ((sym (thing-at-point 'symbol t)))
-    (if (and sym (not (string-empty-p sym)))
-        (protobuf-plus-find-message-references sym)
-      (user-error "No symbol at point"))))
+  (proto-nav-project-find-message-refs (thing-at-point 'symbol)))
+
+(defun proto-nav-project-find-message-def-at-point-in-buffer ()
+  "Performs a live project search for the definition of the proto message at point."
+  (interactive)
+  (let* ((query (format "^message[[:space:]]+%s\\b" (regexp-quote (thing-at-point 'symbol)))))
+    (consult-line query)))

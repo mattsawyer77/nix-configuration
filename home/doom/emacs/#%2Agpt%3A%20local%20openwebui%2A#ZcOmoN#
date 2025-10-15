@@ -1,0 +1,20 @@
+* Can you write an emacs lisp function that iterates over currently defined faces and changes any that are using a bold weight to a medium weight?
+
+
+* Certainly! Here’s an Emacs Lisp function that iterates over all defined faces and sets their weight to =medium= if it’s currently =bold=:
+
+#+begin_src elisp
+(defun my/change-bold-faces-to-medium ()
+  "Iterate over all faces and set those with bold weight to medium."
+  (interactive)
+  (dolist (face (face-list))
+    (let ((current-weight (face-attribute face :weight nil t)))
+      (when (eq current-weight 'bold)
+        (set-face-attribute face nil :weight 'medium)))))
+#+end_src
+
+- Run with =M-x my/change-bold-faces-to-medium=.
+- It checks each face’s weight, and updates if it’s bold.  
+- Add to your init file if you want it on startup.
+
+* * 

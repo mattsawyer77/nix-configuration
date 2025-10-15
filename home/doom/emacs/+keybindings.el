@@ -26,10 +26,10 @@
   :nv "s-{" #'tab-bar-switch-to-prev-tab
   (:leader
    (:prefix ("TAB" . "Tab")
-    :desc "Switch Tab" "TAB" #'tab-bar-switch-to-recent-tab
+    :desc "Switch Tab" "TAB" #'tabspaces-switch-or-create-workspace
     :desc "Close Tab" "x" #'tabspaces-kill-buffers-close-workspace)
    (:prefix ("p" . "+project")
-    :desc "Switch project" "p" #'tabspaces-switch-or-create-workspace
+    :desc "Switch project" "p" #'tabspaces-open-or-create-project-and-workspace
     :desc "Add new project" "a" #'tabspaces-open-or-create-project-and-workspace)))
  (:after emacs-eat
   :nv "<f8>" #'eat-project
@@ -58,7 +58,9 @@
 ;; (after! (evil-nerd-commenter evil-commands)
 (add-hook! prog-mode
   (map! :map general-override-mode-map
-        :nv "#" #'evilnc-comment-or-uncomment-lines))
+        :mode prog-mode
+        :nv "#" #'evilnc-comment-or-uncomment-lines
+        :nv "TAB" #'evil-jump-item))
 
 (after! general
   (map! :map general-override-mode-map
@@ -100,6 +102,7 @@
       :nv "C-n" #'org-move-item-down
       :nv "C-p" #'org-move-item-up
       :i "RET" #'evil-org-return
+      :n "z O" #'evil-open-fold-rec
       (:localleader
        :nv "-" #'org-cycle-list-bullet))
 
@@ -153,3 +156,12 @@
        :nv "s-0" #'textsize-reset
        :nv "s--" #'textsize-decrement
        :nv "s-=" #'textsize-increment))
+(map! :after cov
+      :leader (:map global-map :nv "c v" #'cov-mode))
+(map! :after general
+      (:nv "<f5>" #'gptel
+       :nv "C-<f5>" #'gptel-menu))
+
+(set-lookup-handlers! 'proto-nav-mode
+  :definition #'proto-nav-project-find-message-def-at-point
+  :references #'proto-nav-project-find-message-refs-at-point)

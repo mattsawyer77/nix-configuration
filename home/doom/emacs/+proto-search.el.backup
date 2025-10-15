@@ -1,0 +1,123 @@
+;;;  -*- lexical-binding: t; -*-
+;;; Commentary: emacs package to provide finding proto definitions
+
+(define-derived-mode proto-search-mode protobuf-mode
+  "proto-search-mode"
+  "minor mode for finding the definition of a protobuf message.")
+
+(add-to-list 'auto-mode-alist '("\\\.proto$" . proto-search-mode))
+
+(require 'subr-x)  ;; for string-empty-p
+
+(defcustom proto-search-path "~/protos"
+  "Directory in which to search for .proto definitions."
+  :type 'directory
+  :group 'proto)
+
+(defun find-proto-message (name)
+  "Find the .proto file that defines message NAME.
+If `rg` (ripgrep) is available, use it; otherwise fall back to `grep -R`.
+On a single hit, jump there.  On multiple, present a completing-read."
+  (interactive "sProto message name: ")
+  (let* ((pattern (format "^message[[:space:]]+\\<%s\\>" name))
+         (quoted-pat (shell-quote-argument pattern))
+         (quoted-dir (shell-quote-argument proto-search-path))
+         (cmd
+          (if (executable-find "rg")
+              ;; ripgrep: -n for line nums, --no-heading to get file:line per match
+              ;; --glob to restrict to *.proto
+              (format "rg -n --no-heading --glob '*.proto' --regexp %s %s"
+                      quoted-pat quoted-dir)
+            ;; fallback to grep
+            (format "grep -R -n --include='*.proto' %s %s"
+                    quoted-pat quoted-dir)))
+         (raw (shell-command-to-string cmd))
+         (lines (split-string raw "\n" t))
+         (cands
+          (mapcar
+           (lambda (ln)
+             (let* ((parts   (split-string ln ":" t))
+                    (file    (car parts))
+                    (lnum    (string-to-number (cadr parts)))
+                    (txt     (mapconcat #'identity (cddr parts) ":"))
+                    (summary (string-trim txt))
+                    (disp    (format "%s:%d: %s" file lnum summary)))
+               (cons disp (cons file lnum))))
+           lines)))
+    (cond
+     ((null cands)
+      (user-error "No message '%s' found in %s" name proto-search-path))
+     ((= 1 (length cands))
+      (let* ((target (cdar cands)))
+        (find-file (car target))
+        (goto-char (point-min))
+        (forward-line (1- (cdr target)))))
+     (t
+      (let* ((choice (completing-read "Choose proto: " (mapcar #'car cands) nil t))
+             (target (cdr (assoc choice cands))))
+        (find-file (car target))
+        (goto-char (point-min))
+        (forward-line (1- (cdr target))))))))
+
+(defun find-proto-message-at-point ()
+  "Call `find-proto-message` on the symbol at point."
+  (interactive)
+  (let ((sym (thing-at-point 'symbol t)))
+    (if (and sym (not (string-empty-p sym)))
+        (find-proto-message sym)
+      (user-error "No symbol at point"))))
+
+;;; Search for *references* to a proto message, not its definition.
+(defun find-proto-references (name)
+  "Find references to proto message NAME in all .proto files under `proto-search-path`.
+Uses `rg` (ripgrep) if available, otherwise falls back to `grep -R`.
+On a single hit, jump there.  On multiple hits, prompt with `completing-read`."
+  (interactive "sProto message to search for: ")
+  (let* ((pattern (format "^\s*[\\w\\._]*%s\\b" name))
+         (quoted-pat (shell-quote-argument pattern))
+         (quoted-dir  (shell-quote-argument proto-search-path))
+         (cmd
+          (if (executable-find "rg")
+              ;; ripgrep: -n line nums, --no-heading for file:line:content, --color never
+              ;; -w for whole word, --glob to limit to .proto
+              (format "rg -n --no-heading --color never --glob '*.proto' -w %s %s"
+                      quoted-pat quoted-dir)
+            ;; fallback grep: -R recursive, -n line nums, -w whole word, --include=*.proto
+            (format "grep -R -n -w -E --include='*.proto' %s %s"
+                    quoted-name quoted-dir))))
+    (let* ((raw-lines (split-string (shell-command-to-string cmd) "\n" t))
+           (cands
+            (mapcar
+             (lambda (ln)
+               (let* ((parts   (split-string ln ":" t))
+                      (file    (car parts))
+                      (lnum    (string-to-number (cadr parts)))
+                      (txt     (mapconcat #'identity (cddr parts) ":"))
+                      (summary (string-trim txt))
+                      (disp    (format "%s:%d: %s" file lnum summary)))
+                 ;; each candidate is (DISPLAY . (FILE . LINENUM))
+                 (cons disp (cons file lnum))))
+             raw-lines)))
+      (cond
+       ((null cands)
+        (user-error "No references to '%s' found under %s" name proto-search-path))
+       ((= (length cands) 1)
+        (let* ((target (cdar cands)))
+          (find-file (car target))
+          (goto-char (point-min))
+          (forward-line (1- (cdr target)))))
+       (t
+        (let* ((choice (completing-read "Choose reference: "
+                                        (mapcar #'car cands) nil t))
+               (target (cdr (assoc choice cands))))
+          (find-file (car target))
+          (goto-char (point-min))
+          (forward-line (1- (cdr target)))))))))
+
+(defun find-proto-references-at-point ()
+  "Call `find-proto-references` on the symbol at point."
+  (interactive)
+  (let ((sym (thing-at-point 'symbol t)))
+    (if (and sym (not (string-empty-p sym)))
+        (find-proto-references sym)
+      (user-error "No symbol at point"))))

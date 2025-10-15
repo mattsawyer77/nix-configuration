@@ -1,0 +1,74 @@
+* Can you write an emacs lisp function that will check if there is a repomix-output.xml in the project's root directory (using projectile or project.el if projectile is not installed), and if so will add repomix-output.xml to the gptel context automatically?
+
+Certainly! Here’s an Emacs Lisp function that checks for =repomix-output.xml= in the project root (using Projectile if available, else falling back to project.el), and adds it to the GPTel context (by adjusting =gptel-context-files=).
+
+#+begin_src emacs-lisp
+(defun sawyer/add-repomix-to-gptel-context ()
+  "If repomix-output.xml exists in project root, add it to gptel context."
+  (interactive)
+  (let* ((project-root
+          (cond
+           ((and (featurep 'projectile) (fboundp 'projectile-project-root))
+            (projectile-project-root))
+           ((fboundp 'project-root)
+            (when-let ((pr (project-current)))
+              (car (project-roots pr))))
+           (t
+            (locate-dominating-file default-directory ".git"))))
+         ;; nil if no root, else build path
+         (repomix-path (and project-root
+                            (expand-file-name "repomix-output.xml" project-root))))
+    (when (and repomix-path (file-exists-p repomix-path))
+      ;; gptel-context-files can be buffer-local, but set globally for simplicity
+      (add-to-list 'gptel-context-files repomix-path)
+      (message "Added %s to gptel context." repomix-path))))
+#+end_src
+
+*Usage:*  
+Call =(sawyer/add-repomix-to-gptel-context)= from your project buffer; it will check for the file and add it if present.
+
+*Integration Tip:*  
+You can add this to a hook, e.g. Projectile's =projectile-after-switch-project-hook=:
+
+#+begin_src emacs-lisp
+(add-hook 'projectile-after-switch-project-hook #'sawyer/add-repomix-to-gptel-context)
+#+end_src
+
+Or with project.el (Emacs 29+):
+
+#+begin_src emacs-lisp
+(add-hook 'project-switch-project-hook #'sawyer/add-repomix-to-gptel-context)
+#+end_src
+
+*Customization:*  
+If =gptel-context-files= is buffer-local in your setup, use =(add-to-list 'gptel-context-files repomix-path t)= inside a buffer context.
+
+* Maybe instead of setting the variable gpt-context-files, it should call the gptel-context-add-file function?
+
+Absolutely! Using =gptel-context-add-file= is more robust and portable, since it handles buffer-local/global lists and manages duplicates as intended by gptel.
+
+Here’s the revised function:
+
+#+begin_src emacs-lisp
+(defun sawyer/add-repomix-to-gptel-context ()
+  "If repomix-output.xml exists in the project root, add it to GPTel context using `gptel-context-add-file`."
+  (interactive)
+  (let* ((project-root
+          (cond
+           ((and (featurep 'projectile) (fboundp 'projectile-project-root))
+            (projectile-project-root))
+           ((fboundp 'project-root)
+            (when-let ((pr (project-current)))
+              (car (project-roots pr))))
+           (t
+            (locate-dominating-file default-directory ".git"))))
+         (repomix-path (and project-root
+                            (expand-file-name "repomix-output.xml" project-root))))
+    (when (and repomix-path (file-exists-p repomix-path))
+      (gptel-context-add-file repomix-path)
+      (message "Added %s to GPTel context." repomix-path))))
+#+end_src
+
+You can invoke this interactively or attach it to project switch hooks as in the prior answer.
+
+* 
