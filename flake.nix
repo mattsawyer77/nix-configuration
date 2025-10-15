@@ -231,10 +231,10 @@
         modules = [
           ./hardware/haystack.nix
           ./modules/nixos.nix
-          # ({ pkgs, ... }: import ./modules/k3s {
-          #   inherit pkgs;
-          #   listenerURL = "https://0.0.0.0:6443";
-          # })
+          ({ pkgs, ... }: import ./modules/k3s {
+            inherit pkgs;
+            listenerURL = "https://0.0.0.0:6443";
+          })
           # disable for now in case it's causing issues
           ({ config, pkgs, ... }: import ./modules/tailscale.nix {
             inherit config pkgs;
