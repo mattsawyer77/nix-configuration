@@ -119,6 +119,7 @@
     # upx
     # vmtouch
     wget
+    xan
     yaml-language-server
     yarn
     yj
