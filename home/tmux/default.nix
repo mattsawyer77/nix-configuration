@@ -1,4 +1,5 @@
 { pkgs
+, prefixKey ? "C-space"
 , optionOverrides ? []
 , ... }:
 
@@ -187,13 +188,22 @@ let
     "M-Right" = "select-pane -R";
     "M-Up" = "select-pane -U";
     "M-Down" = "select-pane -D";
-    # "WheelUpPane" = ''
-    #   if-shell -F -t = "#{mouse_any_flag}" "send-keys -M" "if -Ft= '#{pane_in_mode}' 'send-keys -M' 'copy-mode -e'"
-    # '';
+    "M-1" = "select-window -t 1"; 
+    "M-2" = "select-window -t 2"; 
+    "M-3" = "select-window -t 3"; 
+    "M-4" = "select-window -t 4"; 
+    "M-5" = "select-window -t 5"; 
+    "M-6" = "select-window -t 6"; 
+    "M-7" = "select-window -t 7"; 
+    "M-8" = "select-window -t 8"; 
+    "M-9" = "select-window -t 9"; 
+    "WheelUpPane" = ''
+      if-shell -F -t = "#{mouse_any_flag}" "send-keys -M" "if -Ft= '#{pane_in_mode}' 'send-keys -M' 'copy-mode -e'"
+    '';
   };
 
   # keys to bind with prefix
-  prefixKeys = {
+  prefixKeyBindings = {
     "j" = ''
       command-prompt -p "join pane from:"  "join-pane -hs '%%'"
     '';
@@ -237,14 +247,14 @@ in
     disableConfirmationPrompt = true;
     historyLimit = 50000;
     keyMode = "vi";
-    prefix = "C-space";
+    prefix = prefixKey;
     shortcut = "space"; # ??
     sensibleOnTop = false;
     shell = "/etc/profiles/per-user/sawyer/bin/zsh";
     extraConfig = ''
       ${mapKeyUnbinds unbindKeys}
       ${mapKeyBinds "bind -n" rootKeys}
-      ${mapKeyBinds "bind" prefixKeys}
+      ${mapKeyBinds "bind" prefixKeyBindings}
       ${clipboardSettings}
       set-environment LESS '-F -i -M -R -X --incsearch'
       ${mapOptions extraConfigOptions}

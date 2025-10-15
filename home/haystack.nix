@@ -8,7 +8,7 @@ let
   npmPackagePath = ".config/npm-packages";
   # to update/regenerate, run node2nix -i <(echo '["bash-language-server", "prettier"]') --nodejs-18
   # then copy the resulting files into ./npm-packages
-  npmPackages = import ./npm-packages { inherit pkgs; };
+  # npmPackages = import ./npm-packages { inherit pkgs; };
   homePackages = with pkgs; [
     (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
     aws-iam-authenticator
@@ -46,6 +46,7 @@ let
     golangci-lint
     grpcurl
     helix
+    helm
     htop
     jansson
     just
@@ -71,9 +72,9 @@ let
     wireshark
     xsel
     yaml-language-server
-  ]
+  ];
   # npm packages setup via node2nix
-  ++ (with npmPackages; [ bash-language-server prettier ]);
+  # ++ (with npmPackages; [ bash-language-server prettier ]);
 
   envVars = {
     BAT_THEME = "1337";
@@ -133,7 +134,7 @@ in
         {
           name = "status-left";
           value = ''
-            "#[bg=#439fad]#[fg=#151e24]#{?client_prefix,#[bg=green],} #S "
+            "#[bg=#E8993E]#[fg=#151e24]#{?client_prefix,#[bg=green],} #S "
           '';
           flags = [ "global" ];
         }
@@ -156,8 +157,9 @@ in
     (import ./doom {
       inherit pkgs username envVars localBinPath;
       doomDir = doomDirectory;
-      emacsPackage = pkgs.emacs-nox;
-      launchDaemon = true;
+      emacsPackage = pkgs.emacs;
+      launchDaemon = false;
+      runDoomCommands = false;
     })
     (import ./git {
       inherit config pkgs lib;
@@ -165,6 +167,7 @@ in
       defaultUser = "Matt Sawyer";
     })
     ./helix
+    ./ollama
   ];
   home = {
     inherit homeDirectory;

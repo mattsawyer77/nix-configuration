@@ -17,7 +17,7 @@ with lib;
     curlFull
     docker
     docker-compose
-    etcd
+    # etcd
     eternal-terminal
     eza
     fd
@@ -58,6 +58,9 @@ with lib;
       keep-outputs = true
       keep-derivations = true
     '';
+    settings = {
+      download-buffer-size = 524288000;
+    };
   };
   nixpkgs = {
     config.allowUnfree = true;
