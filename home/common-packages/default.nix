@@ -108,8 +108,6 @@
     starship
     sqlite
     taglib
-    # install Tailscale CLI here, but GUI is installed manually
-    # tailscale
     taplo
     tokei
     tree

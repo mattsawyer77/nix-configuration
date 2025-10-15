@@ -31,9 +31,9 @@ let
     docker-compose
     dos2unix
     # envsubst # conflicts with gettext
-    etcd
     eternal-terminal
     file
+    # firefox
     flamegraph
     gcc
     gdb
@@ -50,9 +50,11 @@ let
     htop
     jansson
     just
-    k3s
     kluctl
+    libcgroup
     libsndfile
+    llama-cpp
+    mcphost
     mosh
     msgpack
     ncurses
@@ -63,10 +65,12 @@ let
     pinentry
     pkg-config
     redis
+    repomix
     scons
     sd
     ssm-session-manager-plugin
     sysbench
+    tailscale
     valgrind
     wezterm
     wireshark
@@ -251,7 +255,12 @@ in
     envExtra = builtins.readFile ./.zshenv-haystack;
     initContent = ''
       command -v npm >/dev/null && npm config set prefix ${npmPackagePath} && export PATH=$PATH:$HOME/${npmPackagePath}/bin
-      # source <(kubectl completion zsh)
+      # compinit # compinit alreayd loaded earlier
+      if command -v kubectl >/dev/null; then
+        alias k=kubectl
+        source <(kubectl completion zsh)
+        compdef k='kubectl'
+      fi
       printf '\e]2;'$(hostname)'\a'
     '';
   };
