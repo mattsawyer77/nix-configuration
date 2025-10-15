@@ -12,6 +12,7 @@ let
   homeDirectory = "/Users/" + username;
   doomDirectory = ".doom.d";
   emacsAppDirectory = "${homeDirectory}/Applications/Emacs.app";
+  ghosttyAppDirectory ="${homeAppDirectory}/Ghostty.app";
   goPathSuffix = "gocode";
   localBinPath = ".local/bin";
   npmPackagePath = ".config/npm-packages";
@@ -117,6 +118,10 @@ in
     (import ./wezterm {
       inherit pkgs;
       # weztermPackage = nixpkgs-stable.outputs.legacyPackages.aarch64-darwin.wezterm;
+    (import ./ghostty {
+      # ghosttyPackage = ghostty.outputs.packages.aarch64-darwin.ghostty;
+      inherit pkgs lib;
+      configDir = "${homeDirectory}/Library/Application Support/com.mitchellh.ghostty";
     })
     # while wezterm is having some flakiness
     (import ./tmux {

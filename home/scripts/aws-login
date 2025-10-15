@@ -1,0 +1,18 @@
+#!/usr/bin/env zsh
+
+set -euo pipefail
+
+profile=${AWS_PROFILE:-"f5xc-dev1-sre-console"}
+region=${AWS_REGION:-us-east-2}
+cluster_name=f5xc-dev1-gc01
+
+current_identity=$(aws --profile $profile sts get-caller-identity)
+if [[ $? -eq 0 ]]; then
+  printf "logged in as %s\n" $(echo "$current_identity" | jq -r '.Arn')
+else
+  echo "logging into aws with profile ${profile}..."
+  aws --profile $profile configure sso
+fi
+kubectl cluster-info || (
+  aws --profile $profile eks update-kubeconfig --region $region --name $cluster_name
+)
