@@ -3,7 +3,6 @@
 , nixpkgs-stable
 # , nixpkgs-emacs
 , username
-# , mkalias
 , mcpo
 , mcp-server-tree-sitter
 , duckduckgo-mcp-server
@@ -21,7 +20,6 @@ let
   goPathSuffix = "gocode";
   localBinPath = ".local/bin";
   npmPackagePath = ".config/npm-packages";
-  mkaliasPackage = mkalias.packages.aarch64-darwin.mkalias;
   shellScriptWrappers = [
     # enable `gsed` alias which calls gnused for compatibility with homebrew
     (pkgs.writeShellScriptBin "gsed" ''exec ${pkgs.gnused}/bin/sed "$@"'')
@@ -170,6 +168,10 @@ in
     # ./aider
     ./powerlevel10k
   ];
+  targets.darwin = {
+    linkApps.enable = false;
+    copyApps.enable = true;
+  };
   home = {
     homeDirectory = homeDirectory;
     packages = homePackages;
@@ -222,7 +224,11 @@ in
     initContent = ''
     # hack to fix emacs/eat
     if [ -n "$INSIDE_EMACS" ]; then
-      export TERM=xterm
+      if [[ $INSIDE_EMACS =~ "eat" ]]; then
+        export TERM=eat-color
+      else
+        export TERM=xterm
+      fi
       # disable vi key bindings
       bindkey -e
     fi

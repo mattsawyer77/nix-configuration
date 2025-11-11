@@ -11,8 +11,10 @@
     ];
   };
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/master";
-    nixpkgs-stable.url = "github:nixos/nixpkgs/release-25.05";
+    # nixpkgs.url = "github:nixos/nixpkgs/master";
+    nixpkgs.url = "git+https://github.com/NixOS/nixpkgs?shallow=1&ref=nixpkgs-unstable";
+    # nixpkgs-stable.url = "github:nixos/nixpkgs/release-25.05";
+    nixpkgs-stable.url = "git+https://github.com/NixOS/nixpkgs?shallow=1&ref=release-25.05";
     darwin = {
       url = "github:LnL7/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -111,7 +113,6 @@
                 home-manager.users."${username}" = ({ config, lib, pkgs, ... }:
                   import ./home/mmbpm1.nix {
                     inherit config lib pkgs username fontConfig;
-                    # mkalias = inputs.mkalias;
                   });
               }
               ./modules/mac.nix
@@ -161,7 +162,6 @@
                 home-manager.users."${username}" = ({ config, lib, pkgs, ... }:
                   import ./home/KD21QWDKW7.nix {
                     inherit config lib pkgs username fontConfig mcpo mcp-server-tree-sitter duckduckgo-mcp-server;
-                    # mkalias = inputs.mkalias;
                     # poetry2nix = inputs.poetry2nix;
                     # nixpkgs-emacs = inputs.nixpkgs-emacs;
                     nixpkgs-stable = inputs.nixpkgs-stable;

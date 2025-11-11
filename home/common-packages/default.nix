@@ -6,7 +6,6 @@
     bat-extras.batman
     btop
     # cachix
-    cask
     cmake
     coreutils
     delta
@@ -29,7 +28,7 @@
     gnumake
     gnupg
     gnuplot
-    go
+    # go
     gopls
     graphviz
     grpcurl
