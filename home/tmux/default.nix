@@ -152,6 +152,11 @@ let
       value = ",xterm-256color:Tc";
       flags = [ "global" "append" ];
     }
+    {
+      name = "word-separators";
+      value = " ";
+      flags = [ "global" ];
+    }
   ] ++ optionOverrides;
 
   # utility function to map attrset to tmux key bind syntax

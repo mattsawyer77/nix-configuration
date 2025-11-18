@@ -34,11 +34,12 @@ let
     # enable `emacs` alias which calls Emacs
     (pkgs.writeShellScriptBin "emacs" ''exec ${emacsAppDirectory}/Contents/MacOS/Emacs "$@"'')
     (pkgs.writeShellScriptBin "ghostty" ''exec ${ghosttyAppDirectory}/Contents/MacOS/ghostty "$@"'')
+    (pkgs.writeShellScriptBin "aws" ''exec /usr/local/bin/aws "$@"'') # remove if awscli becomes fast enough
   ] ++ localScripts;
   homePackages = (with pkgs; [
     (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
     aws-iam-authenticator
-    awscli2
+    # awscli2 # too slow, installing from AWS directly for now
     # azure-cli # broken as of 2025-08-29
     bazelisk
     buf
@@ -56,20 +57,24 @@ let
     glab
     gnused
     gnutar
+    go_1_24 # need to test if go 1.25 is causing slowdowns
     gocyclo
     golangci-lint
     golint
     jsonnet
     jsonnet-language-server
     just
+    k9s
     kluctl
     kubecolor
     kubectl
     libiconv
-    mcp-nixos
+    # mcp-nixos # seems to be broken as of 2025-11-18
     mockgen
+    ncurses
     nix-tree
-    open-webui
+    # ollama # seems to be broken as of 2025-11-18
+    opencode
     openldap
     pcre
     pkg-config
@@ -79,9 +84,13 @@ let
     ripgrep
     terraform
     vendir
-    wireshark
+    watch
+    # wireshark # broken as of 2025-10-31
+    xan
+    xorg.xauth
+    xorg.xhost
     xq-xml
-    xquartz
+    # xquartz # maybe broken as of 2025-11-18
     yamllint
     # aider-chat
     # azure-cli # broken on unstable, so using nixpkgs stable
@@ -104,6 +113,7 @@ let
     mcpo-package
     mcp-server-tree-sitter-package
     duckduckgo-mcp-server-package
+    wireshark
   ]);
   # ++ (builtins.filter lib.attrsets.isDerivation (builtins.attrValues pkgs.nerd-fonts));
   envVars = {
@@ -133,7 +143,13 @@ in
     (import ./common-shell {
       inherit pkgs homeDirectory goPathSuffix;
     })
-    (import ./wezterm {
+    # (import ./wezterm {
+    #   inherit pkgs;
+    #   # weztermPackage = nixpkgs-stable.outputs.legacyPackages.aarch64-darwin.wezterm;
+    # })
+    (import ./alacritty {
+      # seems there are some breaking changes in config, so using stable for now
+      # pkgs = nixpkgs-stable.outputs.legacyPackages.aarch64-darwin;
       inherit pkgs;
       theme = "kanagawa_wave";
     })
@@ -163,10 +179,16 @@ in
       # disabled while trying out jimeh build installed externally
       # emacsPackage = nixpkgs-emacs.outputs.legacyPackages.aarch64-darwin.emacs29-macport;
     })
+    # (import ./git {
+    #   inherit config pkgs lib;
+    #   defaultEmail = "m.sawyer@f5.com";
+    #   defaultUser = "Matt Sawyer";
+    # })
     ./helix
     # ./broot
     # ./aider
     ./powerlevel10k
+    ./nats
   ];
   targets.darwin = {
     linkApps.enable = false;
@@ -179,30 +201,6 @@ in
     # append these extra dirs to the nix-generated path
     sessionPath = extraPaths;
     sessionVariables = envVars;
-    # setup application aliases and add them to the Dock
-    # TODO: find another way to do this
-    # activation.setupAliases = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    #   #/usr/bin/env zsh
-    #   set -xe
-    #   echo "setting up ~/Applications..." >&2
-
-    #   # Needs to be writable by the user so that home-manager can create aliases there
-    #   $DRY_RUN_CMD chown ${username} ~/Applications
-    #   $DRY_RUN_CMD chmod u+w ~/Applications
-
-    #   find ~/Applications/Home\ Manager\ Apps/* -maxdepth 0 -mindepth 0 -wholename '*.app' -exec readlink '{}' + |
-    #     while read app; do
-    #       # Spotlight does not recognize symlinks, it will ignore directory we link to the applications folder.
-    #       # It does understand MacOS aliases though, a unique filesystem feature. Sadly they cannot be created
-    #       # from bash (as far as I know), so we use a custom utility called mkalias.
-    #       app_name=$(basename "$app" | ${pkgs.sd}/bin/sd '\.[^\.]+$' $''')
-    #       $DRY_RUN_CMD ${mkaliasPackage}/bin/mkalias $app ~/Applications/$app_name
-    #       $DRY_RUN_CMD ${pkgs.dockutil}/bin/dockutil --add "$app" --replacing "$app_name" --no-restart ~${username}
-    #   done
-    #   # only restart the Dock once, instead of per app in the above loop
-    #   $DRY_RUN_CMD /usr/bin/killall -m Dock
-    #   set +x
-    # '';
     file.".gitconfig" = {
       source = ./git/config;
       target = homeDirectory + "/.config/git/config";
@@ -215,6 +213,32 @@ in
     };
   };
   programs.home-manager.enable = true;
+  programs.opencode = {
+    enable = true;
+    settings = {
+      "$schema" = "https://opencode.ai/config.json";
+      provider = {
+        f5ai = {
+          name = "f5ai";
+          options = {
+            baseURL = "https://f5ai.pd.f5net.com/api";
+          };
+          models = {
+            "gpt-4.1" = {
+              name = "F5AI: GPT 4.1";
+            };
+            "gpt-5" = {
+              name = "F5AI: GPT 5";
+            };
+            "gpt-5-codex" = {
+              name = "F5AI: GPT 5 Codex";
+            };
+          };
+          npm = "@ai-sdk/openai-compatible";
+        };
+      };
+    };
+  };
   programs.zsh = {
     shellAliases = {
       sia = "nohup ~/Applications/sia.app/Contents/MacOS/sia >/dev/null 2>&1 &";

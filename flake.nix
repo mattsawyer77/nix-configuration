@@ -46,11 +46,6 @@
       url = "github:oxalica/nil";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # appears to be broken due to dependency on darwin/apple-sdk
-    # mkalias = {
-    #   url = "github:reckenrode/mkalias";
-    #   inputs.nixpkgs.follows = "nixpkgs";
-    # };
     # for loki's logcli
     loki = {
       url = "github:grafana/loki";
@@ -127,6 +122,7 @@
             specialArgs = inputs;
             modules = [
               ({ config, pkgs, lib, ... }: {
+                system.primaryUser = "m.sawyer";
                 system.stateVersion = 5;
                 ids.gids.nixbld = 30000;
                 users.users."${username}" = {
