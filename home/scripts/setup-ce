@@ -1,47 +1,41 @@
 #!/usr/bin/env zsh
 
-local environment
-local site
-local usage="usage:\nsetup-ce [environment] site-name" 
-if [ ! -v 1 ]
-then
+set -Eeuo pipefail
+
+usage="usage:\nsetup-ce [environment] site-name"
+if [ ! -v 1 ]; then
 	echo "must specify site" >&2
 	echo "$usage" >&2
-	return 1
+	exit 1
 fi
-if [ $# -eq 2 ]
-then
-	environment="$1" 
+if [ $# -eq 2 ]; then
+	environment="$1"
 	shift
 else
-	environment=demo1 
+	environment=demo1
 fi
-local compass_hostname=$(env-compass-hostname "$environment") 
-local site_fqdn=$(env-site-fqdn "$environment") 
-site="$1" 
+compass_hostname=$(env-compass-hostname "$environment")
+site_fqdn=$(env-site-fqdn "$environment")
+site="$1"
 echo "checking public IPs for ${site}..."
-export IFS=$'\n' 
-public_ips=($(site-public-ips $environment $site)) 
-for ip in $public_ips
-do
+export IFS=$'\n'
+public_ips=($(site-public-ips $environment $site))
+for ip in $public_ips; do
 	echo "testing ssh to ${site} at ${ip}..."
-	if ! ssh -nq -i ~/.ves-internal/$environment/id_rsa "vesop@${ip}" > /dev/null
-	then
+	if ! ssh -nq -i ~/.ves-internal/$environment/id_rsa "vesop@${ip}" >/dev/null; then
 		echo "ssh to $ip failed" >&2
-		return 1
+		exit 1
 	fi
-	for file in ~/onedrive/ce-files/* ~/onedrive/ce-files/.*
-	do
+	for file in ~/onedrive/ce-files/* ~/onedrive/ce-files/.*; do
 		echo "copying $(basename ${file}) to ${site} at ${ip}..."
-		if ! scp -q -i "~/.ves-internal/$environment/id_rsa" "$file" "vesop@${ip}:"
-		then
+		if ! scp -q -i "~/.ves-internal/$environment/id_rsa" "$file" "vesop@${ip}:"; then
 			echo "scp of $file to $ip failed" >&2
-			return 1
+			exit 1
 		fi
 	done
 	echo "installing remote files..."
-	ssh -q -i "~/.ves-internal/$environment/id_rsa" "vesop@${ip}" -o RemoteCommand="sudo cp -v plog /opt/bin/" || return 1
-	ssh -q -i "~/.ves-internal/$environment/id_rsa" "vesop@${ip}" -o RemoteCommand="sudo cp -v .vimrc /root" || return 1
-	ssh -q -i "~/.ves-internal/$environment/id_rsa" "vesop@${ip}" -o RemoteCommand="sudo cp -v .bashrc /root" || return 1
+	ssh -q -i "~/.ves-internal/$environment/id_rsa" "vesop@${ip}" -o RemoteCommand="sudo cp -v plog /opt/bin/" || exit 1
+	ssh -q -i "~/.ves-internal/$environment/id_rsa" "vesop@${ip}" -o RemoteCommand="sudo cp -v .vimrc /root" || exit 1
+	ssh -q -i "~/.ves-internal/$environment/id_rsa" "vesop@${ip}" -o RemoteCommand="sudo cp -v .bashrc /root" || exit 1
 done
 echo "CE $site setup successfully"

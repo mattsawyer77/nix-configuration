@@ -2,7 +2,8 @@
 
 ;;; Basic Settings
 (modify-syntax-entry ?_ "w") ;; treat _ as non-word-boundary
-(setq read-process-output-max (* 2 1024 1024)  ; For LSP performance
+(setq read-process-output-max (* 4 1024 1024)  ; For LSP/EAT performance
+      process-adaptive-read-buffering nil
       doom-modeline-vcs-max-length 30
       doom-modeline-height 32
       doom-modeline-persp-name t
@@ -72,6 +73,8 @@
   (setq gofmt-command "goimports"))
 (add-hook! go-mode     #'+word-wrap-mode #'lsp)
 ;; (add-hook! go-ts-mode  #'go-mode)
+(after! go-ts-mode
+  (setq go-ts-mode-indent-offset 2))
 (add-hook! go-mode  #'go-ts-mode)
 (add-hook! go-ts-mode  #'lsp)
 (add-hook! js-mode #'js-ts-mode)
@@ -253,15 +256,21 @@
 (dolist (rule
          '(("^\\*eww\\*"      :side right :slot 5 :vslot 5 :size 0.5)
            ("^\\*jq-json\\*"  :side right :slot 5 :vslot 5 :size 0.5)
-           ("^\\*go-guru-output.*" :side bottom :size 5)
-           ;; ("^\\*gpt:\\*"        :side right :slot 5 :vslot 5 :size 0.4))
-           (apply #'set-popup-rule! rule))))
+           ("^\\*eat\\*"  :side right :slot 5 :vslot 5 :size 0.5)
+           ("^\\*gpt:\\*"  :side right :slot 5 :vslot 5 :size 0.5)
+           ("^\\*go-guru-output.*" :side bottom :size 5)))
+  (set-popup-rule! rule))
 
  ;;; Terminal, VTerm, EAT
 (after! vterm  (setq vterm-shell "/bin/zsh" vterm-tramp-shells nil)
   (set-popup-rule! "^\\*doom:vterm.*" :ignore t))
 
-(after! emacs-eat (setq eat-term-name "xterm-256color"))
+(after! emacs-eat
+  ;; (setq eat-term-name "xterm-256color")
+  (setq eat-term-name "eat-color") ;; seems to be problems with eat-truecolor and eat-256color
+  (setopt eat-shell-prompt-annotation-delay 0)
+  (setopt eat-default-cursor-type '(t nil nil))
+  (setopt eat-very-visible-cursor-type '(t nil nil)))
 
  ;;; Language Customization
 (after! haskell (setq lsp-haskell-process-path-hie "hie-wrapper"))
@@ -413,29 +422,41 @@
 (after! gptel
   (require 'gptel-integrations)
   (require 'gptel-org)
-  (gptel-make-openai "gpt: F5 openwebui"
-    :host "f5ai.pd.f5net.com"
-    :protocol "https"
-    :endpoint "/api/chat/completions"
-    :key (sawyer/get-creds "f5gpt-open-webui" "default")
-    :stream t
-    :models '(o4-mini
-              gpt-4.1
-              gpt-5))
+  ;; (gptel-make-openai "gpt: F5 openwebui"
+  ;;   :host "f5ai.pd.f5net.com"
+  ;;   :protocol "https"
+  ;;   :endpoint "/api/chat/completions"
+  ;;   :key (sawyer/get-creds "f5gpt-open-webui" "default")
+  ;;   :stream t
+  ;;   :models '(o4-mini
+  ;;             gpt-4.1
+  ;;             gpt-5))
+  ;; XXX: not supported, see https://github.com/karthink/gptel/issues/1057
+  ;; (gptel-make-openai "gpt: local openwebui (emacs mcp)"
+  ;;   :host "127.0.0.1:3000"
+  ;;   :protocol "http"
+  ;;   :endpoint "/api/chat/completions"
+  ;;   :key (sawyer/get-creds "local-open-webui" "default")
+  ;;   :stream t
+  ;;   :models '(o4-mini ;; f5gpt
+  ;;             gpt-4.1 ;; f5gpt
+  ;;             gpt-5   ;; f5gpt
+  ;;             ;; devstral-small-2507-gguf:q3_k_xl ;; llama.cpp
+  ;;             ;; deepseek-r1-distill-qwen-1.5b-gguf:q8_0 ;; llama.cpp -- useless though?
+  ;;             ))
   (gptel-make-openai "gpt: local openwebui"
     :host "127.0.0.1:3000"
     :protocol "http"
     :endpoint "/api/chat/completions"
     :key (sawyer/get-creds "local-open-webui" "default")
     :stream t
-    :models '(o4-mini ;; f5gpt
-              gpt-4.1 ;; f5gpt
-              gpt-5   ;; f5gpt
-              ;; devstral-small-2507-gguf:q3_k_xl ;; llama.cpp
-              ;; deepseek-r1-distill-qwen-1.5b-gguf:q8_0 ;; llama.cpp -- useless though?
+    :models '(gpt-4.1       ;; f5gpt
+              gpt-5         ;; f5gpt
+              gpt-5-codex   ;; f5gpt
+              o4-mini       ;; f5gpt
               ))
   (gptel-make-gh-copilot "Copilot")
-  (setq gptel-model 'gpt-4.1
+  (setq gptel-model "gpt: local openwebui"
         gptel-use-tools t
         gptel-confirm-tool-calls 'auto
         gptel-include-tool-results 'auto
@@ -505,16 +526,35 @@
                           ))
   )
 
+;; xenodium/agent-shell
+(after! (acp agent-shell)
+  (require 'acp)
+  (require 'agent-shell)
+  (setq agent-shell-openai-codex-environment (agent-shell-make-environment-variables
+                                              "OPENAI_API_BASE" "https://f5ai.pd.f5net.com/api"
+                                              "OPENAI_API_KEY" (sawyer/get-creds "f5gpt-open-webui" "default"))
+        agent-shell-openai-authentication (agent-shell-openai-make-authentication
+                                           :login nil
+                                           :api-key (sawyer/get-creds "f5gpt-open-webui" "default")))
+  )
+
 (after! magit
-  (setq auto-revert-check-vc-info t
-        auto-revert-interval 30
-        magit-refresh-status-buffer nil
-        magit-diff-highlight-indentation nil
-        magit-diff-highlight-trailing nil
-        magit-diff-paint-whitespace nil
-        magit-diff-highlight-hunk-body nil
-        magit-diff-refine-hunk nil
-        git-commit-summary-max-length 100))
+  (setq
+   auto-revert-check-vc-info t
+   auto-revert-interval 30
+   git-commit-summary-max-length 100
+   ;; magit-diff-highlight-hunk-body nil
+   ;; magit-diff-highlight-indentation nil
+   ;; magit-diff-highlight-trailing nil
+   ;; magit-diff-paint-whitespace nil
+   ;; magit-diff-refine-hunk nil
+   ;; magit-refresh-status-buffer nil
+   ;; magit-revision-insert-related-refs nil
+   ))
+(after! git-commit
+  ;; seem the only purpose of git-commit-propertize-diff is to slow down opening
+  ;; of commit buffers by orders of magnitude, so disable it
+  (remove-hook 'git-commit-setup-hook 'git-commit-propertize-diff))
 
 (after! (gptel magit)
   (add-hook! magit-mode #'gptel-magit-install))
@@ -522,7 +562,8 @@
 (after! lsp-treemacs (setq lsp-treemacs-error-list-expand-depth 3))
 
 (after! treesit
-  (setq treesit-extra-load-path '("~/.config/emacs/.local/cache/tree-sitter"))
+  ;; XXX: seems to break things?
+  ;; (setq treesit-extra-load-path '("~/.config/emacs/.local/cache/tree-sitter"))
   (setq treesit-language-source-alist
         '((bash        "https://github.com/tree-sitter/tree-sitter-bash")
           (cmake       "https://github.com/uyha/tree-sitter-cmake")

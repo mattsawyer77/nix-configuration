@@ -41,6 +41,10 @@
 
 (setq +doom-dashboard-ascii-banner-fn #'sawyer/set-ascii-splash)
 
+;; (add-to-list 'initial-frame-alist '(fullscreen . maximized)) ;; maximizes, but then un-maximizes 
+(add-hook 'window-setup-hook #'toggle-frame-maximized) ;; seems to work ok on macOS
+;; (add-hook 'window-setup-hook #'toggle-frame-fullscreen)
+
 (doom! :input
        ;;bidi              ; (tfel ot) thgir etirw uoy gnipleh
        ;;chinese

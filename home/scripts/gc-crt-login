@@ -1,7 +1,9 @@
 #!/usr/bin/env zsh
 
-export USE_GKE_GCLOUD_AUTH_PLUGIN=True 
-kubectl config use-context gke_crt-env_us-east4_gc01-crt-int-ves-io
-k cluster-info 2> /dev/null || (
-	gcloud auth login --project=crt-env && gcloud container clusters get-credentials gc01-crt-int-ves-io --region us-east4
-)
+set -Eeuo pipefail
+
+export USE_GKE_GCLOUD_AUTH_PLUGIN=True
+kubectl config use-context gke_crt-env_us-east4_gc01-crt-int-ves-io &&
+  kubectl cluster-info 2>/dev/null ||
+  (gcloud auth login --project=crt-env &&
+    gcloud container clusters get-credentials gc01-crt-int-ves-io --region us-east4)

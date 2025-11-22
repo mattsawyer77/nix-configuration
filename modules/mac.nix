@@ -49,9 +49,12 @@ in
   programs.zsh.enableCompletion = true;
   programs.zsh.enableBashCompletion = true;
   programs.zsh.enableSyntaxHighlighting = true;
-  nix.settings.extra-sandbox-paths = [
-    "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib"
-  ];
+  nix.settings = {
+    extra-sandbox-paths = [
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib"
+    ];
+    download-buffer-size = 524288000;
+  };
   nixpkgs = {
     config = {
       allowUnfree = true;

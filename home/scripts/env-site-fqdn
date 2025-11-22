@@ -1,34 +1,41 @@
 #!/usr/bin/env zsh
 
-if [ ! -v 1 ]
-then
+set -Eeuo pipefail
+
+if [ ! -v 1 ]; then
 	echo "must specify environment (demo1, crt, staging, prod)" >&2
-	return 1
+	exit 1
 fi
-local environment="$1" 
-local site="${2:-gc}" 
+environment="$1"
+site="${2:-gc}"
 case $environment in
-	(demo1) if [[ "$site" == "gc" ]]
-		then
-			site=gc01 
-		fi
-		site_fqdn="${site}.int.ves.io"  ;;
-	(crt) if [[ "$site" == "gc" ]]
-		then
-			site=gc01 
-		fi
-		site_fqdn="${site}.int.ves.io"  ;;
-	(staging) if [[ "$site" == "gc" ]]
-		then
-			site=gc1-iad-01 
-		fi
-		site_fqdn="${site}.int.volterra.us"  ;;
-	(prod) if [[ "$site" == "gc" ]]
-		then
-			site=gc01-cle 
-		fi
-		site_fqdn="${site}.int.ves.io"  ;;
-	(*) echo "unknown environment $environment" >&2
-		return 1 ;;
+demo1)
+	if [[ "$site" == "gc" ]]; then
+		site=gc01
+	fi
+	site_fqdn="${site}.int.ves.io"
+	;;
+crt)
+	if [[ "$site" == "gc" ]]; then
+		site=gc01
+	fi
+	site_fqdn="${site}.int.ves.io"
+	;;
+staging)
+	if [[ "$site" == "gc" ]]; then
+		site=gc1-iad-01
+	fi
+	site_fqdn="${site}.int.volterra.us"
+	;;
+prod)
+	if [[ "$site" == "gc" ]]; then
+		site=gc01-cle
+	fi
+	site_fqdn="${site}.int.ves.io"
+	;;
+*)
+	echo "unknown environment $environment" >&2
+	exit 1
+	;;
 esac
 echo "$site_fqdn"

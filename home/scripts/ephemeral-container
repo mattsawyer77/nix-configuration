@@ -1,0 +1,109 @@
+#!/usr/bin/env zsh
+
+check-required-tools jq sd kubectl
+
+autoload colors
+colors
+
+set -eEuo pipefail
+
+usage="$(basename $0) pod-name container-name [namespace=default]"
+
+log_info() {
+  echo "$fg[green]$@${reset_color}"
+}
+
+log_error() {
+  echo >&2 "$fg[red]$@${reset_color}"
+}
+
+gen_container_name() {
+  user=$(whoami | sd '\W' '')
+  echo "${user}-debug-${RANDOM}"
+}
+
+if ! kubectl cluster-info >/dev/null; then
+  log_error "error: not logged into kubernetes"
+  exit 1
+fi
+
+set -eEuo pipefail
+
+if [[ $# -lt 2 ]]; then
+  log_error usage: $usage
+  exit 1
+fi
+pod_name="$1"
+container_name="$2"
+namespace="${3:-default}"
+if [[ -z "${pod_name}" || -z "${container_name}" ]]; then
+  log_error "requires pod name as first argument and container name as second argument"
+  exit 1
+fi
+pod_json="$(kubectl -n "${namespace}" get pod "${pod_name}" -o json)"
+if [[ -z "${pod_json}" ]]; then
+  log_error "invalid pod"
+  exit 2
+fi
+volume_mounts="$(jq --arg CONTAINERNAME "${container_name}" '.spec.containers[] | select(.name==$CONTAINERNAME) | .volumeMounts | map(select(.subPath==null))' <<<"${pod_json}")"
+env_variables="$(jq --arg CONTAINERNAME "${container_name}" '.spec.containers[] | select(.name==$CONTAINERNAME) | .env' <<<"${pod_json}")"
+env_froms="$(jq --arg CONTAINERNAME "${container_name}" '.spec.containers[] | select(.name==$CONTAINERNAME) | .envFrom' <<<"${pod_json}")"
+exec 3< <(
+  kubectl proxy --port=0 &
+  echo $!
+)
+port_number=''
+kubectl_pid=''
+while [[ "${port_number}" == '' || "${kubectl_pid}" == '' ]]; do
+  read -r -u 3 line
+  if [[ "${kubectl_pid}" == '' && "${line}" =~ ^[0-9]+$ ]]; then
+    kubectl_pid="${line}"
+    continue
+  elif [[ "${port_number}" == '' && "${line}" =~ :[0-9]+$ ]]; then
+    port_number="$(grep -oE '[0-9]+$' <<<"${line}")"
+    continue
+  fi
+done
+log_info volume mounts: ${volume_mounts}
+ephemeral_container_name="$(gen_container_name)"
+patch_api_body="$(
+  jq -r tostring <<EOF
+  {
+    "spec":
+    {
+        "ephemeralContainers":
+        [
+            {
+                "name": "${ephemeral_container_name}",
+                "command": ["/bin/bash"],
+                "image": "gcr.io/devtest-293809/network-tool:1.0",
+                "targetContainerName": "${container_name}",
+                "stdin": true,
+                "tty": true,
+                "volumeMounts": ${volume_mounts},
+                "envFrom": ${env_froms},
+                "env": ${env_variables},
+                "securityContext": {"privileged":true}
+            }
+        ]
+    }
+}
+EOF
+)"
+log_info "Patching with the following:"
+log_info "${patch_api_body}"
+curl --fail-with-body "http://localhost:${port_number}/api/v1/namespaces/${namespace}/pods/${pod_name}/ephemeralcontainers" -X PATCH -H 'Content-Type: application/strategic-merge-patch+json' --data-binary "${patch_api_body}"
+kill "${kubectl_pid}"
+
+try=1
+log_info 'waiting for ephemeral container to start...'
+while [[ "$(kubectl -n "${namespace}" get pod "${pod_name}" -o jsonpath='{.status.ephemeralContainerStatuses}' | jq --arg EPHEMERALCONTAINERNAME "${ephemeral_container_name}" -r 'map(select(.name==$EPHEMERALCONTAINERNAME))[0].state | has("running")')" != 'true' ]]; do
+  sleep 1
+  ((try++))
+  if [[ ${try} -gt 30 ]]; then
+    log_error 'failed to start ephemeral container'
+    exit 3
+  fi
+done
+
+kubectl -n "${namespace}" attach "${pod_name}" -c "${ephemeral_container_name}" -it

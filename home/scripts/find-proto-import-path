@@ -1,26 +1,27 @@
 #!/usr/bin/env zsh
 
-local dirs="" 
-local target_dir="$1" 
-(
-	test -d "$target_dir" || echo "$target_dir is not a valid dir" >&2
-) && dirs=$(cd "$target_dir" \
-    && typeset -A import_paths \
-    && for import in $(grep -hE '^\s*import\s".*\.proto";' *.proto | cut -d'"' -f2); do \
+set -Eeuo pipefail
+
+dirs=""
+target_dir="$1"
+(test -d "$target_dir" || echo "$target_dir is not a valid dir" >&2) &&
+  dirs=$(cd "$target_dir" &&
+    typeset -A import_paths &&
+    for import in $(grep -hE '^\s*import\s".*\.proto";' *.proto | cut -d'"' -f2); do
       if [[ -z "${import_paths[$import]}" ]]; then
         echo >&2 "cache miss for $import"
         paths=$(fd --follow --full-path --glob --no-ignore-vcs "**/$import" \
-          $(realpath --relative-to . $(git rev-parse --show-toplevel)) \
-          | sd "/$import" "" \
-          | sd '^(.+)$' '    \"$1\"')
+          $(realpath --relative-to . $(git rev-parse --show-toplevel)) |
+        sd "/$import" "" |
+          sd '^(.+)$' '    \"$1\"')
         if [[ -z "$paths" ]]; then
           echo >&2 "could not find proto files for $import"
         fi
-        import_paths+=( ["$import"]="$paths" )
+        import_paths+=(["$import"]="$paths")
       else
         echo >&2 "cache hit for ${import}: ${import_paths[$import]}"
       fi
       echo "${import_paths[$import]}"
-    done \
-  | sort -u) 
+    done |
+      sort -u)
 echo "$dirs"

@@ -1,130 +1,126 @@
 #!/usr/bin/env zsh
 
-check-required-tools $0 skopeo jq yq bc rg sd fd pcre2grep || return 1
+set -Eeuo pipefail
+check-required-tools $0 skopeo jq yq bc rg sd fd pcre2grep
 declare -A app_repo_map
-app_repo_map[mars]=ares 
-app_repo_map[phobos]=ares 
-app_repo_map[nio]=vega 
-local usage="usage:     sre-model-update-version app-name [image URL|branch|commit] \n
-  example: sre-model-update-version opera_image master \n
-  example: sre-model-update-version opera_image 81993614d915b8282a0310f04c1a423d573787a4 \n
-  example: sre-model-update-version opera_image gcr.io/volterraio/opera@sha256:bf4805a43f158b570cf103e4c98527595d9cede86833b8642605ad68fd9d6559" 
-local show_usage () {
+app_repo_map[mars]=ares
+app_repo_map[phobos]=ares
+app_repo_map[nio]=vega
+usage='usage:     sre-model-update-version app-name [image URL|branch|commit] \n
+    example: sre-model-update-version opera_image master \n
+    example: sre-model-update-version opera_image 81993614d915b8282a0310f04c1a423d573787a4 \n
+    example: sre-model-update-version opera_image gcr.io/volterraio/opera@sha256:bf4805a43f158b570cf103e4c98527595d9cede86833b8642605ad68fd9d6559'
+show_usage() {
 	echo "$usage" >&2
 }
-if [[ $# -ne 2 ]]
-then
+if [[ $# -ne 2 ]]; then
 	show_usage
-	return 1
+	exit 1
 fi
-local app_name="$1" 
+app_name="$1"
 shift
 if ! (
-		pwd | pcre2grep '.*sre-.+-model' > /dev/null
-	)
-then
+	pwd | pcre2grep '.*sre-.+-model' >/dev/null
+); then
 	echo "error: must be in the root dir of an sre model repo" >&2
-	return 1
+	exit 1
 fi
-local image_url='' 
-local image_data='' 
-if pcre2grep '^(gcr.io|volterra.azurecr.io/ves.io).*sha256:[0-9a-f]+$' <<< "$1" > /dev/null
-then
+image_url=''
+image_data=''
+commit_sha=''
+branch_name=''
+app_repo_dir=''
+app_repo_name=''
+root_dir=''
+if pcre2grep '^(gcr.io|volterra.azurecr.io/ves.io).*sha256:[0-9a-f]+$' <<<"$1" >/dev/null; then
 	echo "finding image data for URL ${image_url}..." >&2
-	image_url="$1" 
-	image_data=$(find-image-data "$image_url")  || return 1
-elif pcre2grep '^[0-9a-f]{40}$' <<< "$1" > /dev/null
-then
+	image_url="$1"
+	image_data=$(find-image-data "$image_url")
+elif pcre2grep '^[0-9a-f]{40}$' <<<"$1" >/dev/null; then
 	echo "finding image data for ${app_name} at commit ${commit_sha}..." >&2
-	local commit_sha="$1" 
-	if [[ "$(echo $commit_sha | wc -c)" != 40 ]]
-	then
+	commit_sha="$1"
+	if [[ "$(echo "$commit_sha" | wc -c)" != 40 ]]; then
 		echo "error: must use full 40-character commit hash" >&2
-		return 1
+		exit 1
 	fi
-	image_data=$(find-image-data "$app_name" "$commit_sha")  || return 1
+	image_data=$(find-image-data "$app_name" "$commit_sha")
 else
-	local branch_name="$1" 
+	branch_name="$1"
 	echo "finding image data for ${app_name} at branch ${branch_name}..." >&2
-	local root_dir=${REPO_ROOT:-"../.."} 
-	local app_repo_dir='' 
-	local app_repo_name=$app_name 
-	if [[ -n "$app_repo_map[$app_name]" ]]
-	then
-		app_repo_name="$app_repo_map[$app_name]" 
+	root_dir=${REPO_ROOT:-"../.."}
+	app_repo_dir=''
+	app_repo_name=$app_name
+	if [[ -n "$app_repo_map[$app_name]" ]]; then
+		app_repo_name="$app_repo_map[$app_name]"
 	fi
-	if [[ -d "${root_dir}/${app_repo_name}/.git" ]]
-	then
-		app_repo_dir="${root_dir}/${app_repo_name}" 
+	if [[ -d "${root_dir}/${app_repo_name}/.git" ]]; then
+		app_repo_dir="${root_dir}/${app_repo_name}"
 	else
-		app_repo_dir=$(fd --no-ignore-vcs --type d --hidden --prune -E '_extschema' --full-path ".*/${app_repo_name}/.git$" -1 ../.. | xargs dirname) 
+		app_repo_dir=$(fd --no-ignore-vcs --type d --hidden --prune -E '_extschema' --full-path ".*/${app_repo_name}/.git$" -1 ../.. | xargs dirname)
 	fi
-	if [[ -d "$app_repo_dir" ]]
-	then
-		git -C "$app_repo_dir" fetch origin --quiet || return 1
-		commit_sha=$(git -C "$app_repo_dir" log -n 1 "origin/${branch_name}" --format=format:%H) 
-		if [[ -z "$commit_sha" ]]
-		then
+	if [[ -d "$app_repo_dir" ]]; then
+		git -C "$app_repo_dir" fetch origin --quiet
+		commit_sha=$(git -C "$app_repo_dir" log -n 1 "origin/${branch_name}" --format=format:%H)
+		if [[ -z "$commit_sha" ]]; then
 			echo "error: could not find latest commit hash from branch $branch_name in $app_repo_dir" >&2
-			return 1
+			exit 1
 		fi
 	else
 		echo "could not find app dir for $app_name ($app_repo_name)" >&2
-		return 1
+		exit 1
 	fi
-	image_data=$(find-image-data "$app_name" "$commit_sha")  || return 1
+	image_data=$(find-image-data "$app_name" "$commit_sha")
 fi
-local digest=$(jq -r '.Digest' <<<"$image_data" 2>/dev/null) 
-local image_url=$(jq -r '.Name+"@"+.Digest' <<<"$image_data" 2>/dev/null) 
+printf "found image data:\n%s\n" "$image_data"
+echo parsing digest from image data...
+digest=$(jq -r '.Digest' <<<"$image_data")
+echo "parsed image digest from image data: $digest"
+image_url=$(jq -r '.Name+"@"+.Digest' <<<"$image_data" 2>/dev/null)
 echo "image url: $image_url" >&2
-local commit_info=$(jq -r '.Labels."com.f5.cloud.commit-last"' <<<"$image_data" 2>/dev/null) 
-if [[ -z "$commit_info" ]]
-then
+commit_info=$(jq -r '.Labels."com.f5.cloud.commit-last"' <<<"$image_data" 2>/dev/null)
+if [[ -z "$commit_info" ]]; then
 	echo "error: no commit info found in image labels" >&2
-	return 1
+	exit 1
 fi
-local comment="# $commit_info" 
+comment="# $commit_info"
 echo "commit info: $commit_info" >&2
-local image_search_key=$(cat <<EOF
+image_search_key=$(
+	cat <<EOF
 (([\w_]*_)?${app_name}[^_]*_image.*)@sha256:[0-9a-f]+.*$
 EOF
-) 
+)
 echo "image_search_key: '$image_search_key'" >&2
-local image_files=($(rg -il -g'!versions/ce-lts/**' "$image_search_key" versions params)) 
-local ce_version_updated='false' 
-if [[ -z "${image_files[@]}" ]]
-then
+image_files=($(rg -il -g'!versions/ce-lts/**' "$image_search_key" versions params))
+ce_version_updated='false'
+if [[ -z "${image_files[@]}" ]]; then
 	echo "no image files found for ${app_name}_image" >&2
-	return 1
-else
-	for image_file in $image_files
-	do
+	exit 1
+	els
+	for image_file in $image_files; do
 		echo "updating $app_name image in file ${image_file} to ${digest}..." >&2
-		local replacement=$(printf '$1@%s %s' "$digest" "$comment") 
+		replacement=$(printf '$1@%s %s' "$digest" "$comment")
 		echo sd -fi "$image_search_key" "$replacement" "$image_file"
 		sd -fi "$image_search_key" "$replacement" "$image_file"
 		git diff -U0
 		echo
-		if grep 'versions/ce-last.yaml' <<< "$image_file" > /dev/null
-		then
-			ce_version_updated='true' 
+		if grep 'versions/ce-last.yaml' <<<"$image_file" >/dev/null; then
+			ce_version_updated='true'
 		fi
 	done
-	if [[ "$ce_version_updated" == 'true' ]]
-	then
+	if [[ "$ce_version_updated" == 'true' ]]; then
 		git fetch origin --quiet
-		local current_ce_version_filename_rendered=$(rg -g'render/*.yaml' -l ce-build-version | head)  || return 1
-		local committed_version_file=$(git show "HEAD~1:$current_ce_version_filename_rendered")  || return 1
-		local committed_ce_version=$(printf '%s\n' "$committed_version_file" \
-      | yq e '.commands|map(.data)|map(select(.metadata.name=="ce-build-version"))[0]|.spec.versionSpec.name' -)  || return 1
-		local current_ce_version_number=$(pcre2grep -o '\d+$' <<<"$committed_ce_version") 
-		local current_ce_version_date=$(pcre2grep -o '20\d{6}' <<<"$committed_ce_version") 
-		local ce_versions_file=$(fd -1 ce-last.yaml versions)  || return 1
-		local new_version_number=$(bc <<<"${current_ce_version_number}+1")  || return 1
-		local new_date=$(date --utc '+%Y%m%d') 
-		local new_version_suffix="${new_date}-${new_version_number}" 
-		local new_version="$(echo "$committed_ce_version" | sd '20\d{6}' $new_date | sd '\d+$' $new_version_number)" 
-		local local_version=$(yq e '.spec.versionSpec.name' $ce_versions_file)  || return 1
+		current_ce_version_filename_rendered=$(rg -g'render/*.yaml' -l ce-build-version | head)
+		committed_version_file=$(git show "HEAD~1:$current_ce_version_filename_rendered")
+		committed_ce_version=$(printf '%s\n' "$committed_version_file" |
+			yq e '.commands|map(.data)|map(select(.metadata.name=="ce-build-version"))[0]|.spec.versionSpec.name' -)
+		current_ce_version_number=$(pcre2grep -o '\d+$' <<<"$committed_ce_version")
+		current_ce_version_date=$(pcre2grep -o '20\d{6}' <<<"$committed_ce_version")
+		ce_versions_file=$(fd -1 ce-last.yaml versions)
+		new_version_number=$(bc <<<"${current_ce_version_number}+1")
+		new_date=$(date --utc '+%Y%m%d')
+		new_version_suffix="${new_date}-${new_version_number}"
+		new_version="$(echo "$committed_ce_version" | sd '20\d{6}' $new_date | sd '\d+$' $new_version_number)"
+		local_version=$(yq e '.spec.versionSpec.name' $ce_versions_file)
 		echo "updating CE version in ${ce_versions_file} from ${local_version} to ${new_version}..." >&2
 		sd "$local_version" "$new_version" "$ce_versions_file"
 		git diff -U0 -- "$ce_versions_file"

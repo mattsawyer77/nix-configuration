@@ -12,7 +12,7 @@ let
   homePackages = with pkgs; [
     (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
     aws-iam-authenticator
-    awscli2
+    awscli2-bin
     azure-cli
     bash
     bat
@@ -241,7 +241,7 @@ in
   programs.zoxide = { enable = true; };
   programs.zsh = {
     envExtra = builtins.readFile ./.zshenv-sawyer-dev-vio;
-    initExtra = ''
+    initContent = ''
       command -v npm >/dev/null && npm config set prefix ${npmPackagePath} && export PATH=$PATH:$HOME/${npmPackagePath}/bin
       # source <(kubectl completion zsh)
       printf '\e]2;'$(hostname)'\a'

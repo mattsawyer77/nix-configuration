@@ -1,11 +1,15 @@
-{ config, lib, pkgs, username, fontConfig, mkalias, ... }:
+{ config
+, lib
+, pkgs
+, username
+, fontConfig
+, ... }:
 
 let
   homeDirectory = "/Users/" + username;
   doomDirectory = ".doom.d";
   goPathSuffix = "gocode";
   localBinPath = ".local/bin";
-  mkaliasPackage = mkalias.packages.aarch64-darwin.mkalias;
   # to update/regenerate, run node2nix -i <(echo '["bash-language-server", "prettier", "typescript-formatter"]') --nodejs-18
   # then copy the resulting files into ./npm-packages
   npmPackages = import ./npm-packages { inherit pkgs; };
@@ -15,7 +19,7 @@ let
   glibtool = pkgs.writeShellScriptBin "glibtool" ''exec ${pkgs.libtool}/bin/libtool "$@"'';
   homePackages = (with pkgs; [
     aws-iam-authenticator
-    awscli
+    awscli-bin
     azure-cli
     ccls
     certigo
@@ -40,10 +44,8 @@ let
     gsed
   ]
   # npm packages setup via node2nix
-  ++ (builtins.attrValues npmPackages)
+  ++ (builtins.attrValues npmPackages);
   # flakes outside nixpkgs (that don't have overlays)
-  # TODO: how to make this more idiomatic without specifying the system arch
-  ++ [ mkaliasPackage ];
   envVars = {
     USE_GKE_GCLOUD_AUTH_PLUGIN = "True";
     SAML2AWS_USER_AGENT =
@@ -85,31 +87,6 @@ in
     # append these extra dirs to the nix-generated path
     sessionPath = extraPaths;
     sessionVariables = envVars;
-    # setup application aliases and add them to the Dock
-    activation.setupAliases = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      #/usr/bin/env zsh
-      set -xe
-      echo "setting up ~/Applications..." >&2
-
-      # Needs to be writable by the user so that home-manager can create aliases there
-      $DRY_RUN_CMD chown ${username} ~/Applications
-      $DRY_RUN_CMD chmod u+w ~/Applications
-
-      # for app in ~/Applications/*.app; do
-      #   $DRY_RUN_CMD rm -f "$app"
-      # done
-
-      find ~/Applications/Home\ Manager\ Apps/* -maxdepth 0 -mindepth 0 -wholename '*.app' -exec readlink '{}' + |
-        while read app; do
-          # Spotlight does not recognize symlinks, it will ignore directory we link to the applications folder.
-          # It does understand MacOS aliases though, a unique filesystem feature. Sadly they cannot be created
-          # from bash (as far as I know), so we use a custom utility called mkalias.
-          app_name=$(basename "$app" | sd '\.[^\.]+$' $''')
-          $DRY_RUN_CMD ${mkaliasPackage}/bin/mkalias $app ~/Applications/$app_name
-          $DRY_RUN_CMD ${pkgs.dockutil}/bin/dockutil --add "$app" --replacing "$app_name" ~${username}
-      done
-      set +x
-    '';
   };
   programs.home-manager.enable = true;
   programs.zsh = {

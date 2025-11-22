@@ -1,9 +1,10 @@
 #!/usr/bin/env zsh
 
-rm -rf ~/.ves-internal-backup 2> /dev/null || :
+set -Eeuo pipefail
+
+rm -rf ~/.ves-internal-backup 2>/dev/null || :
 cp -a ~/.ves-internal ~/.ves-internal-backup
-for env in demo1 crt staging prod
-do
+for env in demo1 crt staging prod; do
 	echo -n "${env}: "
 	matrix-renew-cert "$env" $@
 done

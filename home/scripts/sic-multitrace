@@ -1,39 +1,37 @@
 #!/usr/bin/env zsh
 
-if [[ $# -lt 3 ]]
-then
+set -Eeuo pipefail
+
+if [[ $# -lt 3 ]]; then
 	echo "usage: sic-multitrace env servicemap objtype [pattern]" >&2
 	echo " (where servicemap is a comma-separated list of <site:service>)" >&2
 	echo "example: sic-multitrace crt ny2-nyc-crt:ver,gc:streak ves.io.schema.bgp.StatusObject" >&2
 	echo "example: sic-multitrace crt ny2-nyc-crt:ver,gc:streak ves.io.schema.bgp.StatusObject 8eb1e15a-ee22-4fa4-8877-67808d557397" >&2
-	return 1
+	exit 1
 fi
-local env=$1 
-local services=$2 
-local objtype=$3 
-local pattern=${4:-""} 
-local output_dir=$(mktemp -d) 
+env=$1
+services=$2
+objtype=$3
+pattern=${4:-""}
+output_dir=$(mktemp -d)
 unset output_files
 declare -a output_files
-for pair in $(echo "$services" | sd ',' '\n')
-do
-	site=$(echo "$pair" | cut -d':' -f1) 
-	service=$(echo "$pair" | cut -d':' -f2) 
+for pair in $(echo "$services" | sd ',' '\n'); do
+	site=$(echo "$pair" | cut -d':' -f1)
+	service=$(echo "$pair" | cut -d':' -f2)
 	unset sic_args
 	declare -a sic_args
-	sic_args+=("trace" "$env" "$site" "$service" "$objtype") 
-	jq_query='map([.key, .time, "'$site'", "'$service'", .message])[]|@csv' 
-	if [[ -n "$pattern" ]]
-	then
-		sic_args+=("--pattern" "$pattern") 
+	sic_args+=("trace" "$env" "$site" "$service" "$objtype")
+	jq_query='map([.key, .time, "'$site'", "'$service'", .message])[]|@csv'
+	if [[ -n "$pattern" ]]; then
+		sic_args+=("--pattern" "$pattern")
 	fi
-	output_file="${output_dir}/${site}-${service}.csv" 
-	output_files+=($output_file) 
+	output_file="${output_dir}/${site}-${service}.csv"
+	output_files+=($output_file)
 	echo "writing to file ${output_file}..." >&2
-	sic $sic_args | jq -rc "$jq_query" > $output_file &
+	sic $sic_args | jq -rc "$jq_query" >$output_file &
 done
 wait
-for output_file in "${output_files[@]}"
-do
+for output_file in "${output_files[@]}"; do
 	cat $output_file
 done | sort

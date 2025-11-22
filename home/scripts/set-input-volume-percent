@@ -1,14 +1,14 @@
 #!/usr/bin/env zsh
 
-if [[ ! -v 1 ]]
-then
+set -Eeuo pipefail
+
+if [[ ! -v 1 ]]; then
 	echo "error: must specify an input volume percentage (0-100)" >&2
-	return 1
+	exit 1
 fi
-input_volume="$1" 
-if echo "$input_volume" | pcregrep '\D'
-then
+input_volume="$1"
+if echo "$input_volume" | pcregrep '\D'; then
 	echo "error: invalid input volume: $input_volume" >&2
-	return 1
+	exit 1
 fi
 osascript -e 'tell application "System Events"' -e "set volume input volume $input_volume" -e 'end tell'

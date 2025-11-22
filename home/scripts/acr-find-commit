@@ -1,13 +1,14 @@
 #!/usr/bin/env zsh
 
-local acr_metadata=$(acr-find-tag $@)  && local images=($(printf '%s\n' "$acr_metadata" | jq -rc 'map({digest,lastUpdateTime,name})|flatten[]'))  && for image_metadata in $images
-do
-	digest=$(echo "$image_metadata" | jq -r '.digest') 
-	time=$(echo "$image_metadata" | jq -r '.lastUpdateTime') 
-	name=$(echo "$image_metadata" | jq -r '.name') 
-	image="volterra.azurecr.io/ves.io/${repo}@${digest}" 
+set -Eeuo pipefail
+
+acr_metadata=$(acr-find-tag $@) && local images=($(printf '%s\n' "$acr_metadata" | jq -rc 'map({digest,lastUpdateTime,name})|flatten[]')) && for image_metadata in $images; do
+	digest=$(echo "$image_metadata" | jq -r '.digest')
+	time=$(echo "$image_metadata" | jq -r '.lastUpdateTime')
+	name=$(echo "$image_metadata" | jq -r '.name')
+	image="volterra.azurecr.io/ves.io/${repo}@${digest}"
 	echo "$image"
-	commit=$(skopeo-inspect "volterra.azurecr.io/ves.io/${repo}@${digest}")  && (
+	commit=$(skopeo-inspect "volterra.azurecr.io/ves.io/${repo}@${digest}") && (
 		cd ~/workspaces/f5/volterra/ves.io/${repo} && git fetch origin && git log -n 1 $commit
 	)
 	echo

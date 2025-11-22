@@ -1,23 +1,22 @@
 #!/usr/bin/env zsh
 
-local message="$1" 
-declare -a tools
-declare -a missing
-while true
-do
-	shift
-	if [[ -z "$1" ]]
-	then
+# set -Eeo pipefail
+
+declare -a tools=()
+declare -a missing=()
+declare -x message=''
+while [[ -v 1 ]]; do
+	message="$1"
+	if [[ -z "$message" ]]; then
 		break
 	fi
-	tools+=("$1") 
-	if ! command -v "$1" > /dev/null
-	then
-		missing+=("$1") 
+	tools+=("$message")
+	if ! command -v "$message" >/dev/null; then
+		missing+=("$message")
 	fi
+	shift
 done
-if [[ -n "$missing" ]]
-then
+if [[ -n "${missing[@]}" ]]; then
 	echo "$message requires ${tools// /, }, but the following are missing: ${missing// /, }" >&2
-	return 1
+	exit 1
 fi

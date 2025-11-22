@@ -1,24 +1,22 @@
 #!/usr/bin/env zsh
 
-local environment
-local site
-local usage="usage:\nsite-public-ips [environment] site-name" 
-if [ ! -v 1 ]
-then
-	echo "must specify site" >&2
-	echo "$usage" >&2
-	return 1
+set -Eeuo pipefail
+
+usage="usage:\nsite-public-ips [environment] site-name"
+if [ ! -v 1 ]; then
+  echo "must specify site" >&2
+  echo "$usage" >&2
+  exit 1
 fi
-if [ $# -eq 2 ]
-then
-	environment="$1" 
-	shift
+if [ $# -eq 2 ]; then
+  environment="$1"
+  shift
 else
-	environment=demo1 
+  environment=demo1
 fi
-local compass_hostname=$(env-compass-hostname "$environment") 
-local site_fqdn=$(env-site-fqdn "$environment") 
-site="$1" 
+compass_hostname=$(env-compass-hostname "$environment")
+site_fqdn=$(env-site-fqdn "$environment")
+site="$1"
 tf_params_objects=$(curl "https://${compass_hostname}/introspection/${site_fqdn}/vulpix/ves.io.stdlib/introspect/read/object/ves.io.vulpix.terraform_parameters.Object?response_format=1&page_start=0&page_limit=2000" \
   -H 'content-type: application/json' \
   -H 'accept: application/json' \
@@ -28,21 +26,18 @@ tf_params_objects=$(curl "https://${compass_hostname}/introspection/${site_fqdn}
   --silent \
   --fail \
   --cert-type P12 \
-  --cert ${HOME}/.ves-internal/${environment}/usercerts.p12:volterra) 
-if [[ $? -ne 0 ]]
-then
-	return $?
+  --cert ${HOME}/.ves-internal/${environment}/usercerts.p12:volterra)
+if [[ $? -ne 0 ]]; then
+  exit $?
 fi
-tf_params_id=$(printf '%s\n' "$tf_params_objects" \
-  | jq -r '.get_responses|to_entries[]|select(.value.object.system_metadata.owner_view.name == "'"$site"'")|.value.object.metadata.uid') 
-if [[ $? -ne 0 ]]
-then
-	return $?
+tf_params_id=$(printf '%s\n' "$tf_params_objects" |
+  jq -r '.get_responses|to_entries[]|select(.value.object.system_metadata.owner_view.name == "'"$site"'")|.value.object.metadata.uid')
+if [[ $? -ne 0 ]]; then
+  exit $?
 fi
-if [[ -z "$tf_params_id" ]]
-then
-	echo "could not find terraform parameters for site $site" >&2
-	return 1
+if [[ -z "$tf_params_id" ]]; then
+  echo "could not find terraform parameters for site $site" >&2
+  exit 1
 fi
 tf_status=$(curl "https://${compass_hostname}/introspection/${site_fqdn}/streak/ves.io.streak/introspect/read/status-objects" \
   -H 'content-type: application/json' \
@@ -54,22 +49,19 @@ tf_status=$(curl "https://${compass_hostname}/introspection/${site_fqdn}/streak/
   --fail \
   --silent \
   --cert-type P12 \
-  --cert ${HOME}/.ves-internal/${environment}/usercerts.p12:volterra) 
-if [[ -z "$tf_status" ]]
-then
-	echo "could not find terraform status for site $site" >&2
-	return 1
+  --cert ${HOME}/.ves-internal/${environment}/usercerts.p12:volterra)
+if [[ -z "$tf_status" ]]; then
+  echo "could not find terraform status for site $site" >&2
+  exit 1
 fi
-master_ips=$(printf '%s\n' "$tf_status" \
-  | jq -r '.config_status_map|to_entries[].value.items[].status_object_bytes.apply_status.tf_output' | grep master_public_ip_address | pcregrep -o '([\d\.]+)$') 
-if [[ -z "$master_ips" ]]
-then
-	master_ips=$(printf '%s\n' "$tf_status" | grep -A3 master_public_ip_address | pcregrep -o '\d+\.\d+\.\d+\.\d+' | pcregrep -v '^(10\.|192.168\.|172\.16\.)') 
+master_ips=$(printf '%s\n' "$tf_status" |
+  jq -r '.config_status_map|to_entries[].value.items[].status_object_bytes.apply_status.tf_output' | grep master_public_ip_address | pcregrep -o '([\d\.]+)$')
+if [[ -z "$master_ips" ]]; then
+  master_ips=$(printf '%s\n' "$tf_status" | grep -A3 master_public_ip_address | pcregrep -o '\d+\.\d+\.\d+\.\d+' | pcregrep -v '^(10\.|192.168\.|172\.16\.)')
 fi
-if [[ -z "$master_ips" ]]
-then
-	echo "could not find public IPs for site $site, terraform apply status:" >&2
-	printf '%s\n' "$tf_status" >&2
-	return 1
+if [[ -z "$master_ips" ]]; then
+  echo "could not find public IPs for site $site, terraform apply status:" >&2
+  printf '%s\n' "$tf_status" >&2
+  exit 1
 fi
 printf '%s\n' "$master_ips"

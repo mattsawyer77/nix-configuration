@@ -1,16 +1,41 @@
 #!/usr/bin/env zsh
 
-local image="${1:-$(pcregrep -o 'volterra.*go-builder:v?[\d\.]+' .gitlab-ci.yml)}" 
-if [[ -z "$image" ]]
-then
-	echo "ERROR: no image specified, and go-builder image could not be derived from .gitlab-ci.yml" >&2
+set -Eeuo pipefail
+group_id=${GID:-$(id -g)}
+user_id=${UID:-$(id -u)}
+
+image="${1:-$(pcregrep -o 'volterra.*go-builder:v?[\d\.]+' .gitlab-ci.yml)}"
+if [[ -z "$image" ]]; then
+  echo "ERROR: no image specified, and go-builder image could not be derived from .gitlab-ci.yml" >&2
+  exit 1
 else
-	local cmd="${2:-bash}" 
-	local temp_passwd_file="$(mktemp)" 
-	local project_root="$(git rev-parse --show-toplevel)" 
-	local go_src_dir=$(echo $project_root | sed "s^.*src/\(.*\)^src/\1^") 
-	local go_cache_dir="${project_root}/.cache-docker/go" 
-	echo "running container shell with $image"
-	echo "${USER}:x:${UID}:${GID}:Volterra User:${HOME}:/bin/bash" > "$temp_passwd_file" && mkdir -p "${project_root}/.cache.go" && docker run --rm -it --user ${UID}:${GID} --userns=host --env GOCACHE=${go_cache_dir} --env GOPATH=${GOPATH} --env HOME=${HOME} --env DOCKER_IMAGE="$image" --net host -v ${HOME}/.ssh/known_hosts:${HOME}/.ssh/known_hosts:ro,Z -v ${HOME}/.cache:${HOME}/.cache -v "$temp_passwd_file":/etc/passwd:ro,Z -v ${PWD}:/go/${GOPATH}/src:Z -v ${HOME}/.gitconfig:${HOME}/.gitconfig:ro -v ${HOME}/.ssh:${HOME}/.ssh:ro -v ${HOME}/.magefile:${HOME}/.magefile -v ${GOPATH}:${GOPATH} -v ${project_root}:${project_root} -v "${HOME}/.bashrc-docker-shell":"${HOME}/.bashrc" -w ${project_root} ${image} ${cmd}
-	test -f "$temp_passwd_file" && rm -f "$temp_passwd_file"
+  cmd="${2:-bash}"
+  temp_passwd_file="$(mktemp)"
+  project_root="$(git rev-parse --show-toplevel)"
+  go_src_dir=$(echo $project_root | sed "s^.*src/\(.*\)^src/\1^")
+  go_cache_dir="${project_root}/.cache-docker/go"
+  echo "running container shell with $image"
+  echo "${USER}:x:${user_id}:${group_id}:Volterra User:${HOME}:/bin/bash" >"$temp_passwd_file" &&
+    mkdir -p "${project_root}/.cache.go" &&
+    docker run --rm -it \
+      --user ${user_id}:${group_id} \
+      --userns=host \
+      --env GOCACHE=${go_cache_dir} \
+      --env GOPATH=${GOPATH} \
+      --env HOME=${HOME} \
+      --env DOCKER_IMAGE="$image" \
+      --net host -v ${HOME}/.ssh/known_hosts:${HOME}/.ssh/known_hosts:ro,Z \
+      -v ${HOME}/.cache:${HOME}/.cache \
+      -v "$temp_passwd_file":/etc/passwd:ro,Z \
+      -v ${PWD}:/go/${GOPATH}/src:Z \
+      -v ${HOME}/.gitconfig:${HOME}/.gitconfig:ro \
+      -v ${HOME}/.ssh:${HOME}/.ssh:ro \
+      -v ${HOME}/.magefile:${HOME}/.magefile \
+      -v ${GOPATH}:${GOPATH} \
+      -v ${project_root}:${project_root} \
+      -v "${HOME}/.bashrc-docker-shell":"${HOME}/.bashrc" \
+      -w ${project_root} \
+      ${image} \
+      ${cmd}
+  test -f "$temp_passwd_file" && rm -f "$temp_passwd_file"
 fi

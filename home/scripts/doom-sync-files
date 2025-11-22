@@ -1,6 +1,8 @@
 #!/usr/bin/env zsh
 
-local doom_dir=~/.doom.d 
+set -Eeuo pipefail
+
+doom_dir=~/.doom.d
 rm -rf $doom_dir || :
 mkdir -p $doom_dir
 cp -RLvf ~/workspaces/nix-configuration/home/doom/emacs/* $doom_dir

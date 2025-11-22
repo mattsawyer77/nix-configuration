@@ -1,13 +1,12 @@
 #!/usr/bin/env zsh
 
-if [[ ! -v 1 ]]
-then
+set -Eeuo pipefail
+
+if [[ ! -v 1 ]]; then
 	echo "PCRE regex required" >&2
-	return 1
+	exit 1
 fi
-local regex=$1 
-local input
+regex=$1
+input
 read input
-set -x
 printf '%s\n' "$input" | pcregrep --color "^|$regex"
-set +x

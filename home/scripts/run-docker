@@ -1,13 +1,19 @@
 #!/usr/bin/env zsh
 
-if ! pgrep -flai Applications/Docker.app > /dev/null
-then
+set -Eeo pipefail
+
+if pgrep -flai 'colima.*daemon.*start'; then
+	exit 0
+elif [[ -n "$COLIMA_HOME" ]] && [[ -d "$COLIMA_HOME" ]]; then
+	colima start
+fi
+if ! pgrep -flai Applications/Docker.app >/dev/null; then
 	echo -n "starting docker..."
-	open -a ~/Applications/Docker.app && while true
-	do
-		docker system info > /dev/null 2>&1 && break
-		echo -n "."
-		sleep 1
-	done
+	open -a ~/Applications/Docker.app &&
+		while true; do
+			docker system info >/dev/null 2>&1 && break
+			echo -n "."
+			sleep 1
+		done
 	echo ""
 fi

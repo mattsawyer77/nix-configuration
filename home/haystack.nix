@@ -12,7 +12,7 @@ let
   homePackages = with pkgs; [
     (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
     aws-iam-authenticator
-    awscli2
+    awscli2-bin
     azure-cli
     bash
     bat

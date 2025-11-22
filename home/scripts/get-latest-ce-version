@@ -1,6 +1,17 @@
 #!/usr/bin/env zsh
 
-local environment="${1:-demo1}" 
-local site_fqdn=$(env-site-fqdn "$environment") 
-local compass_hostname=$(env-compass-hostname "$environment") 
-curl "https://${compass_hostname}/introspection/${site_fqdn}/maurice/ves.io.stdlib/introspect/read/object/ves.io.pikachu.version.Object?response_format=1&page_start=0&page_limit=1000" -H 'pragma: no-cache' -H 'content-type: application/json' -H 'accept: application/json' -H 'cache-control: no-cache' -H "authority: ${compass_hostname}" --compressed -sf --cert-type P12 --cert ~/.ves-internal/${environment}/usercerts.p12:volterra | jq -r '.get_responses|to_entries[]|select(.value.object.metadata.name=="ce-build-version")|.value.object.spec.version_spec.name'
+set -Eeuo pipefail
+
+local environment="${1:-demo1}"
+local site_fqdn=$(env-site-fqdn "$environment")
+local compass_hostname=$(env-compass-hostname "$environment")
+curl "https://${compass_hostname}/introspection/${site_fqdn}/maurice/ves.io.stdlib/introspect/read/object/ves.io.pikachu.version.Object?response_format=1&page_start=0&page_limit=1000" \
+  -H 'pragma: no-cache' \
+  -H 'content-type: application/json' \
+  -H 'accept: application/json' \
+  -H 'cache-control: no-cache' \
+  -H "authority: ${compass_hostname}" \
+  --compressed -sf \
+  --cert-type P12 \
+  --cert ~/.ves-internal/${environment}/usercerts.p12:volterra |
+  jq -r '.get_responses|to_entries[]|select(.value.object.metadata.name=="ce-build-version")|.value.object.spec.version_spec.name'

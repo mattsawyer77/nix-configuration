@@ -1,22 +1,27 @@
 #!/usr/bin/env zsh
 
-export IFS=$'\n' 
-root_dir=$(git rev-parse --show-toplevel) 
-(
-	cd $root_dir && mod_info=$(grep '^module' go.mod)  && root_module=$(echo "$mod_info" | sd 'module\s*[^/]+/(.*)$' '$1')  && root_package=$(echo "$mod_info" | sd 'module\s*' '') 
-	if [[ "$root_module" == "stdlib" ]]
-	then
-		packages=($(GOTOOLCHAIN=$GOTOOLCHAIN go list ./... | grep -vE 'stdlib/test|pb$')) 
-	elif [[ -d ./cmd ]] && [[ -d ./pkg ]]
-	then
-		packages=($(GOTOOLCHAIN=$GOTOOLCHAIN go list ./cmd/... ./pkg/... | grep -vE 'pbgo|pb$')) 
-	else
-		packages=($(GOTOOLCHAIN=$GOTOOLCHAIN go list ./...)) 
-	fi
-	for pkg in $packages
-	do
-		dir=$(echo $pkg | sd "${root_package}/" './') 
-		echo "$(date -Iseconds): getting coverage for ${pkg} in ${dir}..."
-		GOTOOLCHAIN=$GOTOOLCHAIN nice +20 go test -coverprofile "${dir}/coverage.out" $pkg && GOTOOLCHAIN=$GOTOOLCHAIN gcov2lcov --use-absolute-source-path -infile="${dir}/coverage.out" -outfile="${dir}/lcov.info"
-	done
-)
+set -Eeuo pipefail
+
+check-required-tools gcov2lcov
+export IFS=$'\n'
+root_dir=$(git rev-parse --show-toplevel)
+declare -a packages
+cd $root_dir &&
+  direnv allow &&
+  mod_info=$(grep '^module' go.mod) &&
+  root_module=$(echo "$mod_info" | sd 'module\s*[^/]+/(.*)$' '$1') &&
+  root_package=$(echo "$mod_info" | sd 'module\s*' '')
+echo "go version: $(go version)"
+if [[ "$root_module" == "stdlib" ]]; then
+  packages=($(go list ./... | grep -vE 'stdlib/test|pb$'))
+elif [[ -d ./cmd ]] && [[ -d ./pkg ]]; then
+  packages=($(go list ./cmd/... ./pkg/... | grep -vE 'pbgo|pb$'))
+else
+  packages=($(go list ./...))
+fi
+for pkg in $packages; do
+  dir=$(echo $pkg | sd "${root_package}/" './')
+  echo "$(date -Iseconds): getting coverage for ${pkg} in ${dir}..."
+  nice go test -coverprofile "${dir}/coverage.out" $pkg &&
+    gcov2lcov --use-absolute-source-path -infile="${dir}/coverage.out" -outfile="${dir}/lcov.info"
+done

@@ -1,13 +1,10 @@
 { lib
 , pkgs
 , nixpkgs-stable
-# , nixpkgs-emacs
 , username
 , mcpo
 , mcp-server-tree-sitter
 , duckduckgo-mcp-server
-# , wezterm
-# , ghostty
 , ...
 }:
 
@@ -20,6 +17,78 @@ let
   goPathSuffix = "gocode";
   localBinPath = ".local/bin";
   npmPackagePath = ".config/npm-packages";
+  mcp-server-tree-sitter-package = mcp-server-tree-sitter.packages.aarch64-darwin.default;
+  mcpo-package = mcpo.packages.aarch64-darwin.default;
+  duckduckgo-mcp-server-package = duckduckgo-mcp-server.packages.aarch64-darwin.default;
+  localScripts = with builtins; map (script:
+    let
+      scriptName = baseNameOf script;
+      scriptContent = readFile script;
+    in pkgs.writeShellScriptBin scriptName scriptContent) [
+      ./scripts/acr-find-commit
+      ./scripts/acr-find-digest
+      ./scripts/acr-find-tag
+      ./scripts/acr-login
+      ./scripts/akarctl
+      ./scripts/akardnsctl
+      ./scripts/argo2mermaid
+      ./scripts/aws-login
+      ./scripts/az-login
+      ./scripts/check-color
+      ./scripts/check-required-tools
+      ./scripts/disable-docker-write-through
+      ./scripts/docker-shell
+      ./scripts/doom-sync-files
+      ./scripts/enable-docker-write-through
+      ./scripts/env-compass-hostname
+      ./scripts/env-gc-site
+      ./scripts/env-site-fqdn
+      ./scripts/etcd-get-raw
+      ./scripts/find-image-data
+      ./scripts/find-proto-import-path
+      ./scripts/gc-crt-login
+      ./scripts/gc-login
+      ./scripts/gcr-digest
+      ./scripts/gcr-info
+      ./scripts/generate-lcov
+      ./scripts/generate-protoc-import-dir-locals
+      ./scripts/generate-tls-cert
+      ./scripts/get-latest-ce-version
+      ./scripts/git-cleanup-branches
+      ./scripts/highlight
+      ./scripts/hydra-emacs-overlay-revision
+      ./scripts/introspect
+      ./scripts/kcontainers
+      ./scripts/klb
+      ./scripts/ksvc
+      ./scripts/launchctl-restart
+      ./scripts/loki
+      ./scripts/matrix-renew-cert
+      ./scripts/matrix-renew-certs
+      ./scripts/parse-schema-version
+      ./scripts/png2icns
+      ./scripts/run-docker
+      ./scripts/set-image
+      ./scripts/set-input-volume-percent
+      ./scripts/setup-ce
+      ./scripts/show-docker-cache-mode
+      ./scripts/sic-multitrace
+      ./scripts/site-public-ips
+      ./scripts/site-terraform-output
+      ./scripts/skopeo-acr-login
+      ./scripts/skopeo-inspect
+      ./scripts/skopeo-inspect-commit-log
+      ./scripts/skopeo-inspect-digest
+      ./scripts/skopeo-inspect-labels
+      ./scripts/sre-model-find-commit
+      ./scripts/sre-model-update-version
+      ./scripts/streak-get-status-objects
+      ./scripts/toggle-audio-input-mute
+      ./scripts/tz
+      ./scripts/wezterm-tab-switcher
+      ./scripts/wz
+      ./scripts/zoom-autofocus
+  ];
   shellScriptWrappers = [
     # enable `gsed` alias which calls gnused for compatibility with homebrew
     (pkgs.writeShellScriptBin "gsed" ''exec ${pkgs.gnused}/bin/sed "$@"'')
@@ -61,13 +130,15 @@ let
     gocyclo
     golangci-lint
     golint
-    jsonnet
-    jsonnet-language-server
+    grafana
+    # jsonnet
+    # jsonnet-language-server
     just
     k9s
     kluctl
     kubecolor
     kubectl
+    llama-cpp
     libiconv
     # mcp-nixos # seems to be broken as of 2025-11-18
     mockgen
@@ -78,6 +149,9 @@ let
     openldap
     pcre
     pkg-config
+    prometheus
+    prometheus-nats-exporter
+    # protols # seems not to work with emacs as of 2025-08-06
     python312
     # python312Packages.chromadb
     # repomix # too old at 1.3.0, install via npm
@@ -128,8 +202,6 @@ let
   extraPaths = [
     (homeDirectory + "/" + localBinPath)
     (homeDirectory + "/.cargo/bin")
-    # (homeDirectory + "/.docker/bin")
-    # "/Applications/Docker.app/Contents/Resources/bin"
     (homeDirectory + "/" + goPathSuffix + "/bin")
     (homeDirectory + "/" + npmPackagePath + "/bin")
     (emacsAppDirectory + "/Content/MacOS")
@@ -143,24 +215,17 @@ in
     (import ./common-shell {
       inherit pkgs homeDirectory goPathSuffix;
     })
-    # (import ./wezterm {
-    #   inherit pkgs;
-    #   # weztermPackage = nixpkgs-stable.outputs.legacyPackages.aarch64-darwin.wezterm;
-    # })
     (import ./alacritty {
-      # seems there are some breaking changes in config, so using stable for now
-      # pkgs = nixpkgs-stable.outputs.legacyPackages.aarch64-darwin;
       inherit pkgs;
       theme = "kanagawa_wave";
     })
     (import ./ghostty {
-      # ghosttyPackage = ghostty.outputs.packages.aarch64-darwin.ghostty;
       inherit pkgs lib;
       configDir = "${homeDirectory}/Library/Application Support/com.mitchellh.ghostty";
     })
-    # while wezterm is having some flakiness
     (import ./tmux {
       inherit pkgs;
+      # TODO: is this clobbering tmux config?
       optionOverrides = [
         {
           name = "default-command";
@@ -185,8 +250,6 @@ in
     #   defaultUser = "Matt Sawyer";
     # })
     ./helix
-    # ./broot
-    # ./aider
     ./powerlevel10k
     ./nats
   ];

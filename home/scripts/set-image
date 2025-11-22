@@ -1,35 +1,32 @@
 #!/usr/bin/env zsh
 
-local usage='usage: set-image resource-type resource-name image-sha' 
-local resource_type="$1" 
-if [[ ! -v 1 ]]
-then
+set -Eeuo pipefail
+
+usage='usage: set-image resource-type resource-name image-sha'
+resource_type="$1"
+if [[ ! -v 1 ]]; then
 	echo "ERROR: resource-type is required" >&2
 	echo "$usage" >&2
-	return 1
+	exit 1
 fi
-local resource_name="$2" 
-if [[ ! -v 1 ]]
-then
+resource_name="$2"
+if [[ ! -v 1 ]]; then
 	echo "ERROR: resource-name is required" >&2
 	echo "$usage" >&2
-	return 1
+	exit 1
 fi
-local container_name="$resource_name" 
-local image_sha="$3" 
-if [[ ! -v 1 ]]
-then
+container_name="$resource_name"
+image_sha="$3"
+if [[ ! -v 1 ]]; then
 	echo "ERROR: image-sha is required" >&2
 	echo "$usage" >&2
-	return 1
+	exit 1
 fi
-if echo "$image_sha" | grep -E '^sha256:[0-9a-f]+$'
-then
-	image_sha="$(echo $image_sha | cut -d':' -f2)" 
+if echo "$image_sha" | grep -E '^sha256:[0-9a-f]+$'; then
+	image_sha="$(echo $image_sha | cut -d':' -f2)"
 fi
-if echo "$image_sha" | grep -E '^[0-9a-f]+$'
-then
+if echo "$image_sha" | grep -E '^[0-9a-f]+$'; then
 	echo "ERROR: invalid SHA for image: $image_sha" >&2
-	return 1
+	exit 1
 fi
 echo "updating image for ${resource_type}/${resource_name} to sha256:${image_sha}..."

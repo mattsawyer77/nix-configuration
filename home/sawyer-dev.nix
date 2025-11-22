@@ -254,7 +254,7 @@ in
       doom = "~/.emacs.d/bin/doom";
     };
     envExtra = builtins.readFile ./.zshenv-sawyer-dev;
-    initExtra = ''
+    initContent = ''
       # TERM==xterm-24bit breaks rendering with skim
       skim-history-widget () {
         local OLDTERM=$TERM

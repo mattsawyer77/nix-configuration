@@ -55,6 +55,7 @@
            :branch "main"))
 (package! apheleia)
 (package! just-mode)
+(package! rotate)
 (package! emacs-eat
   :recipe (:host codeberg
            :repo "akib/emacs-eat"
@@ -86,10 +87,15 @@
 
 (package! mcp)
 
-(package! gitlab-lsp :recipe
-  (:host github
-   :repo "kassick/gitlab-lsp.el"
-   :files ("*.el")))
+;; (package! eca :recipe (:host github :repo "editor-code-assistant/eca-emacs" :files ("*.el")))
+
+;; (package! opencode :recipe (:host github :repo "colobas/opencode.el" :nonrecursive t))
+
+;; xenodium/agent-shell
+(package! shell-maker)
+(package! acp)
+(package! agent-shell)
+
 (package! ultra-scroll :recipe (:host github :repo "jdtsmith/ultra-scroll" :branch "main"))
 (when (featurep :system 'macos)
   (package! ns-keychain

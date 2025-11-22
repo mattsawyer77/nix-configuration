@@ -8,6 +8,7 @@
  :map general-override-mode-map
  :g "C-s" #'basic-save-buffer
  :g "s-t" #'eat-project
+ :g "<f3>" #'rotate-layout
  :n "C-," (lambda ()
             (interactive)
             (dired-other-window "~/workspaces/nix-configuration/home/doom/emacs"))
@@ -116,8 +117,8 @@
        (:prefix ("g" . "smerge")
         :desc "next hunk" "n" #'smerge-next
         :desc "prev hunk" "p" #'smerge-prev
-        :desc "keep my version" "M" #'smerge-keep-mine
-        :desc "keep my version" "m" #'smerge-keep-mine
+        :desc "keep my version" "M" #'smerge-keep-upper
+        :desc "keep my version" "m" #'smerge-keep-upper
         :desc "keep their version" "T" #'smerge-keep-lower
         )))
 
