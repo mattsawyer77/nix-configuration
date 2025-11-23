@@ -1,0 +1,197 @@
+#!/usr/bin/env bash
+# Backup git stashes across multiple repos by creating branches per stash.
+# Usage:
+#   stash2branch [-n|--dry-run] [-r|--remote GIT_REMOTE_NAME] REPO_DIR [REPO_DIR ...]
+
+set -euo pipefail
+
+DRY_RUN=0
+REMOTE=''
+
+log() { printf '%s\n' "$*" >&2; }
+cmd() { printf '➤ %s\n' "$*" >&2; }
+
+# Sanitize a stash message into a safe branch suffix.
+# - Keep [A-Za-z0-9_.-]
+# - Replace others with '-'
+# - Collapse multiple '-'
+# - Trim leading/trailing '-'
+# - Lowercase for consistency (toggle if you prefer original case)
+sanitize_suffix() {
+  local msg="$1"
+
+  # Normalize whitespace
+  msg="${msg//[$'\r']/}"
+  msg="$(printf '%s' "$msg" | tr -s '[:space:]' ' ')"
+  msg="$(printf '%s' "$msg" | sed 's/^ *//; s/ *$//')"
+
+  # Lowercase (comment this line out if you want to preserve case)
+  msg="$(printf '%s' "$msg" | tr '[:upper:]' '[:lower:]')"
+
+  # Replace disallowed chars with '-', keep [a-zA-Z0-9_.-]
+  local suf
+  suf="$(printf '%s' "$msg" | sed 's/[^a-zA-Z0-9_.-]/-/g; s/-\{2,\}/-/g; s/^-//; s/-$//')"
+
+  # Fallback if empty
+  if [[ -z "$suf" ]]; then
+    suf="stash-$(date +%Y%m%d-%H%M%S)"
+  fi
+
+  # Limit length to 100 chars
+  if [[ ${#suf} -gt 100 ]]; then
+    suf="${suf:0:100}"
+  fi
+
+  printf '%s' "$suf"
+}
+
+# Prefer the user-provided message if present; strip default prefixes.
+clean_stash_subject() {
+  local subject="$1"
+  # Common forms:
+  #   "WIP on main: <message>"
+  #   "On main: <message>"
+  # If a message was provided via `git stash push -m "<msg>"`, it appears after ": "
+  subject="$(printf '%s' "$subject" | sed -E 's/^(WIP on|On) [^:]+: //')"
+  printf '%s' "$subject"
+}
+
+# Ensure unique branch name by appending -2, -3, ... if needed
+ensure_unique_branch() {
+  local repo="$1" base="$2"
+  local candidate="$base"
+  local n=2
+  while git -C "$repo" rev-parse --verify --quiet "refs/heads/$candidate" >/dev/null; do
+    candidate="${base}-${n}"
+    ((n++))
+  done
+  printf '%s' "$candidate"
+}
+
+# Process a single repository
+process_repo() {
+  local repo="$1"
+  local remote="$REMOTE"
+
+  cmd "Repository: $repo"
+
+  if [[ ! -d "$repo" ]]; then
+    log "skipping non-existent: $repo"
+    return 1
+  fi
+  if [[ ! -d "$repo/.git" ]]; then
+    log "skipping (not a git repo): $repo"
+    return
+  fi
+  if [[ -n "$remote" ]]; then
+    if ! git -C "$repo" remote get-url "$remote" >/dev/null 2>&1; then
+      log "error: no remote named ${remote}"
+      return 1
+    fi
+  fi
+
+  # Use a shell-safe delimiter (Unit Separator, 0x1F) instead of NUL.
+  # %gd = stash ref (e.g., stash@{0}); %s = subject
+  local IFS=$'\n'
+  mapfile -t entries < <(git -C "$repo" stash list --pretty='%gd%x1f%s')
+
+  if [[ ${#entries[@]} -eq 0 ]]; then
+    log "  No stashes found."
+    return
+  fi
+
+  for entry in "${entries[@]}"; do
+    # Split on Unit Separator
+    local delim=$'\x1f'
+    local ref="${entry%%"$delim"*}"
+    local subject_raw="${entry#*"$delim"}"
+    # If the delimiter wasn't present (shouldn't happen), fall back
+    if [[ "$ref" == "$entry" ]]; then
+      ref="$entry"
+      subject_raw=""
+    fi
+
+    local subject
+    subject="$(clean_stash_subject "$subject_raw")"
+
+    # Derive a sane suffix from the cleaned subject
+    local suffix
+    suffix="$(sanitize_suffix "$subject")"
+    local branch_base="sawyer/${suffix}"
+    local branch
+    branch="$(ensure_unique_branch "$repo" "$branch_base")"
+
+    log "  Found: $ref"
+    log "    raw subject: ${subject_raw:-<none>}"
+    log "    subject:     ${subject:-<none>}"
+    log "    branch:      $branch"
+
+    if [[ $DRY_RUN -eq 1 ]]; then
+      log "    (dry-run) Would run: git -C \"$repo\" stash branch \"$branch\" \"$ref\""
+      if [[ -n "$REMOTE" ]]; then
+        log "    (dry-run) Would run: git -C \"$repo\" push $remote \"$branch\""
+      fi
+      continue
+    fi
+
+    # Create branch from stash. On success, the stash is dropped automatically.
+    if git -C "$repo" stash branch "$branch" "$ref"; then
+      log "    ✅ Created branch '$branch' from $ref"
+    else
+      log "    ❌ Failed to create branch from $ref. (Possible conflicts)"
+      log "       Try manually: git -C \"$repo\" checkout -b \"$branch\" <base-commit>; git -C \"$repo\" stash apply \"$ref\""
+    fi
+  done
+  if [[ -n "$remote" ]]; then
+    log "pushing all branches to ${origin}..."
+    if git -C "$repo" push "$remote" --all; then
+      log "    ✅ pushed all branches and tags to $remote"
+    else
+      log "    ❌ Failed to push to $remote."
+      return 1
+    fi
+  fi
+}
+
+# Parse args
+if [[ $# -lt 1 ]]; then
+  cat >&2 <<'USAGE'
+Usage:
+  stash2branch [-n|--dry-run] [-r|--remote GIT_REMOTE_NAME] REPO_DIR [REPO_DIR ...]
+
+  if remote specified, the branch created from the stash will be pushed there.
+
+Examples:
+  stash2branch ~/code/repo-a ~/code/repo-b
+  stash2branch --remote origin ~/code/repo-a
+  stash2branch --dry-run .
+USAGE
+  exit 1
+fi
+
+repos=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+  -n | --dry-run)
+    DRY_RUN=1
+    shift
+    ;;
+  -h | --help)
+    sed -n '1,40p' "$0" 2>/dev/null || echo "See script header for usage."
+    exit 0
+    ;;
+  -r | --remote)
+    REMOTE="$2"
+    shift
+    shift
+    ;;
+  *)
+    repos+=("$1")
+    shift
+    ;;
+  esac
+done
+
+for r in "${repos[@]}"; do
+  process_repo "$r"
+done
