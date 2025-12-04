@@ -109,7 +109,7 @@
     sqlite
     taglib
     # install Tailscale CLI here, but GUI is installed manually
-    tailscale
+    # tailscale
     taplo
     tokei
     tree

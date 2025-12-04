@@ -114,6 +114,58 @@
             ];
           }; # mmbpm1
 
+        JM3Y9TN61H =
+          let username = "m.sawyer";
+          in
+          darwin.lib.darwinSystem {
+            system = "aarch64-darwin";
+            specialArgs = inputs;
+            modules = [
+              ({ config, pkgs, lib, ... }: {
+                system.primaryUser = "m.sawyer";
+                system.stateVersion = 5;
+                ids.gids.nixbld = 1000;
+                ids.uids.nixbld = 1000;
+                users.users."${username}" = {
+                  name = username;
+                  home = "/Users/${username}";
+                };
+                nix = {
+                  enable = true;
+                  gc = {
+                    automatic = true;
+                    interval = { Hour = 13; Minute = 0; };
+                    options = "--delete-older-than 2d";
+                  };
+                  # package = pkgs.nixVersions.stable;
+                  extraOptions = ''
+                    system = aarch64-darwin
+                    extra-platforms = aarch64-darwin x86_64-darwin
+                    experimental-features = nix-command flakes
+                    build-users-group = nixbld
+                    trusted-users = root m.sawyer
+                    keep-outputs = true
+                    keep-derivations = true
+                    trusted-users = root m.sawyer
+                    keep-outputs = true
+                    keep-derivations = true
+                  '';
+                };
+              })
+              home-manager.darwinModules.home-manager
+              {
+                home-manager.useGlobalPkgs = true;
+                home-manager.useUserPackages = true;
+                home-manager.users."${username}" = ({ config, lib, pkgs, ... }:
+                  import ./home/JM3Y9TN61H.nix {
+                    inherit config lib pkgs username fontConfig mcpo mcp-server-tree-sitter duckduckgo-mcp-server;
+                    nixpkgs-stable = inputs.nixpkgs-stable;
+                  });
+              }
+              ./modules/mac.nix
+            ];
+          }; # JM3Y9TN61H
+
         KD21QWDKW7 =
           let username = "m.sawyer";
           in
