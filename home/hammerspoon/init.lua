@@ -12,7 +12,8 @@ controlKeyHandler = hs.eventtap.new({hs.eventtap.event.types.flagsChanged, hs.ev
     local keyCode = event:getKeyCode()
     
     -- Check if left control key (keyCode 59)
-    if keyCode == 59 then
+    if keyCode == 59 or keyCode == 62 then
+        -- print("control key pressed (or released)")
         if event:getType() == hs.eventtap.event.types.flagsChanged then
             if flags.ctrl then
                 -- Left CTRL pressed
@@ -22,6 +23,7 @@ controlKeyHandler = hs.eventtap.new({hs.eventtap.event.types.flagsChanged, hs.ev
                 -- Left CTRL released
                 if controlPressed and not controlUsedWithOtherKey then
                     -- Tap ESC
+                    -- print("sending escape")
                     hs.eventtap.keyStroke({}, "escape")
                 end
                 controlPressed = false
@@ -30,6 +32,28 @@ controlKeyHandler = hs.eventtap.new({hs.eventtap.event.types.flagsChanged, hs.ev
         end
         -- Don't suppress the original control event
         return false
+    end
+    
+    -- Check for CTRL+space in Firefox
+    if event:getType() == hs.eventtap.event.types.keyDown and keyCode == 49 and flags.ctrl then
+        -- Space bar keyCode is 49
+        local app = hs.application.frontmostApplication()
+        if app:name() == "Firefox" then
+            controlUsedWithOtherKey = true
+            -- Send CMD+l (focus address bar)
+            hs.eventtap.keyStroke({"cmd"}, "l")
+            hs.timer.usleep(50000) -- 50ms delay
+            
+            -- Send %
+            hs.eventtap.keyStrokes("%")
+            hs.timer.usleep(50000) -- 50ms delay
+            
+            -- Send space
+            hs.eventtap.keyStroke({}, "space")
+            
+            -- Suppress the original CTRL+space event
+            return true
+        end
     end
     
     -- If any other key is pressed while control is held
@@ -42,29 +66,43 @@ end)
 
 controlKeyHandler:start()
 
--- Firefox-specific: CTRL+space mapping
-firefoxHotkey = hs.hotkey.bind({"ctrl"}, "space", function()
-    local app = hs.application.frontmostApplication()
-    if app:name() == "Firefox" then
-        -- Send CMD+l (focus address bar)
-        hs.eventtap.keyStroke({"cmd"}, "l")
-        hs.timer.usleep(50000) -- 50ms delay
-        
-        -- Send %
-        hs.eventtap.keyStrokes("%")
-        hs.timer.usleep(50000) -- 50ms delay
-        
-        -- Send space
-        hs.eventtap.keyStroke({}, "space")
-    else
-        -- If not Firefox, send regular CTRL+space
-        hs.eventtap.keyStroke({"ctrl"}, "space")
+-- Monitor eventtap health and restart if needed
+local function checkEventTapHealth()
+    if controlKeyHandler and not controlKeyHandler:isEnabled() then
+        print("EventTap was disabled, attempting to restart...")
+        controlKeyHandler:start()
+        hs.notify.new({title="Hammerspoon", informativeText="EventTap restarted"}):send()
     end
+end
+
+-- Check every 5 seconds
+healthTimer = hs.timer.doEvery(5, checkEventTapHealth)
+
+-- Watch for sleep/wake events and restart eventtap
+local function caffeinateWatcher(eventType)
+    if eventType == hs.caffeinate.watcher.systemDidWake then
+        print("System woke from sleep, restarting eventtap...")
+        controlKeyHandler:stop()
+        hs.timer.doAfter(1, function()
+            controlKeyHandler:start()
+        end)
+    end
+end
+
+sleepWatcher = hs.caffeinate.watcher.new(caffeinateWatcher)
+sleepWatcher:start()
+
+-- Manual restart hotkey (CMD+ALT+CTRL+R)
+hs.hotkey.bind({"cmd", "alt", "ctrl"}, "R", function()
+    print("Manually restarting eventtap...")
+    controlKeyHandler:stop()
+    hs.timer.doAfter(0.5, function()
+        controlKeyHandler:start()
+        hs.notify.new({title="Hammerspoon", informativeText="EventTap manually restarted"}):send()
+    end)
 end)
 
 -- Notification on config load
 hs.notify.new({title="Hammerspoon", informativeText="Config loaded successfully"}):send()
 
-print("Hammerspoon config loaded:")
-print("- Left CTRL: tap for ESC, hold for CTRL")
-print("- Firefox CTRL+space: CMD+l, %, space")
+print("Hammerspoon config loaded")
