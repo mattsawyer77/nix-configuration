@@ -63,6 +63,7 @@ let
         command -v zoxide >/dev/null && eval "$(zoxide init zsh)"
         command -v az >/dev/null && source ${pkgs.azure-cli}/share/bash-completion/completions/az.bash
       '';
+      # TODO: make ZSH_HIGHLIGHT_STYLES work better with terminal theme
       initContent = ''
         # Case-insensitive completion
         zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
@@ -82,20 +83,21 @@ let
         # Use cache for faster completions
         zstyle ':completion:*' use-cache on        zstyle ':completion:*' cache-path ~/.zsh/cache
         # fix some contrast issues with ZSH syntax highlighting
-        ZSH_HIGHLIGHT_STYLES[reserved-word]="fg=magenta"
-        ZSH_HIGHLIGHT_STYLES[precommand]="fg=red"
-        ZSH_HIGHLIGHT_STYLES[commandseparator]="fg=magenta"
-        ZSH_HIGHLIGHT_STYLES[globbing]="fg=magenta"
-        ZSH_HIGHLIGHT_STYLES[history-expansion]="fg=magenta"
+        ZSH_HIGHLIGHT_STYLES[reserved-word]="fg=202"
+        ZSH_HIGHLIGHT_STYLES[precommand]="fg=127"
+        ZSH_HIGHLIGHT_STYLES[commandseparator]="fg=33"
+        ZSH_HIGHLIGHT_STYLES[globbing]="fg=162"
+        ZSH_HIGHLIGHT_STYLES[history-expansion]="fg=100"
         ZSH_HIGHLIGHT_STYLES[single-quoted-argument]="fg=green"
-        ZSH_HIGHLIGHT_STYLES[double-quoted-argument]="fg=green"
-        ZSH_HIGHLIGHT_STYLES[dollar-quoted-argument]="fg=green"
-        ZSH_HIGHLIGHT_STYLES[rc-quote]="fg=magenta"
-        ZSH_HIGHLIGHT_STYLES[dollar-double-quoted-argument]="fg=black"
-        ZSH_HIGHLIGHT_STYLES[back-double-quoted-argument]="fg=magenta"
-        ZSH_HIGHLIGHT_STYLES[back-dollar-quoted-argument]="fg=magenta"
-        ZSH_HIGHLIGHT_STYLES[redirection]="fg=magenta"
-        ZSH_HIGHLIGHT_STYLES[comment]="fg=244"
+        ZSH_HIGHLIGHT_STYLES[double-quoted-argument]="fg=cyan"
+        ZSH_HIGHLIGHT_STYLES[dollar-quoted-argument]="fg=yellow"
+        ZSH_HIGHLIGHT_STYLES[rc-quote]="fg=45"
+        ZSH_HIGHLIGHT_STYLES[dollar-double-quoted-argument]="fg=111"
+        ZSH_HIGHLIGHT_STYLES[back-double-quoted-argument]="fg=147"
+        ZSH_HIGHLIGHT_STYLES[back-dollar-quoted-argument]="fg=216"
+        ZSH_HIGHLIGHT_STYLES[redirection]="fg=220"
+        ZSH_HIGHLIGHT_STYLES[comment]="fg=188"
+        ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets)
         printf '\e]2;'$(hostname)'\a'
       '';
     };
