@@ -154,7 +154,9 @@ let
     }
     {
       name = "word-separators";
-      value = " ";
+      value = ''
+        "!\"#&'()*+,/;<=>?[\\]^`{|}~"
+      '';
       flags = [ "global" ];
     }
   ] ++ optionOverrides;
@@ -240,7 +242,7 @@ in
     prefix = "C-space";
     shortcut = "space"; # ??
     sensibleOnTop = false;
-    shell = "/etc/profiles/per-user/sawyer/bin/zsh";
+    # shell = "/etc/profiles/per-user/sawyer/bin/zsh";
     extraConfig = ''
       ${mapKeyUnbinds unbindKeys}
       ${mapKeyBinds "bind -n" rootKeys}
