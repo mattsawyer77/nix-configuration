@@ -267,10 +267,10 @@ in
               baseURL = "https://f5ai.pd.f5net.com/api";
             };
             models = {
-              "claude-opus-4.5" = {
+              "claude-opus-4-5" = {
                 name = "F5AI: Claude Opus 4.5";
               };
-              "claude-sonnet-4.5" = {
+              "claude-sonnet-4-5" = {
                 name = "F5AI: Claude Sonnet 4.5";
               };
             };
