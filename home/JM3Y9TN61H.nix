@@ -1,4 +1,5 @@
-{ lib
+{ config
+, lib
 , pkgs
 , nixpkgs-stable
 , username
@@ -254,6 +255,30 @@ in
     ./powerlevel10k
     ./nats
     ./hammerspoon
+    (import ./opencode {
+      inherit config pkgs lib;
+      enableSuperpowers = true;
+      settings = {
+        "$schema" = "https://opencode.ai/config.json";
+        provider = {
+          f5ai = {
+            name = "f5ai";
+            options = {
+              baseURL = "https://f5ai.pd.f5net.com/api";
+            };
+            models = {
+              "claude-opus-4.5" = {
+                name = "F5AI: Claude Opus 4.5";
+              };
+              "claude-sonnet-4.5" = {
+                name = "F5AI: Claude Sonnet 4.5";
+              };
+            };
+            npm = "@ai-sdk/openai-compatible";
+          };
+        };
+      };
+    })
   ];
   targets.darwin = {
     linkApps.enable = false;
@@ -278,32 +303,6 @@ in
     };
   };
   programs.home-manager.enable = true;
-  programs.opencode = {
-    enable = true;
-    settings = {
-      "$schema" = "https://opencode.ai/config.json";
-      provider = {
-        f5ai = {
-          name = "f5ai";
-          options = {
-            baseURL = "https://f5ai.pd.f5net.com/api";
-          };
-          models = {
-            "gpt-4.1" = {
-              name = "F5AI: GPT 4.1";
-            };
-            "gpt-5" = {
-              name = "F5AI: GPT 5";
-            };
-            "gpt-5-codex" = {
-              name = "F5AI: GPT 5 Codex";
-            };
-          };
-          npm = "@ai-sdk/openai-compatible";
-        };
-      };
-    };
-  };
   programs.zsh = {
     shellAliases = {
       sia = "nohup ~/Applications/sia.app/Contents/MacOS/sia >/dev/null 2>&1 &";
