@@ -14,10 +14,11 @@ let
 in
 
 {
-  # environment.systemPackages = [
-  #   emacsPackage
-  #   pkgs.fetchpatch
-  # ];
+  environment.systemPackages = [
+    pkgs.home-manager
+    # emacsPackage
+    # pkgs.fetchpatch
+  ];
   # the following won't work with 24-bit color
   # services.emacs = {
   #   enable = true;

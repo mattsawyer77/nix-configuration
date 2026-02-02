@@ -6,19 +6,19 @@
     bat-extras.batman
     btop
     # cachix
-    cmake
+    # cmake
     coreutils
     delta
     # devenv # broken due to https://github.com/NixOS/nixpkgs/issues/404506
     direnv
     dos2unix
-    editorconfig-core-c
+    # editorconfig-core-c
     eternal-terminal
     eza
     fd
     findutils
     # fontconfig
-    fzf
+    # fzf
     # gdb # broken as of 2023-01-20
     # gdbm
     gettext
@@ -32,12 +32,7 @@
     gopls
     graphviz
     grpcurl
-    # gvproxy
-    # harfbuzzFull
-    # html-tidy
-    # htop
     ijq
-    # jansson
     jq
     kubecolor
     kubectl
@@ -49,7 +44,7 @@
     libsndfile
     libssh2
     libtool
-    libvterm-neovim
+    # libvterm-neovim
     libxml2
     # llvm
     # llvmPackages_12.lldb
@@ -85,13 +80,13 @@
     pcre2
     pkg-config
     # poetry
-    protobuf
+    # protobuf
     # prototool
     # pyenv
     # pyright
     # python3
-    python312Packages.grip
-    python312Packages.xmltodict
+    # python312Packages.grip
+    # python312Packages.xmltodict
     # pywal
     readline
     # redis
@@ -105,7 +100,7 @@
     shfmt
     skim
     skopeo
-    starship
+    # starship
     sqlite
     taglib
     # install Tailscale CLI here, but GUI is installed manually
@@ -166,8 +161,8 @@
   #   tree-sitter-zig
   # ])
   ++ (if pkgs.stdenv.isDarwin then [
-    discord
-    dockutil
+    # discord
+    # dockutil
     reattach-to-user-namespace
   ] else [ ]);
 }

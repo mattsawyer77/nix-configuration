@@ -108,15 +108,15 @@ let
   ] ++ localScripts;
   homePackages = (with pkgs; [
     (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
-    aws-iam-authenticator
+    # aws-iam-authenticator
     # awscli2 # too slow, installing from AWS directly for now
     # azure-cli # broken as of 2025-08-29
     bazelisk
     buf
     cachix
-    ccls
+    # ccls
     certigo
-    cmake
+    # cmake
     coreutils
     delve
     devenv
@@ -124,14 +124,14 @@ let
     dust
     git
     github-mcp-server
-    glab
+    # glab
     gnused
     gnutar
-    go_1_24 # need to test if go 1.25 is causing slowdowns
+    go
     gocyclo
     golangci-lint
     golint
-    grafana
+    # grafana
     # jsonnet
     # jsonnet-language-server
     just
@@ -139,37 +139,33 @@ let
     kluctl
     kubecolor
     kubectl
-    llama-cpp
+    # llama-cpp
     libiconv
-    lua
-    lua-language-server
+    # lua
+    # lua-language-server
     # mcp-nixos # seems to be broken as of 2025-11-18
-    mockgen
+    # mockgen
     ncurses
     nix-tree
     # ollama # seems to be broken as of 2025-11-18
     opencode
-    openldap
+    # openldap
     pcre
     pkg-config
-    prometheus
-    prometheus-nats-exporter
+    # postgresql
+    # prometheus
+    # prometheus-nats-exporter
     # protols # seems not to work with emacs as of 2025-08-06
     python312
     # python312Packages.chromadb
     # repomix # too old at 1.3.0, install via npm
     ripgrep
-    terraform
+    # terraform
     vendir
     watch
-    # wireshark # broken as of 2025-10-31
     xan
-    xorg.xauth
-    xorg.xhost
     xq-xml
-    # xquartz # maybe broken as of 2025-11-18
     yamllint
-    # aider-chat
     # azure-cli # broken on unstable, so using nixpkgs stable
     # colima
     # curlFull # nixpkgs curl builds with openssl 3 which breaks legacy PKCS12 cert auth
@@ -180,6 +176,10 @@ let
     # openfortivpn # maybe broken as of 2024-10-31
     # qemu
     # sshfs
+    # wireshark # broken as of 2025-10-31
+    # xorg.xauth
+    # xorg.xhost
+    # xquartz # maybe broken as of 2025-11-18
   ])
   # wrappers for homebrew compatibility, etc.
   ++ shellScriptWrappers
@@ -190,7 +190,7 @@ let
     mcpo-package
     mcp-server-tree-sitter-package
     duckduckgo-mcp-server-package
-    wireshark
+    # wireshark
   ]);
   # ++ (builtins.filter lib.attrsets.isDerivation (builtins.attrValues pkgs.nerd-fonts));
   envVars = {
