@@ -8,6 +8,7 @@
   runDoomCommands ? true,
   launchDaemon ? false,
   installEmacs ? false,
+  emacs-vterm ? null,
   ...
 }:
 let

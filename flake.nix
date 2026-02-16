@@ -46,6 +46,11 @@
       url = "github:oxalica/nil";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # vterm native module source
+    emacs-vterm-src = {
+      url = "github:akermu/emacs-libvterm";
+      flake = false;
+    };
     # for loki's logcli
     loki = {
       url = "github:grafana/loki";
@@ -63,7 +68,7 @@
     #   # inputs.nixpkgs.follows = "nixpkgs";
     # };
   };
-  outputs = { self, nixpkgs, darwin, flake-utils, mcpo, mcp-server-tree-sitter, duckduckgo-mcp-server, home-manager, ... }@inputs: {
+  outputs = { self, nixpkgs, darwin, flake-utils, mcpo, mcp-server-tree-sitter, duckduckgo-mcp-server, emacs-vterm-src, home-manager, ... }@inputs: {
     # mac
     darwinConfigurations =
       let
@@ -158,7 +163,7 @@
                 home-manager.useUserPackages = true;
                 home-manager.users."${username}" = ({ config, lib, pkgs, ... }:
                   import ./home/JM3Y9TN61H.nix {
-                    inherit config lib pkgs username fontConfig mcpo mcp-server-tree-sitter duckduckgo-mcp-server;
+                    inherit config lib pkgs username fontConfig mcpo mcp-server-tree-sitter duckduckgo-mcp-server emacs-vterm-src;
                     nixpkgs-stable = inputs.nixpkgs-stable;
                   });
               }

@@ -6,6 +6,7 @@
 , mcpo
 , mcp-server-tree-sitter
 , duckduckgo-mcp-server
+, emacs-vterm-src
 , ...
 }:
 
@@ -21,6 +22,7 @@ let
   mcp-server-tree-sitter-package = mcp-server-tree-sitter.packages.aarch64-darwin.default;
   mcpo-package = mcpo.packages.aarch64-darwin.default;
   duckduckgo-mcp-server-package = duckduckgo-mcp-server.packages.aarch64-darwin.default;
+  emacs-vterm = import ../modules/emacs-vterm { inherit pkgs emacs-vterm-src; };
   localScripts = with builtins; map (script:
     let
       scriptName = baseNameOf script;
@@ -66,6 +68,7 @@ let
       ./scripts/loki
       ./scripts/matrix-renew-cert
       ./scripts/matrix-renew-certs
+      ./scripts/update-opencode-agents
       ./scripts/parse-schema-version
       ./scripts/png2icns
       ./scripts/run-docker
@@ -106,7 +109,9 @@ let
     (pkgs.writeShellScriptBin "ghostty" ''exec ${ghosttyAppDirectory}/Contents/MacOS/ghostty "$@"'')
     (pkgs.writeShellScriptBin "aws" ''exec /usr/local/bin/aws "$@"'') # remove if awscli becomes fast enough
   ] ++ localScripts;
-  homePackages = (with pkgs; [
+  homePackages = [
+    emacs-vterm
+  ] ++ (with pkgs; [
     (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
     # aws-iam-authenticator
     # awscli2 # too slow, installing from AWS directly for now
@@ -116,7 +121,7 @@ let
     cachix
     # ccls
     certigo
-    # cmake
+    cmake
     coreutils
     delve
     devenv
@@ -256,8 +261,6 @@ in
     ./nats
     ./hammerspoon
     (import ./opencode {
-      inherit config pkgs lib;
-      enableSuperpowers = true;
       settings = {
         "$schema" = "https://opencode.ai/config.json";
         provider = {
@@ -267,11 +270,11 @@ in
               baseURL = "https://f5ai.pd.f5net.com/api";
             };
             models = {
-              "claude-opus-4-5" = {
-                name = "F5AI: Claude Opus 4.5";
+              "claude-opus-4-6" = {
+                name = "F5AI: Claude Opus 4.6";
               };
-              "claude-sonnet-4-5" = {
-                name = "F5AI: Claude Sonnet 4.5";
+              "claude-sonnet-4-6" = {
+                name = "F5AI: Claude Sonnet 4.6";
               };
             };
             npm = "@ai-sdk/openai-compatible";
