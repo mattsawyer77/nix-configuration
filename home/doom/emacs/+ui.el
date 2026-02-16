@@ -12,10 +12,15 @@
          (tool-bar-lines . 0) (menu-bar-lines . 0))))
 
 (when (and (featurep :system 'macos) (fboundp 'display-graphic-p))
-  (setq ns-use-proxy-icon nil)
   (setq frame-title-format nil)
-  (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
-  (add-to-list 'default-frame-alist '(ns-appearance . dark)))
+  ;; ns-use-proxy-icon and ns-transparent-titlebar/ns-appearance are
+  ;; NS-build-only parameters.  The mac port (emacs-macport) handles
+  ;; titlebar transparency via a patch in modules/emacs-plus and
+  ;; auto-detects appearance from the background color.
+  (when (boundp 'ns-use-proxy-icon)
+    (setq ns-use-proxy-icon nil)
+    (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
+    (add-to-list 'default-frame-alist '(ns-appearance . dark))))
 
 ;;; Faces and Font Setup
 
@@ -117,7 +122,7 @@
   "Set theme based on system appearance to system-appearance-mode, which can be either `light` or `dark`. nil will result in automatic theme detection."
   (cond ((string-equal system-appearance-mode "dark") (load-theme sawyer/dark-theme t))
         ((string-equal system-appearance-mode "light") (load-theme sawyer/light-theme t))
-        (ns-system-appearance ;; (emacs-plus or jimeh emacs builds)
+        ((boundp 'ns-system-appearance) ;; (emacs-plus or jimeh emacs builds)
          (progn
            (message "ns-system-appearance is set to %s" ns-system-appearance)
            (progn
@@ -316,7 +321,7 @@
 ;;; Load default theme at startup
 (load-theme sawyer/dark-theme t)
 (add-hook! after-init
-  (when ns-system-appearance
+  (when (boundp 'ns-system-appearance)
     (setq ns-system-appearance-change-functions '(sawyer/auto-set-theme))
     (message "setup auto-theme switching via ns-system-appearance-change-functions"))
   (sawyer/auto-set-theme))

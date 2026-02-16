@@ -14,7 +14,6 @@ let
   homeDirectory = "/Users/" + username;
   doomDirectory = ".doom.d";
   homeAppDirectory = "${homeDirectory}/Applications";
-  emacsAppDirectory = "${homeAppDirectory}/Emacs.app";
   ghosttyAppDirectory ="${homeAppDirectory}/Ghostty.app";
   goPathSuffix = "gocode";
   localBinPath = ".local/bin";
@@ -22,6 +21,7 @@ let
   mcp-server-tree-sitter-package = mcp-server-tree-sitter.packages.aarch64-darwin.default;
   mcpo-package = mcpo.packages.aarch64-darwin.default;
   duckduckgo-mcp-server-package = duckduckgo-mcp-server.packages.aarch64-darwin.default;
+  emacs-plus = import ../modules/emacs-plus { inherit pkgs; };
   emacs-vterm = import ../modules/emacs-vterm { inherit pkgs emacs-vterm-src; };
   localScripts = with builtins; map (script:
     let
@@ -104,8 +104,6 @@ let
     (pkgs.writeShellScriptBin "gxargs" ''exec ${pkgs.findutils}/bin/xargs "$@"'')
     # enable `gtar` alias which calls gnu tar for compatibility with homebrew
     (pkgs.writeShellScriptBin "gtar" ''exec ${pkgs.gnutar}/bin/tar "$@"'')
-    # enable `emacs` alias which calls Emacs
-    (pkgs.writeShellScriptBin "emacs" ''exec ${emacsAppDirectory}/Contents/MacOS/Emacs "$@"'')
     (pkgs.writeShellScriptBin "ghostty" ''exec ${ghosttyAppDirectory}/Contents/MacOS/ghostty "$@"'')
     (pkgs.writeShellScriptBin "aws" ''exec /usr/local/bin/aws "$@"'') # remove if awscli becomes fast enough
   ] ++ localScripts;
@@ -205,14 +203,12 @@ let
     SAML2AWS_USER_AGENT =
       "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.00) Gecko/20100101 Firefox/82.0";
     LSP_USE_PLISTS = "true";
-    EMACS = "${emacsAppDirectory}/Contents/MacOS/Emacs";
   };
   extraPaths = [
     (homeDirectory + "/" + localBinPath)
     (homeDirectory + "/.cargo/bin")
     (homeDirectory + "/" + goPathSuffix + "/bin")
     (homeDirectory + "/" + npmPackagePath + "/bin")
-    (emacsAppDirectory + "/Content/MacOS")
     # rancher desktop
     (homeDirectory + "/" + ".rd/bin")
   ];
@@ -247,9 +243,8 @@ in
       doomDir = doomDirectory;
       # we'll run doom commands manually
       runDoomCommands = false;
-      # emacsPackage = pkgs.emacs29-macport;
-      # disabled while trying out jimeh build installed externally
-      # emacsPackage = nixpkgs-emacs.outputs.legacyPackages.aarch64-darwin.emacs29-macport;
+      emacsPackage = emacs-plus;
+      installEmacs = true;
     })
     # (import ./git {
     #   inherit config pkgs lib;
