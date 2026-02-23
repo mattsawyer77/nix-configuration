@@ -20,5 +20,16 @@ basePackage.overrideAttrs (old: {
     # shows through instead of the system dark/light titlebar chrome.
     # Also hides the window title text.
     ../../patches/mac-transparent-titlebar.patch
+
+    # Replace select() with poll() and raise the internal file
+    # descriptor ceiling from FD_SETSIZE (1024) to 10 * FD_SETSIZE
+    # (10240).  This prevents "no file descriptor left" errors when
+    # using features that create many file watchers (e.g. cov-mode
+    # on large projects).
+    ../../patches/poll.patch
   ] ++ extraPatches;
+
+  configureFlags = (old.configureFlags or []) ++ [
+    "--with-poll"
+  ];
 })

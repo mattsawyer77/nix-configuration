@@ -21,10 +21,10 @@ index cc4e59ee5ac..e21ce3c7ea6 100644
  
  pre_PKG_CONFIG_CFLAGS=$CFLAGS
  pre_PKG_CONFIG_LIBS=$LIBS
-@@ -6620,7 +6632,7 @@ AC_DEFUN
+@@ -7831,7 +7843,7 @@ AC_DEFUN
  emacs_config_features=
  for opt in ACL BE_APP CAIRO DBUS FREETYPE GCONF GIF GLIB GMP GNUTLS GPM GSETTINGS \
-  HARFBUZZ IMAGEMAGICK JPEG JSON LCMS2 LIBOTF LIBSELINUX LIBSYSTEMD LIBXML2 \
+  HARFBUZZ IMAGEMAGICK JPEG LCMS2 LIBOTF LIBSELINUX LIBSYSTEMD LIBXML2 \
 - M17N_FLT MODULES NATIVE_COMP NOTIFY NS OLDXMENU PDUMPER PGTK PNG RSVG SECCOMP \
 + M17N_FLT MODULES NATIVE_COMP NOTIFY NS OLDXMENU PDUMPER PGTK PNG POLL RSVG SECCOMP \
   SOUND SQLITE3 THREADS TIFF TOOLKIT_SCROLL_BARS TREE_SITTER \
@@ -79,6 +79,27 @@ index 507f2a9e7da..eecc35dc324 100644
        setrlimit (RLIMIT_NOFILE, &rlim);
      }
    if ([NSApp activationPolicy] == NSApplicationActivationPolicyProhibited) {
+diff --git a/src/macappkit.m b/src/macappkit.m
+--- a/src/macappkit.m
++++ b/src/macappkit.m
+@@ -1263,14 +1263,14 @@
+      maximum number of open files for the process in their first call.
+      We make dummy calls to them and then reduce the resource limit
+      here, since pselect cannot handle file descriptors that are
+-     greater than or equal to FD_SETSIZE.  */
++     greater than or equal to EMACS_MAX_FD.  */
+   CFSocketGetTypeID ();
+   CFFileDescriptorGetTypeID ();
+   MRC_RELEASE ([[NSFileHandle alloc] init]);
+   struct rlimit rlim;
+-  if (getrlimit (RLIMIT_NOFILE, &rlim) == 0 && rlim.rlim_cur > FD_SETSIZE)
++  if (getrlimit (RLIMIT_NOFILE, &rlim) == 0 && rlim.rlim_cur > EMACS_MAX_FD)
+     {
+-      rlim.rlim_cur = FD_SETSIZE;
++      rlim.rlim_cur = EMACS_MAX_FD;
+       setrlimit (RLIMIT_NOFILE, &rlim);
+     }
+ 
 diff --git a/src/process.c b/src/process.c
 index 5144c5d6c92..e28ac5482b9 100644
 --- a/src/process.c
@@ -610,8 +631,8 @@ index 5144c5d6c92..e28ac5482b9 100644
  		   to be accurate, just positive is enough. */
 -		for (channel = 0; channel < FD_SETSIZE; ++channel)
 +		for (channel = 0; channel < EMACS_MAX_FD; ++channel)
- 		  if (FD_ISSET(channel, &tls_available))
- 		    FD_SET(channel, &Available);
+ 		  if (FD_ISSET (channel, &tls_available))
+ 		    FD_SET (channel, &Available);
  	    }
 @@ -6103,7 +6208,7 @@ read_process_output (Lisp_Object proc, int channel)
  {
@@ -883,16 +904,16 @@ index 45cc22bc4cb..029a913f324 100644
 +#define FD_SET(n, p) \
 +  do { \
 +    if ((n) < EMACS_MAX_FD) { \
-+      (p)->bits[(n)/EMACS_UINT_WIDTH] |= (1 << (n)%EMACS_UINT_WIDTH); \
++      (p)->bits[(n)/EMACS_UINT_WIDTH] |= ((EMACS_UINT)1 << (n)%EMACS_UINT_WIDTH); \
 +    } \
 +  } while (0)
 +#define FD_CLR(n, p) \
 +  do { \
 +    if ((n) < EMACS_MAX_FD) { \
-+      (p)->bits[(n)/EMACS_UINT_WIDTH] &= ~(1 << (n)%EMACS_UINT_WIDTH); \
++      (p)->bits[(n)/EMACS_UINT_WIDTH] &= ~((EMACS_UINT)1 << (n)%EMACS_UINT_WIDTH); \
 +    } \
 +  } while (0)
-+#define FD_ISSET(n, p) ((n) < EMACS_MAX_FD ? ((p)->bits[(n)/EMACS_UINT_WIDTH] & (1 << (n)%EMACS_UINT_WIDTH)) : 0)
++#define FD_ISSET(n, p) ((n) < EMACS_MAX_FD ? ((p)->bits[(n)/EMACS_UINT_WIDTH] & ((EMACS_UINT)1 << (n)%EMACS_UINT_WIDTH)) : 0)
 +#define FD_ZERO(p) memset((p), 0, sizeof(emacs_fd_set))
 +#include "syspoll.h"
 +#endif /* no USE_POLL */
