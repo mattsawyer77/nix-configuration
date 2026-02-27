@@ -53,13 +53,10 @@ let
         socks4proxy = "ssh -D 8888 -f -C -q -N";
         randomizeMacAddress =
           "openssl rand -hex 6 | sed 's/(..)/1:/g; s/.$//' | xargs sudo ifconfig $(route -n get default | grep interface: | cut -d':' -f2 | awk '{print $1}') ether";
-        k = "kubecolor";
-        kv = "kubecolor -n ves-system";
         l = "eza";
       };
       completionInit = ''
         autoload -U compinit && compinit
-        command -v kubectl >/dev/null && source <(kubectl completion zsh) && alias k=kubectl
         command -v zoxide >/dev/null && eval "$(zoxide init zsh)"
         command -v az >/dev/null && source ${pkgs.azure-cli}/share/bash-completion/completions/az.bash
       '';
@@ -81,7 +78,25 @@ let
         zstyle ':completion:*:descriptions' format '%B%d%b'
 
         # Use cache for faster completions
-        zstyle ':completion:*' use-cache on        zstyle ':completion:*' cache-path ~/.zsh/cache
+        zstyle ':completion:*' use-cache on
+        zstyle ':completion:*' cache-path ~/.zsh/cache
+
+        # Don't use /etc/hosts for completion (may contain large blocklists)
+        zstyle -e ':completion:*:hosts' hosts 'reply=()'
+
+        # kubectl + kubecolor completion and aliases
+        if command -v kubectl >/dev/null; then
+          source <(kubectl completion zsh)
+          if command -v kubecolor >/dev/null; then
+            compdef kubecolor=kubectl
+            alias k=kubecolor
+            alias kv='kubecolor -n ves-system'
+          else
+            alias k=kubectl
+            alias kv='kubectl -n ves-system'
+          fi
+        fi
+
         # fix some contrast issues with ZSH syntax highlighting
         ZSH_HIGHLIGHT_STYLES[reserved-word]="fg=202"
         ZSH_HIGHLIGHT_STYLES[precommand]="fg=127"
