@@ -1,8 +1,8 @@
-{ pkgs
-, optionOverrides ? []
-, ... }:
+{ config, lib, pkgs, ... }:
 
 let
+  cfg = config.custom.tmux;
+
   optionFlags = {
     "global" = "g";
     "pane" = "p";
@@ -159,7 +159,7 @@ let
       '';
       flags = [ "global" ];
     }
-  ] ++ optionOverrides;
+  ] ++ cfg.optionOverrides;
 
   # utility function to map attrset to tmux key bind syntax
   # where command is something like "bind -n" or "bind"
@@ -224,39 +224,49 @@ let
 
 in
 {
-  home.packages = with pkgs; [
-    tmux
-    # tmuxPlugins.resurrect
-  ];
-  programs.tmux = {
-    enable = true;
-    package = pkgs.tmux;
-    # plugins = with pkgs.tmuxPlugins; [
-    #   resurrect
-    # ];
-    baseIndex = 1;
-    clock24 = true;
-    disableConfirmationPrompt = true;
-    historyLimit = 50000;
-    keyMode = "vi";
-    prefix = "C-space";
-    shortcut = "space"; # ??
-    sensibleOnTop = false;
-    # shell = "/etc/profiles/per-user/sawyer/bin/zsh";
-    extraConfig = ''
-      ${mapKeyUnbinds unbindKeys}
-      ${mapKeyBinds "bind -n" rootKeys}
-      ${mapKeyBinds "bind" prefixKeys}
-      ${clipboardSettings}
-      set-environment LESS '-F -i -M -R -X --incsearch'
-      ${mapOptions extraConfigOptions}
-    '';
+  options.custom.tmux = {
+    optionOverrides = lib.mkOption {
+      type = lib.types.listOf lib.types.attrs;
+      default = [];
+      description = "List of tmux option override attrsets ({name, value, flags}).";
+    };
   };
-  programs.zsh = {
-    shellAliases = {
-      ts = "tmux new-session -n main -s";
-      ta = "tmux attach -t";
-      tl = "tmux list-sessions";
+
+  config = {
+    home.packages = with pkgs; [
+      tmux
+      # tmuxPlugins.resurrect
+    ];
+    programs.tmux = {
+      enable = true;
+      package = pkgs.tmux;
+      # plugins = with pkgs.tmuxPlugins; [
+      #   resurrect
+      # ];
+      baseIndex = 1;
+      clock24 = true;
+      disableConfirmationPrompt = true;
+      historyLimit = 50000;
+      keyMode = "vi";
+      prefix = "C-space";
+      shortcut = "space"; # ??
+      sensibleOnTop = false;
+      # shell = "/etc/profiles/per-user/sawyer/bin/zsh";
+      extraConfig = ''
+        ${mapKeyUnbinds unbindKeys}
+        ${mapKeyBinds "bind -n" rootKeys}
+        ${mapKeyBinds "bind" prefixKeys}
+        ${clipboardSettings}
+        set-environment LESS '-F -i -M -R -X --incsearch'
+        ${mapOptions extraConfigOptions}
+      '';
+    };
+    programs.zsh = {
+      shellAliases = {
+        ts = "tmux new-session -n main -s";
+        ta = "tmux attach -t";
+        tl = "tmux list-sessions";
+      };
     };
   };
 }

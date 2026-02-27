@@ -162,7 +162,16 @@
 (map! :after general
       (:nv "<f5>" #'gptel
        :nv "C-<f5>" #'gptel-menu))
-
+(map! :map general-override-mode-map
+      :mode markdown-mode
+      (:nv "<f8>" #'mermaid-view-mode
+       :nv "<f9>" #'mermaid-view-maximize)
+      )
+(map! :map general-override-mode-map
+      :mode org-mode
+      (:nv "<f8>" #'mermaid-view-mode
+       :nv "<f9>" #'mermaid-view-maximize)
+      )
 (set-lookup-handlers! 'proto-nav-mode
   :definition #'proto-nav-project-find-message-def-at-point
   :references #'proto-nav-project-find-message-refs-at-point)

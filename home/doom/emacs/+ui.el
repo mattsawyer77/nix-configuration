@@ -26,6 +26,7 @@
 
 (defface sawyer/mono-face
   '((t :inherit default :family "PragmataPro Liga 1.1" :weight normal))
+  ;; '((t :inherit default :family "SF Mono" :weight light))
   ;; '((t :inherit default :family "JetBrains Mono 1.1" :weight normal))
   ;; '((t :inherit default :family "JetBrains Mono"))
   ;; '((t :inherit default :family "Iosevka Custom" :weight normal))
@@ -33,11 +34,13 @@
 
 (defface sawyer/variable-face
   ;; '((t :inherit default :family "Galvji" :size 20 :weight light))
-  '((t :inherit default :family "Fira Sans" :size 20 :weight normal))
+  ;; '((t :inherit default :family "Fira Sans" :size 20 :weight normal))
+  ;; '((t :inherit default :family "SF Pro" :size 20 :weight normal))
+  '((t :inherit default :family "Noto Sans" :size 20 :weight normal))
   "Font spec for all variable-width text.")
 
 (defface code-face
-  '((t :inherit sawyer/mono-face :height 1.2 :weight normal))
+  '((t :inherit sawyer/mono-face :height 1.2 :weight light))
   "Monospace code face.")
 
 (defface org-face

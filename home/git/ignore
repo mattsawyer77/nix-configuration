@@ -2,3 +2,4 @@
 .idea
 *.log
 *doom*scratch*
+*-tabspaces-session.el

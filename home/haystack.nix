@@ -1,7 +1,7 @@
 { config, lib, pkgs, username, ... }:
 
 let
-  homeDirectory = "/home/" + username;
+  homeDirectory = "/home/${username}";
   doomDirectory = ".doom.d";
   goPathSuffix = "gocode";
   localBinPath = ".local/bin";
@@ -103,69 +103,67 @@ in
 {
   imports = [
     ./common-packages
-    (import ./common-shell {
-      inherit pkgs goPathSuffix homeDirectory;
-    })
-    (import ./tmux {
-      inherit pkgs lib;
-      optionOverrides = [
-        {
-          name = "window-status-style";
-          value = ''
-            fg="#888899",bg="#151e24"
-          '';
-          flags = [ "global" ];
-        }
-        {
-          name = "window-status-last-style";
-          value = ''
-            fg="#888899",bg="#151e24"
-          '';
-          flags = [ "global" ];
-        }
-        {
-          name = "window-status-current-style";
-          value = ''
-            fg="#ccccdd",bg="#4f4f58"
-          '';
-          flags = [ "global" ];
-        }
-        {
-          name = "status-left";
-          value = ''
-            "#[bg=#439fad]#[fg=#151e24]#{?client_prefix,#[bg=green],} #S "
-          '';
-          flags = [ "global" ];
-        }
-        {
-          name = "status-right";
-          value = ''
-            '#[bg=#202017]#[fg=#585865] %H:%M%Z #(TZ=UTC date +"(%%H:%%MUTC)") '
-          '';
-          flags = [ "global" ];
-        }
-        {
-          name = "update-environment";
-          value = ''
-            "SSH_TTY"
-          '';
-          flags = [ "global" "append" ];
-        }
-      ];
-    })
-    (import ./doom {
-      inherit pkgs username envVars localBinPath;
-      doomDir = doomDirectory;
-      emacsPackage = pkgs.emacs-nox;
-      launchDaemon = true;
-    })
-    (import ./git {
-      inherit config pkgs lib;
-      defaultEmail = "m.sawyer@f5.com";
-      defaultUser = "Matt Sawyer";
-    })
+    ./common-shell
+    ./tmux
+    ./doom
+    ./git
     ./helix
   ];
+  custom.shell.goPathSuffix = goPathSuffix;
+  custom.tmux.optionOverrides = [
+    {
+      name = "window-status-style";
+      value = ''
+        fg="#888899",bg="#151e24"
+      '';
+      flags = [ "global" ];
+    }
+    {
+      name = "window-status-last-style";
+      value = ''
+        fg="#888899",bg="#151e24"
+      '';
+      flags = [ "global" ];
+    }
+    {
+      name = "window-status-current-style";
+      value = ''
+        fg="#ccccdd",bg="#4f4f58"
+      '';
+      flags = [ "global" ];
+    }
+    {
+      name = "status-left";
+      value = ''
+        "#[bg=#439fad]#[fg=#151e24]#{?client_prefix,#[bg=green],} #S "
+      '';
+      flags = [ "global" ];
+    }
+    {
+      name = "status-right";
+      value = ''
+        '#[bg=#202017]#[fg=#585865] %H:%M%Z #(TZ=UTC date +"(%%H:%%MUTC)") '
+      '';
+      flags = [ "global" ];
+    }
+    {
+      name = "update-environment";
+      value = ''
+        "SSH_TTY"
+      '';
+      flags = [ "global" "append" ];
+    }
+  ];
+  custom.doom = {
+    inherit envVars;
+    doomDir = doomDirectory;
+    emacsPackage = pkgs.emacs-nox;
+    launchDaemon = true;
+  };
+  custom.git = {
+    defaultEmail = "m.sawyer@f5.com";
+    defaultUser = "Matt Sawyer";
+  };
   home = {
     inherit homeDirectory;
     inherit username;

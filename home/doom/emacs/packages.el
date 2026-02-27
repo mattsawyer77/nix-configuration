@@ -1,5 +1,5 @@
 ;;;  -*- no-byte-compile: t; -*-
-
+;;(setq straight-vc-git-default-protocol 'ssh)
 (unpin! lsp-treemacs)
 (package! adoc-mode)
 (package! prettier-js)
@@ -87,6 +87,7 @@
 
 (package! mcp)
 
+(package! opencode :recipe (:host github :repo "colobas/opencode.el"))
 ;; (package! eca :recipe (:host github :repo "editor-code-assistant/eca-emacs" :files ("*.el")))
 
 ;; (package! opencode :recipe (:host github :repo "colobas/opencode.el" :nonrecursive t))
@@ -97,9 +98,22 @@
 (package! agent-shell)
 
 (package! ultra-scroll :recipe (:host github :repo "jdtsmith/ultra-scroll" :branch "main"))
+
 (when (featurep :system 'macos)
   (package! ns-keychain
     :recipe (:host github :repo "mattsawyer77/ns-keychain.el")))
 
+(when (featurep :system 'macos)
+  (package! applescript-mode
+    :recipe (:host github :repo "emacsorphanage/applescript-mode")))
+
 (package! jq-mode :recipe (:host github :repo "ljos/jq-mode"))
+(package! md-mermaid :recipe (:host github :repo "ahmetus/md-mermaid"))
+
+(package! mermaid-view
+  :recipe (:type git
+           :repo "git@github.com:mattsawyer77/mermaid-view.el"
+           :branch "main"
+           ))
+
 (disable-packages! hl-line)

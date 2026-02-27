@@ -50,7 +50,9 @@
            ("\\.hujson$"              . jsonc-mode)))
   (add-to-list 'auto-mode-alist spec))
 
-(after! proto-nav-mode
+;; proto-nav-mode is defined in +proto-search.el, which is loaded before
+;; +editor.el via config.el — no need for after! (it has no `provide').
+(when (fboundp 'proto-nav-mode)
   (add-to-list 'auto-mode-alist '("\\.proto\\'" . proto-nav-mode)))
 
 ;; TODO: do we need this or does set-formatter! handle it
@@ -239,18 +241,157 @@
 
 (after! (flycheck rustic) (push 'rustic-clippy flycheck-checkers))
 
- ;;; Org-Mode and Notes
+(defun sawyer/org-mermaid-uuid ()
+  "Generate a random UUID-like string for unique filenames."
+  (md5 (format "%s%s%s" (system-name) (emacs-pid) (time-to-seconds))))
+
+(defun sawyer/org-mermaid--collect-blocks ()
+  "Collect all mermaid src blocks in the current buffer.
+Returns a list of plists with :body, :out-file, :marker, :params."
+  (let (blocks)
+    (org-babel-map-src-blocks nil
+      (when (string= lang "mermaid")
+        (let* ((info (org-babel-get-src-block-info 'no-eval))
+               (params (nth 2 info))
+               (body (nth 1 info))
+               (raw-file (cdr (assoc :file params)))
+               ;; The :file param may be a lambda; evaluate it if so.
+               (out-file (if (functionp raw-file)
+                             (funcall raw-file)
+                           raw-file))
+               (marker (copy-marker (point))))
+          (push (list :body body
+                      :out-file out-file
+                      :marker marker
+                      :params params)
+                blocks))))
+    (nreverse blocks)))
+
+(defun sawyer/org-mermaid--build-cmd (temp-file out-file params)
+  "Build the mmdc command string for a mermaid block.
+TEMP-FILE is the input file, OUT-FILE is the output image,
+PARAMS are the org-babel header params."
+  (let* ((mmdc (or ob-mermaid-cli-path
+                   (executable-find "mmdc")
+                   (error "mmdc not found")))
+         (theme (cdr (assoc :theme params)))
+         (width (cdr (assoc :width params)))
+         (height (cdr (assoc :height params)))
+         (scale (cdr (assoc :scale params)))
+         (background-color (cdr (assoc :background-color params)))
+         (mermaid-config-file (or (cdr (assoc :mermaid-config-file params))
+                                  ob-mermaid-default-config-file))
+         (css-file (cdr (assoc :css-file params)))
+         (puppeteer-config-file (cdr (assoc :puppeteer-config-file params)))
+         (pdf-fit (assoc :pdf-fit params))
+         (cmdline (cdr (assoc :cmdline params))))
+    (concat mmdc
+            " -i " (shell-quote-argument temp-file)
+            " -o " (shell-quote-argument out-file)
+            (when theme (concat " -t " theme))
+            (when background-color (concat " -b " background-color))
+            (when width (concat " -w " (if (numberp width) (number-to-string width) width)))
+            (when height (concat " -H " (if (numberp height) (number-to-string height) height)))
+            (when scale (concat " -s " (number-to-string scale)))
+            (when pdf-fit " -f ")
+            (when mermaid-config-file (concat " -c " (shell-quote-argument mermaid-config-file)))
+            (when css-file (concat " -C " (shell-quote-argument css-file)))
+            (when puppeteer-config-file (concat " -p " (shell-quote-argument puppeteer-config-file)))
+            (when cmdline (concat " " cmdline)))))
+
+(defun sawyer/org-mermaid--hide-block-at (marker)
+  "Ensure the src block at MARKER is folded (hidden).
+Uses `org-hide-block-toggle' only when the block is currently visible."
+  (when (marker-buffer marker)
+    (with-current-buffer (marker-buffer marker)
+      (save-excursion
+        (goto-char marker)
+        ;; Move to the #+begin_src line so toggle operates on the right block.
+        (beginning-of-line)
+        (when (looking-at-p "[ \t]*#\\+begin_src")
+          ;; Only hide if not already hidden (no org-hide-block overlay here).
+          (let ((ov (cl-find-if
+                     (lambda (o) (eq (overlay-get o 'invisible) 'org-hide-block))
+                     (overlays-at (line-end-position)))))
+            (unless ov
+              (org-hide-block-toggle))))))))
+
+(defun sawyer/org-mermaid--insert-result (marker out-file)
+  "Insert or update the #+RESULTS block and display the inline image at MARKER."
+  (when (and (marker-buffer marker) (file-exists-p out-file))
+    (with-current-buffer (marker-buffer marker)
+      (save-excursion
+        (goto-char marker)
+        (org-babel-insert-result (format "[[file:%s]]" out-file) '("file"))
+        ;; Refresh inline images so the result is visible immediately.
+        (org-redisplay-inline-images)))))
+
+(defun sawyer/org-render-and-hide-mermaid ()
+  "Render all mermaid src blocks concurrently and hide them when done."
+  (interactive)
+  (when (derived-mode-p 'org-mode)
+    (let ((blocks (sawyer/org-mermaid--collect-blocks))
+          (buf (current-buffer)))
+      (when blocks
+        (message "Rendering %d mermaid block(s) concurrently..." (length blocks))
+        (dolist (blk blocks)
+          (let* ((body     (plist-get blk :body))
+                 (out-file (plist-get blk :out-file))
+                 (marker   (plist-get blk :marker))
+                 (params   (plist-get blk :params))
+                 (temp-file (make-temp-file "mermaid-" nil ".mmd")))
+            (with-temp-file temp-file (insert body))
+            (let ((cmd (sawyer/org-mermaid--build-cmd temp-file out-file params)))
+              (message "mermaid: %s" cmd)
+              (make-process
+               :name (format "mermaid-%s" (file-name-nondirectory out-file))
+               :buffer (generate-new-buffer " *mermaid-compile*")
+               :command (list "sh" "-c" cmd)
+               :noquery t
+               :sentinel
+               (let ((m marker) (of out-file) (tf temp-file) (b buf))
+                 (lambda (proc event)
+                   (unwind-protect
+                       (if (string= event "finished\n")
+                           (progn
+                             (message "mermaid: rendered %s" of)
+                             (when (buffer-live-p b)
+                               (with-current-buffer b
+                                 (sawyer/org-mermaid--insert-result m of)
+                                 (sawyer/org-mermaid--hide-block-at m))))
+                         (message "mermaid: failed for %s (see process buffer)" of))
+                     ;; Cleanup temp file and process buffer.
+                     (ignore-errors (delete-file tf))
+                     (when (process-buffer proc)
+                       (kill-buffer (process-buffer proc))))))))))))))
+
+
+;;; Org-Mode and Notes
 (after! org
   (setq org-export-body-only t)
+  (setq org-babel-default-header-args:mermaid
+        `((:results . "file")
+          (:exports . "results")
+          ;; This auto-generates a filename in the temp directory
+          (:file . (lambda ()
+                     (expand-file-name
+                      (format "mermaid-%s.png" (sawyer/org-mermaid-uuid))
+                      temporary-file-directory)))))
   (cond
    ((equal (system-name) "SEA-ML-00059144")
     (setq org-agenda-files '("/Users/sawyer/Documents/OneDrive - F5 Networks/notes")))
-   ((equal (system-name) "KD21QWDKW7")
+   ((equal (system-name) "JM3Y9TN61H")
     (progn
       (setq org-directory "~/onedrive/notes")
       (setq org-agenda-files '("/Users/m.sawyer/Library/CloudStorage/OneDrive-F5,Inc/notes"))))
    (t
-    (setq org-agenda-files '("/Users/sawyer/Library/Mobile Documents/com~apple~CloudDocs/notes")))))
+    (setq org-agenda-files '("/Users/sawyer/Library/Mobile Documents/com~apple~CloudDocs/notes"))))
+  )
+(after! ob-mermaid
+  (setq ob-mermaid-cli-path "~/.local/bin/mmdc")
+  (setq ob-mermaid-default-config-file "~/.config/mermaid_config.json")
+  ;; (add-hook! org-mode #'sawyer/org-render-and-hide-mermaid)
+  )
 
  ;;; Popup Rules
 (dolist (rule
@@ -444,8 +585,8 @@
   ;;             ;; devstral-small-2507-gguf:q3_k_xl ;; llama.cpp
   ;;             ;; deepseek-r1-distill-qwen-1.5b-gguf:q8_0 ;; llama.cpp -- useless though?
   ;;             ))
-  (gptel-make-openai "gpt: local openwebui"
-    :host "127.0.0.1:3000"
+  (gptel-make-openai "gpt: haystack openwebui"
+    :host "haystack:5000"
     :protocol "http"
     :endpoint "/api/chat/completions"
     :key (sawyer/get-creds "local-open-webui" "default")
@@ -455,8 +596,8 @@
               gpt-5-codex   ;; f5gpt
               o4-mini       ;; f5gpt
               ))
-  (gptel-make-gh-copilot "Copilot")
-  (setq gptel-model "gpt: local openwebui"
+  ;; (gptel-make-gh-copilot "Copilot")
+  (setq gptel-model "gpt: haystack openwebui"
         gptel-use-tools t
         gptel-confirm-tool-calls 'auto
         gptel-include-tool-results 'auto
@@ -505,7 +646,7 @@
   ;; (add-hook! gptel-post-stream #'gptel-auto-scroll) ;; might be incompatible with gptel-default-mode: org-mode
   ) ;; gptel
 
-(add-hook! gptel-mode-hook #'sawyer/add-repomix-to-gptel-context)
+;; (add-hook! gptel-mode-hook #'sawyer/add-repomix-to-gptel-context)
 (add-hook! gptel-mode-hook #'sawyer/gptel-mode-buffer-local-variables)
 (add-hook! gptel-post-response #'sawyer/gptel-mode-after-response)
 (add-hook! org-mode #'sawyer/gptel-mode)
@@ -519,7 +660,6 @@
                           ("tree-sitter" . (:command "mcp-server-tree-sitter" :args ("--debug")))
                           ("duckduckgo" . (:command "duckduckgo-mcp-server"))
                           ("nixos" . (:command "mcp-nixos"))
-                          ;; ("repomix" . (:command "repomix" :args ("--mcp")))
                           ;; ("filesystem" . (:command "npx" :args ("-y" "@modelcontextprotocol/server-filesystem" ,(getenv "home"))))
                           ;; ("sequential-thinking" . (:command "npx" :args ("-y" "@modelcontextprotocol/server-sequential-thinking")))
                           ;; ("context7" . (:command "npx" :args ("-y" "@upstash/context7-mcp") :env (:default_minimum_tokens "6000")))
@@ -543,6 +683,7 @@
    auto-revert-check-vc-info t
    auto-revert-interval 30
    git-commit-summary-max-length 100
+   ;; magit-process-connection-type nil
    ;; magit-diff-highlight-hunk-body nil
    ;; magit-diff-highlight-indentation nil
    ;; magit-diff-highlight-trailing nil

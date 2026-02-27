@@ -6,9 +6,8 @@
 , ... }:
 
 let
-  homeDirectory = "/Users/" + username;
+  homeDirectory = "/Users/${username}";
   doomDirectory = ".doom.d";
-  goPathSuffix = "gocode";
   localBinPath = ".local/bin";
   # to update/regenerate, run node2nix -i <(echo '["bash-language-server", "prettier", "typescript-formatter"]') --nodejs-18
   # then copy the resulting files into ./npm-packages
@@ -54,32 +53,28 @@ let
   extraPaths = [
     (homeDirectory + "/" + localBinPath)
     (homeDirectory + "/.cargo/bin")
-    (homeDirectory + "/" + goPathSuffix + "/bin")
+    (homeDirectory + "/gocode/bin")
   ];
 in
 {
   imports = [
     ./common-packages
-    (import ./common-shell {
-      inherit pkgs homeDirectory goPathSuffix;
-    })
+    ./common-shell
     ./wezterm
-    (import ./tmux {
-      inherit pkgs;
-      optionOverrides = [ ];
-    })
+    ./tmux
     ./karabiner
-    (import ./doom {
-      inherit pkgs localBinPath username envVars;
-      doomDir = doomDirectory;
-    })
-    (import ./git {
-      inherit config pkgs lib;
-      defaultEmail = "m.sawyer@f5.com";
-      defaultUser = "Matt Sawyer";
-    })
+    ./doom
+    ./git
     ./helix
   ];
+  custom.doom = {
+    inherit envVars;
+    doomDir = doomDirectory;
+  };
+  custom.git = {
+    defaultEmail = "m.sawyer@f5.com";
+    defaultUser = "Matt Sawyer";
+  };
   home = {
     homeDirectory = homeDirectory;
     packages = homePackages;
