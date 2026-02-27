@@ -1,8 +1,9 @@
 { config
 , lib
 , pkgs
-, nixpkgs-stable
 , username
+, fontConfig
+, nixpkgs-stable
 , mcpo
 , mcp-server-tree-sitter
 , duckduckgo-mcp-server
@@ -11,11 +12,10 @@
 }:
 
 let
-  homeDirectory = "/Users/" + username;
+  homeDirectory = "/Users/${username}";
   doomDirectory = ".doom.d";
   homeAppDirectory = "${homeDirectory}/Applications";
   ghosttyAppDirectory ="${homeAppDirectory}/Ghostty.app";
-  goPathSuffix = "gocode";
   localBinPath = ".local/bin";
   npmPackagePath = ".config/npm-packages";
   mcp-server-tree-sitter-package = mcp-server-tree-sitter.packages.aarch64-darwin.default;
@@ -208,7 +208,7 @@ let
   extraPaths = [
     (homeDirectory + "/" + localBinPath)
     (homeDirectory + "/.cargo/bin")
-    (homeDirectory + "/" + goPathSuffix + "/bin")
+    (homeDirectory + "/gocode/bin")
     (homeDirectory + "/" + npmPackagePath + "/bin")
     # rancher desktop
     (homeDirectory + "/" + ".rd/bin")
@@ -217,70 +217,67 @@ in
 {
   imports = [
     ./common-packages
-    (import ./common-shell {
-      inherit pkgs homeDirectory goPathSuffix;
-    })
-    (import ./alacritty {
-      inherit pkgs;
-      theme = "kanagawa_wave";
-      fontConfig = { monospaceFamily = "PragmataPro Liga"; };
-    })
-    (import ./ghostty {
-      inherit pkgs lib;
-      configDir = "${homeDirectory}/Library/Application Support/com.mitchellh.ghostty";
-    })
-    (import ./tmux {
-      inherit pkgs;
-      # TODO: is this clobbering tmux config?
-      optionOverrides = [
-        {
-          name = "default-command";
-          value = ''"reattach-to-user-namespace -l zsh"'';
-          flags = [ "global" ];
-        }
-      ];
-    })
-    (import ./doom {
-      inherit lib pkgs envVars;
-      username = config.home.username;
-      doomDir = doomDirectory;
-      # we'll run doom commands manually
-      runDoomCommands = false;
-      emacsPackage = emacs-plus;
-      installEmacs = true;
-    })
-    # (import ./git {
-    #   inherit config pkgs lib;
-    #   defaultEmail = "m.sawyer@f5.com";
-    #   defaultUser = "Matt Sawyer";
-    # })
+    ./common-shell
+    ./alacritty
+    ./ghostty
+    ./tmux
+    ./doom
+    # ./git
     ./helix
     ./powerlevel10k
     ./nats
     ./hammerspoon
-    (import ./opencode {
-      settings = {
-        "$schema" = "https://opencode.ai/config.json";
-        provider = {
-          f5ai = {
-            name = "f5ai";
-            options = {
-              baseURL = "https://f5ai.pd.f5net.com/openai";
-            };
-            models = {
-              "claude-opus-4-6" = {
-                name = "F5AI: Claude Opus 4.6";
-              };
-              "claude-sonnet-4-6" = {
-                name = "F5AI: Claude Sonnet 4.6";
-              };
-            };
-            npm = "@ai-sdk/openai-compatible";
+    ./opencode
+  ];
+  custom.alacritty = {
+    theme = "kanagawa_wave";
+    fontFamily = fontConfig.monospaceFamily;
+  };
+  custom.ghostty = {
+    configDir = "${homeDirectory}/Library/Application Support/com.mitchellh.ghostty";
+  };
+  custom.tmux = {
+    # TODO: is this clobbering tmux config?
+    optionOverrides = [
+      {
+        name = "default-command";
+        value = ''"reattach-to-user-namespace -l zsh"'';
+        flags = [ "global" ];
+      }
+    ];
+  };
+  custom.doom = {
+    inherit envVars;
+    doomDir = doomDirectory;
+    # we'll run doom commands manually
+    runDoomCommands = false;
+    emacsPackage = emacs-plus;
+    installEmacs = true;
+  };
+  # custom.git = {
+  #   defaultEmail = "m.sawyer@f5.com";
+  #   defaultUser = "Matt Sawyer";
+  # };
+  custom.opencode.settings = {
+    "$schema" = "https://opencode.ai/config.json";
+    provider = {
+      f5ai = {
+        name = "f5ai";
+        options = {
+          baseURL = "https://f5ai.pd.f5net.com/openai";
+        };
+        models = {
+          "claude-opus-4-6" = {
+            name = "F5AI: Claude Opus 4.6";
+          };
+          "claude-sonnet-4-6" = {
+            name = "F5AI: Claude Sonnet 4.6";
           };
         };
+        npm = "@ai-sdk/openai-compatible";
       };
-    })
-  ];
+    };
+  };
   targets.darwin = {
     linkApps.enable = false;
     copyApps.enable = true;

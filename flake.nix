@@ -110,10 +110,10 @@
               {
                 home-manager.useGlobalPkgs = true;
                 home-manager.useUserPackages = true;
-                home-manager.users."${username}" = ({ config, lib, pkgs, ... }:
-                  import ./home/mmbpm1.nix {
-                    inherit config lib pkgs username fontConfig;
-                  });
+                home-manager.extraSpecialArgs = {
+                  inherit username fontConfig;
+                };
+                home-manager.users."${username}" = import ./home/mmbpm1.nix;
               }
               ./modules/mac.nix
             ];
@@ -161,11 +161,11 @@
               {
                 home-manager.useGlobalPkgs = true;
                 home-manager.useUserPackages = true;
-                home-manager.users."${username}" = ({ config, lib, pkgs, ... }:
-                  import ./home/JM3Y9TN61H.nix {
-                    inherit config lib pkgs username fontConfig mcpo mcp-server-tree-sitter duckduckgo-mcp-server emacs-vterm-src;
-                    nixpkgs-stable = inputs.nixpkgs-stable;
-                  });
+                home-manager.extraSpecialArgs = {
+                  inherit username fontConfig mcpo mcp-server-tree-sitter duckduckgo-mcp-server emacs-vterm-src;
+                  nixpkgs-stable = inputs.nixpkgs-stable;
+                };
+                home-manager.users."${username}" = import ./home/JM3Y9TN61H.nix;
               }
               ./modules/mac.nix
             ];
@@ -212,13 +212,11 @@
               {
                 home-manager.useGlobalPkgs = true;
                 home-manager.useUserPackages = true;
-                home-manager.users."${username}" = ({ config, lib, pkgs, ... }:
-                  import ./home/KD21QWDKW7.nix {
-                    inherit config lib pkgs username fontConfig mcpo mcp-server-tree-sitter duckduckgo-mcp-server;
-                    # poetry2nix = inputs.poetry2nix;
-                    # nixpkgs-emacs = inputs.nixpkgs-emacs;
-                    nixpkgs-stable = inputs.nixpkgs-stable;
-                  });
+                home-manager.extraSpecialArgs = {
+                  inherit username fontConfig mcpo mcp-server-tree-sitter duckduckgo-mcp-server;
+                  nixpkgs-stable = inputs.nixpkgs-stable;
+                };
+                home-manager.users."${username}" = import ./home/KD21QWDKW7.nix;
               }
               ./modules/mac.nix
             ];
@@ -248,11 +246,10 @@
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-            home-manager.users.sawyer = ({ config, lib, pkgs, ... }:
-              import ./home/haystack.nix {
-                inherit config lib pkgs;
-                username = "sawyer";
-              });
+            home-manager.extraSpecialArgs = {
+              username = "sawyer";
+            };
+            home-manager.users.sawyer = import ./home/haystack.nix;
           }
           ({ pkgs, ... }: {
             system.stateVersion = "22.11";
@@ -380,11 +377,10 @@
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-            home-manager.users.sawyer = ({ config, lib, pkgs, ... }:
-              import ./home/sawyer-dev-vio.nix {
-                inherit config lib pkgs;
-                username = "sawyer";
-              });
+            home-manager.extraSpecialArgs = {
+              username = "sawyer";
+            };
+            home-manager.users.sawyer = import ./home/sawyer-dev-vio.nix;
           }
           ({ pkgs, ... }: {
             system.stateVersion = "22.11";

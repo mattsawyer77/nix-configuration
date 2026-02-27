@@ -1,7 +1,8 @@
-{ lib
+{ config
+, lib
 , pkgs
-, nixpkgs-stable
 , username
+, nixpkgs-stable
 , mcpo
 , mcp-server-tree-sitter
 , duckduckgo-mcp-server
@@ -9,12 +10,11 @@
 }:
 
 let
-  homeDirectory = "/Users/" + username;
+  homeDirectory = "/Users/${username}";
   doomDirectory = ".doom.d";
   homeAppDirectory = "${homeDirectory}/Applications";
   emacsAppDirectory = "${homeAppDirectory}/Emacs.app";
   ghosttyAppDirectory ="${homeAppDirectory}/Ghostty.app";
-  goPathSuffix = "gocode";
   localBinPath = ".local/bin";
   npmPackagePath = ".config/npm-packages";
   mcp-server-tree-sitter-package = mcp-server-tree-sitter.packages.aarch64-darwin.default;
@@ -202,7 +202,7 @@ let
   extraPaths = [
     (homeDirectory + "/" + localBinPath)
     (homeDirectory + "/.cargo/bin")
-    (homeDirectory + "/" + goPathSuffix + "/bin")
+    (homeDirectory + "/gocode/bin")
     (homeDirectory + "/" + npmPackagePath + "/bin")
     (emacsAppDirectory + "/Content/MacOS")
     # rancher desktop
@@ -212,47 +212,46 @@ in
 {
   imports = [
     ./common-packages
-    (import ./common-shell {
-      inherit pkgs homeDirectory goPathSuffix;
-    })
-    (import ./alacritty {
-      inherit pkgs;
-      theme = "kanagawa_wave";
-    })
-    (import ./ghostty {
-      inherit pkgs lib;
-      configDir = "${homeDirectory}/Library/Application Support/com.mitchellh.ghostty";
-    })
-    (import ./tmux {
-      inherit pkgs;
-      # TODO: is this clobbering tmux config?
-      optionOverrides = [
-        {
-          name = "default-command";
-          value = ''"reattach-to-user-namespace -l zsh"'';
-          flags = [ "global" ];
-        }
-      ];
-    })
+    ./common-shell
+    ./alacritty
+    ./ghostty
+    ./tmux
     ./karabiner
-    (import ./doom {
-      inherit lib pkgs username envVars;
-      doomDir = doomDirectory;
-      # we'll run doom commands manually
-      runDoomCommands = false;
-      # emacsPackage = pkgs.emacs29-macport;
-      # disabled while trying out jimeh build installed externally
-      # emacsPackage = nixpkgs-emacs.outputs.legacyPackages.aarch64-darwin.emacs29-macport;
-    })
-    # (import ./git {
-    #   inherit config pkgs lib;
-    #   defaultEmail = "m.sawyer@f5.com";
-    #   defaultUser = "Matt Sawyer";
-    # })
+    ./doom
+    # ./git
     ./helix
     ./powerlevel10k
     ./nats
   ];
+  custom.alacritty = {
+    theme = "kanagawa_wave";
+  };
+  custom.ghostty = {
+    configDir = "${homeDirectory}/Library/Application Support/com.mitchellh.ghostty";
+  };
+  custom.tmux = {
+    # TODO: is this clobbering tmux config?
+    optionOverrides = [
+      {
+        name = "default-command";
+        value = ''"reattach-to-user-namespace -l zsh"'';
+        flags = [ "global" ];
+      }
+    ];
+  };
+  custom.doom = {
+    inherit username envVars;
+    doomDir = doomDirectory;
+    # we'll run doom commands manually
+    runDoomCommands = false;
+    # emacsPackage = pkgs.emacs29-macport;
+    # disabled while trying out jimeh build installed externally
+    # emacsPackage = nixpkgs-emacs.outputs.legacyPackages.aarch64-darwin.emacs29-macport;
+  };
+  # custom.git = {
+  #   defaultEmail = "m.sawyer@f5.com";
+  #   defaultUser = "Matt Sawyer";
+  # };
   targets.darwin = {
     linkApps.enable = false;
     copyApps.enable = true;
