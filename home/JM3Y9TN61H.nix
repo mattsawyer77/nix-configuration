@@ -125,6 +125,7 @@ let
     devenv
     duf
     dust
+    gcov2lcov
     git
     github-mcp-server
     # glab
@@ -222,6 +223,7 @@ in
     (import ./alacritty {
       inherit pkgs;
       theme = "kanagawa_wave";
+      fontConfig = { monospaceFamily = "PragmataPro Liga"; };
     })
     (import ./ghostty {
       inherit pkgs lib;
@@ -239,7 +241,8 @@ in
       ];
     })
     (import ./doom {
-      inherit lib pkgs username envVars;
+      inherit lib pkgs envVars;
+      username = config.home.username;
       doomDir = doomDirectory;
       # we'll run doom commands manually
       runDoomCommands = false;
@@ -262,7 +265,7 @@ in
           f5ai = {
             name = "f5ai";
             options = {
-              baseURL = "https://f5ai.pd.f5net.com/api";
+              baseURL = "https://f5ai.pd.f5net.com/openai";
             };
             models = {
               "claude-opus-4-6" = {

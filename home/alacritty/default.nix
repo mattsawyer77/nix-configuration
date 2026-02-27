@@ -102,14 +102,14 @@ in
           # as modifying the line spacing, and `offset.x` as modifying the letter spacing.
           offset = {
             x = 0;
-            y = 6;
+            y = 10;
           };
           # Glyph offset determines the locations of the glyphs within their cells with
           # the default being at the bottom. Increasing `x` moves the glyph to the right,
           # increasing `y` moves the glyph upwards.
           glyph_offset = {
             x = 0;
-            y = 4;
+            y = 5;
           };
         }; # font
         bell = {

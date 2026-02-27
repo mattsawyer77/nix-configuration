@@ -44,3 +44,9 @@ for plugin in "${!plugins[@]}"; do
     fi
   done
 done
+
+# fix hardcoded agent models
+for agent_file in $(fd '\.md$' ${HOME}/.config/opencode/agents -x grep -l '^model:' {}); do
+  echo "removing hardcoded model from $agent_file"
+  grep -vE '^model:.*[a-z]+' "$agent_file" >/tmp/agent.md && mv /tmp/agent.md "$agent_file"
+done

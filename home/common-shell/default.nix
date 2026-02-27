@@ -131,6 +131,7 @@ let
     # XXX: autosuggestion.highlight didn't seem to work, so
     # zshAutoSuggestStyle is being interpolated into ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE below
     ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE = zshAutoSuggestStyle;
+    NPM_CONFIG_PREFIX = "${homeDirectory}/.local";
   };
   home.file.direnv_cache = {
     target = ".config/direnv/direnvrc";

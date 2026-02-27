@@ -326,14 +326,8 @@ in
     if [[ -r "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh" ]]; then
       source "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh"
     fi
-    autoload -Uz compinit && compinit
     if command -v aws_completer >/dev/null; then
       complete -C 'aws_completer' aws
-    fi
-    if command -v kubectl >/dev/null; then
-      source <(kubectl completion zsh)
-      # alias has to be setup after the above source for completion to work
-      alias k=kubectl
     fi
     command -v npm >/dev/null && npm config set prefix ${npmPackagePath} && export PATH=$PATH:$HOME/${npmPackagePath}/bin
     '';

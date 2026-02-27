@@ -20,6 +20,7 @@ else
   packages=($(go list ./...))
 fi
 for pkg in $packages; do
+  echo "- generating coverage for package: ${pkg}..."
   dir=$(echo $pkg | sd "${root_package}/" './')
   echo "$(date -Iseconds): getting coverage for ${pkg} in ${dir}..."
   nice go test -coverprofile "${dir}/coverage.out" $pkg &&

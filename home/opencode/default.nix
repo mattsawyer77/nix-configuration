@@ -3,6 +3,9 @@
 {
   programs.opencode = {
     enable = true;
-    inherit settings;
+    settings = {
+      "$schema" = "https://opencode.ai/config.json";
+      share = "disabled";
+    } // settings;
   };
 }
