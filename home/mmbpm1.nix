@@ -10,8 +10,8 @@ let
   doomDirectory = ".doom.d";
   localBinPath = ".local/bin";
   # to update/regenerate, run node2nix -i <(echo '["bash-language-server", "prettier", "typescript-formatter"]') --nodejs-18
-  # then copy the resulting files into ./npm-packages
-  npmPackages = import ./npm-packages { inherit pkgs; };
+  # then copy the resulting files into ./modules/npm-packages
+  npmPackages = import ./modules/npm-packages { inherit pkgs; };
   # enable `gsed` alias which calls gnused for compatibility with homebrew
   gsed = pkgs.writeShellScriptBin "gsed" ''exec ${pkgs.gnused}/bin/sed "$@"'';
   # enable `glibtool` alias which calls libtool for compatibility with homebrew
@@ -58,14 +58,14 @@ let
 in
 {
   imports = [
-    ./common-packages
-    ./common-shell
-    ./wezterm
-    ./tmux
-    ./karabiner
-    ./doom
-    ./git
-    ./helix
+    ./modules/common-packages
+    ./modules/common-shell
+    ./modules/wezterm
+    ./modules/tmux
+    ./modules/karabiner
+    ./modules/doom
+    ./modules/git
+    ./modules/helix
   ];
   custom.doom = {
     inherit envVars;

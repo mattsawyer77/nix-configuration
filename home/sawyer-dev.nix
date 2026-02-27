@@ -43,7 +43,7 @@ in
     # install doom config into ~/.doom.d
     # and doom itself into ~/.emacs.d (not a pure install, but this allows us to run doom commands outside nix)
     file.".doom.d" = {
-      source = ./doom;
+      source = ./modules/doom;
       recursive = true;
       onChange = ''
         #!/usr/bin/env zsh
@@ -59,7 +59,7 @@ in
     # for git, $EDITOR/$VISUAL can't be set to reference a shell function, so deploy the script as follows
     file."em.zsh" = {
       executable = true;
-      source = ./scripts/em.zsh;
+      source = ./modules/doom/em.zsh;
       target = homeDirectory + "/" + localBinPath + "/em";
     };
   };
@@ -145,15 +145,15 @@ in
       };
     }]; # languages
     themes = {
-      edge = (builtins.fromJSON (builtins.readFile ./helix/themes/edge.json));
+      edge = (builtins.fromJSON (builtins.readFile ./modules/helix/themes/edge.json));
       everforest =
-        (builtins.fromJSON (builtins.readFile ./helix/themes/everforest.json));
+        (builtins.fromJSON (builtins.readFile ./modules/helix/themes/everforest.json));
       gruvbox =
-        (builtins.fromJSON (builtins.readFile ./helix/themes/gruvbox.json));
+        (builtins.fromJSON (builtins.readFile ./modules/helix/themes/gruvbox.json));
       mogster =
-        (builtins.fromJSON (builtins.readFile ./helix/themes/mogster.json));
+        (builtins.fromJSON (builtins.readFile ./modules/helix/themes/mogster.json));
       sonokai =
-        (builtins.fromJSON (builtins.readFile ./helix/themes/sonokai.json));
+        (builtins.fromJSON (builtins.readFile ./modules/helix/themes/sonokai.json));
     }; # themes
   }; # helix
   programs.skim = {

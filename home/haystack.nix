@@ -7,8 +7,8 @@ let
   localBinPath = ".local/bin";
   npmPackagePath = ".config/npm-packages";
   # to update/regenerate, run node2nix -i <(echo '["bash-language-server", "prettier"]') --nodejs-18
-  # then copy the resulting files into ./npm-packages
-  npmPackages = import ./npm-packages { inherit pkgs; };
+  # then copy the resulting files into ./modules/npm-packages
+  npmPackages = import ./modules/npm-packages { inherit pkgs; };
   homePackages = with pkgs; [
     (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
     aws-iam-authenticator
@@ -102,12 +102,12 @@ let
 in
 {
   imports = [
-    ./common-packages
-    ./common-shell
-    ./tmux
-    ./doom
-    ./git
-    ./helix
+    ./modules/common-packages
+    ./modules/common-shell
+    ./modules/tmux
+    ./modules/doom
+    ./modules/git
+    ./modules/helix
   ];
   custom.shell.goPathSuffix = goPathSuffix;
   custom.tmux.optionOverrides = [
@@ -185,12 +185,12 @@ in
     # for git, $EDITOR/$VISUAL can't be set to reference a shell function, so deploy the script as follows
 #     file."em.zsh" = {
 #       executable = true;
-#       source = ./scripts/em.zsh;
+#       source = ./modules/scripts/em.zsh;
 #       target = homeDirectory + "/" + localBinPath + "/em";
 #     };
 #    file."terminfo-24bit.src" = {
 #      executable = false;
-#      source = ./terminal/terminfo-24bit.src;
+#      source = ./modules/terminal/terminfo-24bit.src;
 #      target = homeDirectory + "/.config/terminfo-24bit.src";
 #    };
     file."registries.config" = {

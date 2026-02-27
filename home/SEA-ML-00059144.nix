@@ -36,12 +36,12 @@ in
     # for git, $EDITOR/$VISUAL can't be set to reference a shell function, so deploy the script as follows
     file."em.zsh" = {
       executable = true;
-      source = ./scripts/em.zsh;
+      source = ./modules/doom/em.zsh;
       target = homeDirectory + "/" + localBinPath + "/em";
     };
     # install karabiner config (note: this may make the Karabiner Elements app unable to make config changes)
     file."karabiner.json" = {
-      text = builtins.toJSON (import ./karabiner.nix);
+      text = builtins.toJSON (import ./modules/karabiner.nix);
       target = homeDirectory + "/.config/karabiner/karabiner.json";
     };
   };
@@ -50,20 +50,20 @@ in
     enable = true;
     settings = {
       live_config_reload = true;
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Afterglow.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Argonaut.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Atelierlakeside.dark.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ayu-Dark.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ayu-Mirage.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Brewer.dark.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Eqie6.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Hybrid.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Iceberg-Dark.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Ocean.dark.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Palenight.json);
-      colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Tokyonight_Night.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/Twilight.dark.json);
-      # colors = builtins.fromJSON (builtins.readFile ./alacritty-themes/github_dimmed.json);
+      # colors = builtins.fromJSON (builtins.readFile ./modules/alacritty-themes/Afterglow.json);
+      # colors = builtins.fromJSON (builtins.readFile ./modules/alacritty-themes/Argonaut.json);
+      # colors = builtins.fromJSON (builtins.readFile ./modules/alacritty-themes/Atelierlakeside.dark.json);
+      # colors = builtins.fromJSON (builtins.readFile ./modules/alacritty-themes/Ayu-Dark.json);
+      # colors = builtins.fromJSON (builtins.readFile ./modules/alacritty-themes/Ayu-Mirage.json);
+      # colors = builtins.fromJSON (builtins.readFile ./modules/alacritty-themes/Brewer.dark.json);
+      # colors = builtins.fromJSON (builtins.readFile ./modules/alacritty-themes/Eqie6.json);
+      # colors = builtins.fromJSON (builtins.readFile ./modules/alacritty-themes/Hybrid.json);
+      # colors = builtins.fromJSON (builtins.readFile ./modules/alacritty-themes/Iceberg-Dark.json);
+      # colors = builtins.fromJSON (builtins.readFile ./modules/alacritty-themes/Ocean.dark.json);
+      # colors = builtins.fromJSON (builtins.readFile ./modules/alacritty-themes/Palenight.json);
+      colors = builtins.fromJSON (builtins.readFile ./modules/alacritty-themes/Tokyonight_Night.json);
+      # colors = builtins.fromJSON (builtins.readFile ./modules/alacritty-themes/Twilight.dark.json);
+      # colors = builtins.fromJSON (builtins.readFile ./modules/alacritty-themes/github_dimmed.json);
       env = {
         # TERM = "xterm-256color";
         TERM = "alacritty";
@@ -254,11 +254,11 @@ in
       };
     }]; # languages
     themes = {
-      edge = (builtins.fromJSON (builtins.readFile ./helix/themes/edge.json));
-      everforest = (builtins.fromJSON (builtins.readFile ./helix/themes/everforest.json));
-      gruvbox = (builtins.fromJSON (builtins.readFile ./helix/themes/gruvbox.json));
-      mogster = (builtins.fromJSON (builtins.readFile ./helix/themes/mogster.json));
-      sonokai = (builtins.fromJSON (builtins.readFile ./helix/themes/sonokai.json));
+      edge = (builtins.fromJSON (builtins.readFile ./modules/helix/themes/edge.json));
+      everforest = (builtins.fromJSON (builtins.readFile ./modules/helix/themes/everforest.json));
+      gruvbox = (builtins.fromJSON (builtins.readFile ./modules/helix/themes/gruvbox.json));
+      mogster = (builtins.fromJSON (builtins.readFile ./modules/helix/themes/mogster.json));
+      sonokai = (builtins.fromJSON (builtins.readFile ./modules/helix/themes/sonokai.json));
     }; # themes
   }; # helix
   programs.skim = {
@@ -383,27 +383,27 @@ in
         };
       theme = "tokyo-night";
       themes.dracula =
-        builtins.fromJSON (builtins.readFile ./zellij/themes/dracula.json);
+        builtins.fromJSON (builtins.readFile ./modules/zellij/themes/dracula.json);
       themes.gruvbox-dark =
-        builtins.fromJSON (builtins.readFile ./zellij/themes/gruvbox-dark.json);
+        builtins.fromJSON (builtins.readFile ./modules/zellij/themes/gruvbox-dark.json);
       themes.gruvbox-light = builtins.fromJSON
-        (builtins.readFile ./zellij/themes/gruvbox-light.json);
+        (builtins.readFile ./modules/zellij/themes/gruvbox-light.json);
       themes.molokai-dark =
-        builtins.fromJSON (builtins.readFile ./zellij/themes/molokai-dark.json);
+        builtins.fromJSON (builtins.readFile ./modules/zellij/themes/molokai-dark.json);
       themes.nord =
-        builtins.fromJSON (builtins.readFile ./zellij/themes/nord.json);
+        builtins.fromJSON (builtins.readFile ./modules/zellij/themes/nord.json);
       themes.one-half-dark = builtins.fromJSON
-        (builtins.readFile ./zellij/themes/one-half-dark.json);
+        (builtins.readFile ./modules/zellij/themes/one-half-dark.json);
       themes.solarized-dark = builtins.fromJSON
-        (builtins.readFile ./zellij/themes/solarized-dark.json);
+        (builtins.readFile ./modules/zellij/themes/solarized-dark.json);
       themes.solarized-light = builtins.fromJSON
-        (builtins.readFile ./zellij/themes/solarized-light.json);
+        (builtins.readFile ./modules/zellij/themes/solarized-light.json);
       themes.tokyo-night-light = builtins.fromJSON
-        (builtins.readFile ./zellij/themes/tokyo-night-light.json);
+        (builtins.readFile ./modules/zellij/themes/tokyo-night-light.json);
       themes.tokyo-night-storm = builtins.fromJSON
-        (builtins.readFile ./zellij/themes/tokyo-night-storm.json);
+        (builtins.readFile ./modules/zellij/themes/tokyo-night-storm.json);
       themes.tokyo-night =
-        builtins.fromJSON (builtins.readFile ./zellij/themes/tokyo-night.json);
+        builtins.fromJSON (builtins.readFile ./modules/zellij/themes/tokyo-night.json);
     };
   };
   programs.zoxide = { enable = true; };

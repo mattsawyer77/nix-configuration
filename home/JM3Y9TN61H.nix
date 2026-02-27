@@ -28,70 +28,70 @@ let
       scriptName = baseNameOf script;
       scriptContent = readFile script;
     in pkgs.writeShellScriptBin scriptName scriptContent) [
-      ./scripts/acr-find-commit
-      ./scripts/acr-find-digest
-      ./scripts/acr-find-tag
-      ./scripts/acr-login
-      ./scripts/akarctl
-      ./scripts/akardnsctl
-      ./scripts/argo2mermaid
-      ./scripts/aws-login
-      ./scripts/az-login
-      ./scripts/check-color
-      ./scripts/check-required-tools
-      ./scripts/disable-docker-write-through
-      ./scripts/docker-shell
-      ./scripts/doom-sync-files
-      ./scripts/enable-docker-write-through
-      ./scripts/env-compass-hostname
-      ./scripts/env-gc-site
-      ./scripts/env-site-fqdn
-      ./scripts/etcd-get-raw
-      ./scripts/find-image-data
-      ./scripts/find-proto-import-path
-      ./scripts/gc-crt-login
-      ./scripts/gc-login
-      ./scripts/gcr-digest
-      ./scripts/gcr-info
-      ./scripts/generate-lcov
-      ./scripts/generate-protoc-import-dir-locals
-      ./scripts/generate-tls-cert
-      ./scripts/get-latest-ce-version
-      ./scripts/git-cleanup-branches
-      ./scripts/highlight
-      ./scripts/hydra-emacs-overlay-revision
-      ./scripts/introspect
-      ./scripts/kcontainers
-      ./scripts/klb
-      ./scripts/ksvc
-      ./scripts/launchctl-restart
-      ./scripts/loki
-      ./scripts/matrix-renew-cert
-      ./scripts/matrix-renew-certs
-      ./scripts/update-opencode-agents
-      ./scripts/parse-schema-version
-      ./scripts/png2icns
-      ./scripts/run-docker
-      ./scripts/set-image
-      ./scripts/set-input-volume-percent
-      ./scripts/setup-ce
-      ./scripts/show-docker-cache-mode
-      ./scripts/sic-multitrace
-      ./scripts/site-public-ips
-      ./scripts/site-terraform-output
-      ./scripts/skopeo-acr-login
-      ./scripts/skopeo-inspect
-      ./scripts/skopeo-inspect-commit-log
-      ./scripts/skopeo-inspect-digest
-      ./scripts/skopeo-inspect-labels
-      ./scripts/sre-model-find-commit
-      ./scripts/sre-model-update-version
-      ./scripts/streak-get-status-objects
-      ./scripts/toggle-audio-input-mute
-      ./scripts/tz
-      ./scripts/wezterm-tab-switcher
-      ./scripts/wz
-      ./scripts/zoom-autofocus
+      ./modules/scripts/acr-find-commit
+      ./modules/scripts/acr-find-digest
+      ./modules/scripts/acr-find-tag
+      ./modules/scripts/acr-login
+      ./modules/scripts/akarctl
+      ./modules/scripts/akardnsctl
+      ./modules/scripts/argo2mermaid
+      ./modules/scripts/aws-login
+      ./modules/scripts/az-login
+      ./modules/scripts/check-color
+      ./modules/scripts/check-required-tools
+      ./modules/scripts/disable-docker-write-through
+      ./modules/scripts/docker-shell
+      ./modules/scripts/doom-sync-files
+      ./modules/scripts/enable-docker-write-through
+      ./modules/scripts/env-compass-hostname
+      ./modules/scripts/env-gc-site
+      ./modules/scripts/env-site-fqdn
+      ./modules/scripts/etcd-get-raw
+      ./modules/scripts/find-image-data
+      ./modules/scripts/find-proto-import-path
+      ./modules/scripts/gc-crt-login
+      ./modules/scripts/gc-login
+      ./modules/scripts/gcr-digest
+      ./modules/scripts/gcr-info
+      ./modules/scripts/generate-lcov
+      ./modules/scripts/generate-protoc-import-dir-locals
+      ./modules/scripts/generate-tls-cert
+      ./modules/scripts/get-latest-ce-version
+      ./modules/scripts/git-cleanup-branches
+      ./modules/scripts/highlight
+      ./modules/scripts/hydra-emacs-overlay-revision
+      ./modules/scripts/introspect
+      ./modules/scripts/kcontainers
+      ./modules/scripts/klb
+      ./modules/scripts/ksvc
+      ./modules/scripts/launchctl-restart
+      ./modules/scripts/loki
+      ./modules/scripts/matrix-renew-cert
+      ./modules/scripts/matrix-renew-certs
+      ./modules/scripts/update-opencode-agents
+      ./modules/scripts/parse-schema-version
+      ./modules/scripts/png2icns
+      ./modules/scripts/run-docker
+      ./modules/scripts/set-image
+      ./modules/scripts/set-input-volume-percent
+      ./modules/scripts/setup-ce
+      ./modules/scripts/show-docker-cache-mode
+      ./modules/scripts/sic-multitrace
+      ./modules/scripts/site-public-ips
+      ./modules/scripts/site-terraform-output
+      ./modules/scripts/skopeo-acr-login
+      ./modules/scripts/skopeo-inspect
+      ./modules/scripts/skopeo-inspect-commit-log
+      ./modules/scripts/skopeo-inspect-digest
+      ./modules/scripts/skopeo-inspect-labels
+      ./modules/scripts/sre-model-find-commit
+      ./modules/scripts/sre-model-update-version
+      ./modules/scripts/streak-get-status-objects
+      ./modules/scripts/toggle-audio-input-mute
+      ./modules/scripts/tz
+      ./modules/scripts/wezterm-tab-switcher
+      ./modules/scripts/wz
+      ./modules/scripts/zoom-autofocus
   ];
   shellScriptWrappers = [
     # enable `gsed` alias which calls gnused for compatibility with homebrew
@@ -216,18 +216,18 @@ let
 in
 {
   imports = [
-    ./common-packages
-    ./common-shell
-    ./alacritty
-    ./ghostty
-    ./tmux
-    ./doom
-    # ./git
-    ./helix
-    ./powerlevel10k
-    ./nats
-    ./hammerspoon
-    ./opencode
+    ./modules/common-packages
+    ./modules/common-shell
+    ./modules/alacritty
+    ./modules/ghostty
+    ./modules/tmux
+    ./modules/doom
+    # ./modules/git
+    ./modules/helix
+    ./modules/powerlevel10k
+    ./modules/nats
+    ./modules/hammerspoon
+    ./modules/opencode
   ];
   custom.alacritty = {
     theme = "kanagawa_wave";
@@ -290,12 +290,12 @@ in
     sessionPath = extraPaths;
     sessionVariables = envVars;
     file.".gitconfig" = {
-      source = ./git/config;
+      source = ./modules/git/config;
       target = homeDirectory + "/.config/git/config";
       force = true;
     };
     file.".gitignore" = {
-      source = ./git/ignore;
+      source = ./modules/git/ignore;
       target = homeDirectory + "/.config/git/ignore";
       force = true;
     };
