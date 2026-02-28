@@ -24,20 +24,22 @@
 
 ;;; Faces and Font Setup
 
+(defvar sawyer/nix-mono-font-family nil
+  "Monospace font family injected by Nix. See +nix-generated.el.")
+(defvar sawyer/nix-variable-font-family nil
+  "Variable-width font family injected by Nix. See +nix-generated.el.")
+
 (defface sawyer/mono-face
-  '((t :inherit default :family "PragmataPro Liga 1.1" :weight normal))
-  ;; '((t :inherit default :family "SF Mono" :weight light))
-  ;; '((t :inherit default :family "JetBrains Mono 1.1" :weight normal))
-  ;; '((t :inherit default :family "JetBrains Mono"))
-  ;; '((t :inherit default :family "Iosevka Custom" :weight normal))
+  '((t :inherit default :weight normal))
   "Font spec for all monospace text.")
+(set-face-attribute 'sawyer/mono-face nil
+                    :family (or sawyer/nix-mono-font-family "PragmataPro Liga"))
 
 (defface sawyer/variable-face
-  ;; '((t :inherit default :family "Galvji" :size 20 :weight light))
-  ;; '((t :inherit default :family "Fira Sans" :size 20 :weight normal))
-  ;; '((t :inherit default :family "SF Pro" :size 20 :weight normal))
-  '((t :inherit default :family "Noto Sans" :size 20 :weight normal))
+  '((t :inherit default :size 20 :weight normal))
   "Font spec for all variable-width text.")
+(set-face-attribute 'sawyer/variable-face nil
+                    :family (or sawyer/nix-variable-font-family "Fira Sans"))
 
 (defface code-face
   '((t :inherit sawyer/mono-face :height 1.2 :weight light))

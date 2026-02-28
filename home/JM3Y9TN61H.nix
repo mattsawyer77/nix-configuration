@@ -1,21 +1,22 @@
-{ config
-, lib
-, pkgs
-, username
-, fontConfig
-, nixpkgs-stable
-, mcpo
-, mcp-server-tree-sitter
-, duckduckgo-mcp-server
-, emacs-vterm-src
-, ...
+{
+  config,
+  lib,
+  pkgs,
+  username,
+  fontConfig,
+  nixpkgs-stable,
+  mcpo,
+  mcp-server-tree-sitter,
+  duckduckgo-mcp-server,
+  emacs-vterm-src,
+  ...
 }:
 
 let
   homeDirectory = "/Users/${username}";
   doomDirectory = ".doom.d";
   homeAppDirectory = "${homeDirectory}/Applications";
-  ghosttyAppDirectory ="${homeAppDirectory}/Ghostty.app";
+  ghosttyAppDirectory = "${homeAppDirectory}/Ghostty.app";
   localBinPath = ".local/bin";
   npmPackagePath = ".config/npm-packages";
   mcp-server-tree-sitter-package = mcp-server-tree-sitter.packages.aarch64-darwin.default;
@@ -23,76 +24,83 @@ let
   duckduckgo-mcp-server-package = duckduckgo-mcp-server.packages.aarch64-darwin.default;
   emacs-plus = import ../modules/emacs-plus { inherit pkgs; };
   emacs-vterm = import ../modules/emacs-vterm { inherit pkgs emacs-vterm-src; };
-  localScripts = with builtins; map (script:
-    let
-      scriptName = baseNameOf script;
-      scriptContent = readFile script;
-    in pkgs.writeShellScriptBin scriptName scriptContent) [
-      ./modules/scripts/acr-find-commit
-      ./modules/scripts/acr-find-digest
-      ./modules/scripts/acr-find-tag
-      ./modules/scripts/acr-login
-      ./modules/scripts/akarctl
-      ./modules/scripts/akardnsctl
-      ./modules/scripts/argo2mermaid
-      ./modules/scripts/aws-login
-      ./modules/scripts/az-login
-      ./modules/scripts/check-color
-      ./modules/scripts/check-required-tools
-      ./modules/scripts/disable-docker-write-through
-      ./modules/scripts/docker-shell
-      ./modules/scripts/doom-sync-files
-      ./modules/scripts/enable-docker-write-through
-      ./modules/scripts/env-compass-hostname
-      ./modules/scripts/env-gc-site
-      ./modules/scripts/env-site-fqdn
-      ./modules/scripts/etcd-get-raw
-      ./modules/scripts/find-image-data
-      ./modules/scripts/find-proto-import-path
-      ./modules/scripts/gc-crt-login
-      ./modules/scripts/gc-login
-      ./modules/scripts/gcr-digest
-      ./modules/scripts/gcr-info
-      ./modules/scripts/generate-lcov
-      ./modules/scripts/generate-protoc-import-dir-locals
-      ./modules/scripts/generate-tls-cert
-      ./modules/scripts/get-latest-ce-version
-      ./modules/scripts/git-cleanup-branches
-      ./modules/scripts/highlight
-      ./modules/scripts/hydra-emacs-overlay-revision
-      ./modules/scripts/introspect
-      ./modules/scripts/kcontainers
-      ./modules/scripts/klb
-      ./modules/scripts/ksvc
-      ./modules/scripts/launchctl-restart
-      ./modules/scripts/loki
-      ./modules/scripts/matrix-renew-cert
-      ./modules/scripts/matrix-renew-certs
-      ./modules/scripts/update-opencode-agents
-      ./modules/scripts/parse-schema-version
-      ./modules/scripts/png2icns
-      ./modules/scripts/run-docker
-      ./modules/scripts/set-image
-      ./modules/scripts/set-input-volume-percent
-      ./modules/scripts/setup-ce
-      ./modules/scripts/show-docker-cache-mode
-      ./modules/scripts/sic-multitrace
-      ./modules/scripts/site-public-ips
-      ./modules/scripts/site-terraform-output
-      ./modules/scripts/skopeo-acr-login
-      ./modules/scripts/skopeo-inspect
-      ./modules/scripts/skopeo-inspect-commit-log
-      ./modules/scripts/skopeo-inspect-digest
-      ./modules/scripts/skopeo-inspect-labels
-      ./modules/scripts/sre-model-find-commit
-      ./modules/scripts/sre-model-update-version
-      ./modules/scripts/streak-get-status-objects
-      ./modules/scripts/toggle-audio-input-mute
-      ./modules/scripts/tz
-      ./modules/scripts/wezterm-tab-switcher
-      ./modules/scripts/wz
-      ./modules/scripts/zoom-autofocus
-  ];
+  localScripts =
+    with builtins;
+    map
+      (
+        script:
+        let
+          scriptName = baseNameOf script;
+          scriptContent = readFile script;
+        in
+        pkgs.writeShellScriptBin scriptName scriptContent
+      )
+      [
+        ./modules/scripts/acr-find-commit
+        ./modules/scripts/acr-find-digest
+        ./modules/scripts/acr-find-tag
+        ./modules/scripts/acr-login
+        ./modules/scripts/akarctl
+        ./modules/scripts/akardnsctl
+        ./modules/scripts/argo2mermaid
+        ./modules/scripts/aws-login
+        ./modules/scripts/az-login
+        ./modules/scripts/check-color
+        ./modules/scripts/check-required-tools
+        ./modules/scripts/disable-docker-write-through
+        ./modules/scripts/docker-shell
+        ./modules/scripts/doom-sync-files
+        ./modules/scripts/enable-docker-write-through
+        ./modules/scripts/env-compass-hostname
+        ./modules/scripts/env-gc-site
+        ./modules/scripts/env-site-fqdn
+        ./modules/scripts/etcd-get-raw
+        ./modules/scripts/find-image-data
+        ./modules/scripts/find-proto-import-path
+        ./modules/scripts/gc-crt-login
+        ./modules/scripts/gc-login
+        ./modules/scripts/gcr-digest
+        ./modules/scripts/gcr-info
+        ./modules/scripts/generate-lcov
+        ./modules/scripts/generate-protoc-import-dir-locals
+        ./modules/scripts/generate-tls-cert
+        ./modules/scripts/get-latest-ce-version
+        ./modules/scripts/git-cleanup-branches
+        ./modules/scripts/highlight
+        ./modules/scripts/hydra-emacs-overlay-revision
+        ./modules/scripts/introspect
+        ./modules/scripts/kcontainers
+        ./modules/scripts/klb
+        ./modules/scripts/ksvc
+        ./modules/scripts/launchctl-restart
+        ./modules/scripts/loki
+        ./modules/scripts/matrix-renew-cert
+        ./modules/scripts/matrix-renew-certs
+        ./modules/scripts/update-opencode-agents
+        ./modules/scripts/parse-schema-version
+        ./modules/scripts/png2icns
+        ./modules/scripts/run-docker
+        ./modules/scripts/set-image
+        ./modules/scripts/set-input-volume-percent
+        ./modules/scripts/setup-ce
+        ./modules/scripts/show-docker-cache-mode
+        ./modules/scripts/sic-multitrace
+        ./modules/scripts/site-public-ips
+        ./modules/scripts/site-terraform-output
+        ./modules/scripts/skopeo-acr-login
+        ./modules/scripts/skopeo-inspect
+        ./modules/scripts/skopeo-inspect-commit-log
+        ./modules/scripts/skopeo-inspect-digest
+        ./modules/scripts/skopeo-inspect-labels
+        ./modules/scripts/sre-model-find-commit
+        ./modules/scripts/sre-model-update-version
+        ./modules/scripts/streak-get-status-objects
+        ./modules/scripts/toggle-audio-input-mute
+        ./modules/scripts/tz
+        ./modules/scripts/wezterm-tab-switcher
+        ./modules/scripts/wz
+        ./modules/scripts/zoom-autofocus
+      ];
   shellScriptWrappers = [
     # enable `gsed` alias which calls gnused for compatibility with homebrew
     (pkgs.writeShellScriptBin "gsed" ''exec ${pkgs.gnused}/bin/sed "$@"'')
@@ -106,10 +114,12 @@ let
     (pkgs.writeShellScriptBin "gtar" ''exec ${pkgs.gnutar}/bin/tar "$@"'')
     (pkgs.writeShellScriptBin "ghostty" ''exec ${ghosttyAppDirectory}/Contents/MacOS/ghostty "$@"'')
     (pkgs.writeShellScriptBin "aws" ''exec /usr/local/bin/aws "$@"'') # remove if awscli becomes fast enough
-  ] ++ localScripts;
+  ]
+  ++ localScripts;
   homePackages = [
     emacs-vterm
-  ] ++ (with pkgs; [
+  ]
+  ++ (with pkgs; [
     (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
     # aws-iam-authenticator
     # awscli2 # too slow, installing from AWS directly for now
@@ -201,8 +211,7 @@ let
     EDITOR = "hx";
     VISUAL = "hx";
     USE_GKE_GCLOUD_AUTH_PLUGIN = "True";
-    SAML2AWS_USER_AGENT =
-      "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.00) Gecko/20100101 Firefox/82.0";
+    SAML2AWS_USER_AGENT = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.00) Gecko/20100101 Firefox/82.0";
     LSP_USE_PLISTS = "true";
   };
   extraPaths = [
@@ -253,6 +262,7 @@ in
     runDoomCommands = false;
     emacsPackage = emacs-plus;
     installEmacs = true;
+    inherit fontConfig;
   };
   # custom.git = {
   #   defaultEmail = "m.sawyer@f5.com";
@@ -277,6 +287,43 @@ in
         npm = "@ai-sdk/openai-compatible";
       };
     };
+    instructions = [
+      "*/AGENTS.md"
+      "AGENTS.md"
+      "README.md"
+      "pbdoc/docs.md"
+    ];
+    compaction = {
+      auto = true;
+      prune = true;
+    };
+    # mcp = {
+    # # TODO: figure out how to set these securely
+    #   atlassian = {
+    #     command = [
+    #       "uvx"
+    #       "mcp-atlassian"
+    #     ];
+    #     environment = {
+    #       CONFLUENCE_PERSONAL_TOKEN = "{env:F5_CONFLUENCE_PAT}";
+    #       CONFLUENCE_SSL_VERIFY = "false";
+    #       CONFLUENCE_URL = "{env:F5_CONFLUENCE_URL}";
+    #       JIRA_PERSONAL_TOKEN = "{env:F5_JIRA_PAT}";
+    #       JIRA_SSL_VERIFY = "false";
+    #       JIRA_URL = "{env:F5_JIRA_URL}";
+    #     };
+    #     type = "local";
+    #   };
+    #   git = {
+    #     command = [
+    #       "uvx"
+    #       "mcp-server-git"
+    #       "--repository"
+    #       "\${PWD}"
+    #     ];
+    #     type = "local";
+    #   };
+    # };
   };
   targets.darwin = {
     linkApps.enable = false;
@@ -307,27 +354,27 @@ in
     };
     envExtra = builtins.readFile ./.zshenv-JM3Y9TN61H;
     initContent = ''
-    # hack to fix emacs/eat
-    if [ -n "$INSIDE_EMACS" ]; then
-      if [[ $INSIDE_EMACS =~ "eat" ]]; then
-        export TERM=eat-color
-      else
-        export TERM=xterm
+      # hack to fix emacs/eat
+      if [ -n "$INSIDE_EMACS" ]; then
+        if [[ $INSIDE_EMACS =~ "eat" ]]; then
+          export TERM=eat-color
+        else
+          export TERM=xterm
+        fi
+        # disable vi key bindings
+        bindkey -e
       fi
-      # disable vi key bindings
-      bindkey -e
-    fi
-    export POWERLEVEL9K_CONFIG_FILE=~/workspaces/nix-configuration/home/powerlevel10k/.p10k.zsh
-    # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-    # Initialization code that may require console input (password prompts, [y/n]
-    # confirmations, etc.) must go above this block; everything else may go below.
-    if [[ -r "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh" ]]; then
-      source "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh"
-    fi
-    if command -v aws_completer >/dev/null; then
-      complete -C 'aws_completer' aws
-    fi
-    command -v npm >/dev/null && npm config set prefix ${npmPackagePath} && export PATH=$PATH:$HOME/${npmPackagePath}/bin
+      export POWERLEVEL9K_CONFIG_FILE=~/workspaces/nix-configuration/home/powerlevel10k/.p10k.zsh
+      # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+      # Initialization code that may require console input (password prompts, [y/n]
+      # confirmations, etc.) must go above this block; everything else may go below.
+      if [[ -r "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh" ]]; then
+        source "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh"
+      fi
+      if command -v aws_completer >/dev/null; then
+        complete -C 'aws_completer' aws
+      fi
+      command -v npm >/dev/null && npm config set prefix ${npmPackagePath} && export PATH=$PATH:$HOME/${npmPackagePath}/bin
     '';
   };
 }

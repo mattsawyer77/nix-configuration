@@ -68,6 +68,7 @@
     nix-prefetch
     nix-prefetch-git
     nix-zsh-completions
+    nixfmt
     nixpkgs-fmt
     nmap
     # node2nix

@@ -23,7 +23,7 @@ Guidance for agents working in this repository. These instructions apply to the 
 ## Conventions & Style
 
 - Nix style
-  - Two-space indentation, follow the style seen in `flake.nix` and existing modules or use `nixpkgs-fmt` to auto-format.
+  - Two-space indentation, follow the style seen in `flake.nix` and existing modules or use `nixfmt` to auto-format.
   - Use `inherit` to pass through `config`, `lib`, `pkgs`, etc. where appropriate.
   - Prefer `lib.mkEnableOption`, `lib.mkOption`, and `lib.mkIf` for module options/patterns.
   - Keep options minimal; feature flags should default to safe values.

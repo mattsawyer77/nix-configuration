@@ -40,7 +40,7 @@
     # custom duckduckgo mcp server
     duckduckgo-mcp-server = {
       inputs.nixpkgs.follows = "nixpkgs";
-      url =  "github:mattsawyer77/duckduckgo-mcp-server";
+      url = "github:mattsawyer77/duckduckgo-mcp-server";
     };
     nil = {
       url = "github:oxalica/nil";
@@ -68,11 +68,23 @@
     #   # inputs.nixpkgs.follows = "nixpkgs";
     # };
   };
-  outputs = { self, nixpkgs, darwin, flake-utils, mcpo, mcp-server-tree-sitter, duckduckgo-mcp-server, emacs-vterm-src, home-manager, ... }@inputs:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      darwin,
+      flake-utils,
+      mcpo,
+      mcp-server-tree-sitter,
+      duckduckgo-mcp-server,
+      emacs-vterm-src,
+      home-manager,
+      ...
+    }@inputs:
     let
-      # TODO: integrate into emacs/wezterm somehow
       fontConfig = {
-        monospaceFamily = "PragmataPro Liga";
+        monospaceFamily = "PragmataPro Liga 1.1";
+        variableFamily = "Fira Sans";
       };
 
       # ── Machine registry ─────────────────────────────────────
@@ -81,7 +93,12 @@
           system = "aarch64-darwin";
           username = "m.sawyer";
           extraSpecialArgs = {
-            inherit mcpo mcp-server-tree-sitter duckduckgo-mcp-server emacs-vterm-src;
+            inherit
+              mcpo
+              mcp-server-tree-sitter
+              duckduckgo-mcp-server
+              emacs-vterm-src
+              ;
             nixpkgs-stable = inputs.nixpkgs-stable;
           };
         };
@@ -96,15 +113,21 @@
           system = "x86_64-linux";
           username = "sawyer";
           extraModules = [
-            ({ pkgs, ... }: import ./modules/k3s {
-              inherit pkgs;
-              listenerURL = "https://0.0.0.0:6443";
-            })
-            ({ config, pkgs, ... }: import ./modules/tailscale.nix {
-              inherit config pkgs;
-              needFirewall = false;
-              networkInterfaceName = "ens3";
-            })
+            (
+              { pkgs, ... }:
+              import ./modules/k3s {
+                inherit pkgs;
+                listenerURL = "https://0.0.0.0:6443";
+              }
+            )
+            (
+              { config, pkgs, ... }:
+              import ./modules/tailscale.nix {
+                inherit config pkgs;
+                needFirewall = false;
+                networkInterfaceName = "ens3";
+              }
+            )
           ];
         };
         sawyer-dev = {
@@ -114,7 +137,14 @@
       };
 
       # ── Builders ─────────────────────────────────────────────
-      mkDarwinSystem = hostname: { system, username, extraSpecialArgs ? {}, ... }:
+      mkDarwinSystem =
+        hostname:
+        {
+          system,
+          username,
+          extraSpecialArgs ? { },
+          ...
+        }:
         darwin.lib.darwinSystem {
           inherit system;
           specialArgs = inputs;
@@ -127,13 +157,21 @@
               home-manager.useUserPackages = true;
               home-manager.extraSpecialArgs = {
                 inherit username fontConfig;
-              } // extraSpecialArgs;
+              }
+              // extraSpecialArgs;
               home-manager.users.${username} = import ./home/${hostname}.nix;
             }
           ];
         };
 
-      mkNixosSystem = hostname: { system, username, extraModules ? [], ... }:
+      mkNixosSystem =
+        hostname:
+        {
+          system,
+          username,
+          extraModules ? [ ],
+          ...
+        }:
         nixpkgs.lib.nixosSystem {
           inherit system;
           specialArgs = inputs;
@@ -150,10 +188,12 @@
               };
               home-manager.users.${username} = import ./home/${hostname}.nix;
             }
-          ] ++ extraModules;
+          ]
+          ++ extraModules;
         };
 
-    in {
+    in
+    {
       darwinConfigurations = builtins.mapAttrs mkDarwinSystem darwinSystems;
       nixosConfigurations = builtins.mapAttrs mkNixosSystem nixosSystems;
     }; # outputs

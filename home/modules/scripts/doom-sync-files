@@ -6,5 +6,5 @@ doom_dir=~/.doom.d
 rm -rf $doom_dir || :
 mkdir -p $doom_dir
 # remove any temporary compiled emacs files from repo
-fd '\.elc' ~/workspaces/nix-configuration/home/doom/emacs -x rm -v {}
-rsync -av --delete ~/workspaces/nix-configuration/home/doom/emacs/* $doom_dir
+fd '\.elc' ~/workspaces/nix-configuration/home/modules/doom/emacs -x rm -v {}
+rsync -av --delete --exclude "*-generated.el" ~/workspaces/nix-configuration/home/modules/doom/emacs/* $doom_dir

@@ -13,6 +13,7 @@
       comp-deferred-compilation t)
 (load! "+go-template-mode")
 (load! "+proto-search")
+(load! "+nix-generated")
 (load! "+editor")
 (load! "+ui")
 (load! "+keybindings")

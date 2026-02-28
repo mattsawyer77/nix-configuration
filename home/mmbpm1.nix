@@ -70,6 +70,7 @@ in
   custom.doom = {
     inherit envVars;
     doomDir = doomDirectory;
+    inherit fontConfig;
   };
   custom.git = {
     defaultEmail = "m.sawyer@f5.com";
