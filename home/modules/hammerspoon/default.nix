@@ -1,8 +1,7 @@
 {
   # configDir ? ".hammerspoon",
   ...
-}:
-let
+}: let
   configDir = ".hammerspoon";
   configFile = "${configDir}/init.lua";
 in {

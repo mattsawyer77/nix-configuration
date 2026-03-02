@@ -1,11 +1,12 @@
-{ config, lib, pkgs, ... }:
-
-with lib;
-
-let
-  cfg = config.options;
-in
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+with lib; let
+  cfg = config.options;
+in {
   options.services.postgresql = {
     enable = mkEnableOption "PostgreSQL server";
 
@@ -47,13 +48,13 @@ in
 
     initdbArgs = mkOption {
       type = types.listOf types.str;
-      default = [ ];
+      default = [];
       description = "Arguments passed to initdb when initializing the database.";
     };
 
     settings = mkOption {
-      type = types.attrsOf (types.oneOf [ types.str types.int types.bool ]);
-      default = { };
+      type = types.attrsOf (types.oneOf [types.str types.int types.bool]);
+      default = {};
       description = "PostgreSQL configuration parameters.";
       example = {
         log_connections = true;
@@ -64,7 +65,7 @@ in
   };
 
   config = mkIf cfg.enable {
-    environment.systemPackages = [ cfg.package ];
+    environment.systemPackages = [cfg.package];
 
     services.postgresql.settings = {
       listen_addresses = "localhost";
@@ -89,11 +90,19 @@ in
 
         # Generate configuration files
         cat > ${cfg.dataDir}/postgresql.conf << EOF
-        ${concatStringsSep "\n" (mapAttrsToList (name: value: 
-          if isString value then "${name} = '${value}'"
-          else if isBool value then "${name} = ${if value then "on" else "off"}"
-          else "${name} = ${toString value}"
-        ) cfg.settings)}
+        ${concatStringsSep "\n" (mapAttrsToList (
+            name: value:
+              if isString value
+              then "${name} = '${value}'"
+              else if isBool value
+              then "${name} = ${
+                if value
+                then "on"
+                else "off"
+              }"
+              else "${name} = ${toString value}"
+          )
+          cfg.settings)}
         EOF
 
         cat > ${cfg.dataDir}/pg_hba.conf << EOF

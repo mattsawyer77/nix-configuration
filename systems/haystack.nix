@@ -1,5 +1,9 @@
-{ config, pkgs, lib, ... }:
 {
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
   imports = [
     ../modules/containerd
   ];
@@ -24,7 +28,7 @@
   networking = {
     networkmanager.enable = true;
     hostName = "haystack";
-    nameservers = [ "172.27.1.1" "1.0.0.1" "8.8.4.4" ];
+    nameservers = ["172.27.1.1" "1.0.0.1" "8.8.4.4"];
     firewall = {
       enable = true;
       allowPing = true;
@@ -45,8 +49,8 @@
       options = "--delete-older-than 7d";
     };
     settings = {
-      allowed-users = [ "sawyer" "@wheel" ];
-      trusted-users = [ "sawyer" "@wheel" ];
+      allowed-users = ["sawyer" "@wheel"];
+      trusted-users = ["sawyer" "@wheel"];
     };
   };
 

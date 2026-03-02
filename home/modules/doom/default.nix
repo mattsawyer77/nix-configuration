@@ -4,11 +4,12 @@
   lib,
   pkgs,
   ...
-}:
-
-let
+}: let
   cfg = config.custom.doom;
-  cpRecursiveFlags = if pkgs.stdenv.isDarwin then "-RLvf" else "-rLvf";
+  cpRecursiveFlags =
+    if pkgs.stdenv.isDarwin
+    then "-RLvf"
+    else "-rLvf";
   nixGeneratedEl = pkgs.writeText "+nix-generated.el" ''
     ;;; +nix-generated.el --- Values injected from Nix configuration -*- lexical-binding: t; no-byte-compile: t; -*-
     ;;; Commentary:
@@ -21,8 +22,7 @@ let
     (provide 'nix-generated)
     ;;; nix-generated.el ends here
   '';
-in
-{
+in {
   options.custom.doom = {
     doomDir = lib.mkOption {
       type = lib.types.str;
@@ -36,7 +36,7 @@ in
     };
     envVars = lib.mkOption {
       type = lib.types.attrsOf lib.types.str;
-      default = { };
+      default = {};
       description = "Environment variables to export in doom scripts.";
     };
     emacsPackage = lib.mkOption {
@@ -79,64 +79,63 @@ in
       force = true;
       # NOTE: the following script will only run if doom files have changed -- even if the script itself fails.
       onChange =
-        if cfg.runDoomCommands then
-          (
-            "${pkgs.writeShellScript "doom-change" ''
-              #!/usr/bin/env zsh
-              set -xe
-              EMACS_DIR="$HOME/.config/emacs"
-              DOOM="$EMACS_DIR/bin/doom"
-              export PATH=$HOME/.nix-profile/bin:/etc/profiles/per-user/${cfg.username}/bin:/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/local/bin:/usr/bin:/usr/sbin:/bin:/sbin:$HOME/.local/bin:$HOME/.cargo/bin:$HOME/gocode/bin
-              echo "PATH: $PATH"
-              export ${
-                builtins.concatStringsSep " " (
-                  builtins.attrValues (builtins.mapAttrs (k: v: "${k}='${v}'") cfg.envVars)
-                )
-              }
-              if [[ ! -d "$EMACS_DIR" ]]; then
-                $DRY_RUN_CMD git clone https://github.com/doomemacs/doomemacs $EMACS_DIR
-                $DRY_RUN_CMD $EMACS_DIR/bin/doom install --pager cat
-              fi
-              $DRY_RUN_CMD cp $(readlink ~/${cfg.doomDir}/black-hole.png) ~/$EMACS_DIR/.local
-              echo "syncing doom emacs..."
-              $DRY_RUN_CMD $DOOM sync --force --pager cat
-              if [[ -d $HOME/${cfg.doomDir}.nix ]]; then
-                rm -rf $HOME/${cfg.doomDir} || :
-                mkdir -p $HOME/${cfg.doomDir}
-                cp ${cpRecursiveFlags} $HOME/${cfg.doomDir}.nix/* $HOME/${cfg.doomDir}
-              else
-                echo "${cfg.doomDir}.nix" does not yet exist. rebuild/reactivate once more to sync doom configuration.
-              fi
-              set +x
-            ''}"
-          )
-        else
-          (
-            "${pkgs.writeShellScript "doom-change" ''
-              #!/usr/bin/env zsh
-              if [[ -d $HOME/${cfg.doomDir}.nix ]]; then
-                rm -rf $HOME/${cfg.doomDir} || :
-                mkdir -p $HOME/${cfg.doomDir}
-                cp ${cpRecursiveFlags} $HOME/${cfg.doomDir}.nix/* $HOME/${cfg.doomDir}
-              else
-                echo "${cfg.doomDir}.nix" does not yet exist. rebuild/reactivate once more to sync doom configuration.
-              fi
-              echo "runDoomCommands is false. you need to run doom sync manually."
-            ''}"
-          );
+        if cfg.runDoomCommands
+        then "${pkgs.writeShellScript "doom-change" ''
+          #!/usr/bin/env zsh
+          set -xe
+          EMACS_DIR="$HOME/.config/emacs"
+          DOOM="$EMACS_DIR/bin/doom"
+          export PATH=$HOME/.nix-profile/bin:/etc/profiles/per-user/${cfg.username}/bin:/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/local/bin:/usr/bin:/usr/sbin:/bin:/sbin:$HOME/.local/bin:$HOME/.cargo/bin:$HOME/gocode/bin
+          echo "PATH: $PATH"
+          export ${
+            builtins.concatStringsSep " " (
+              builtins.attrValues (builtins.mapAttrs (k: v: "${k}='${v}'") cfg.envVars)
+            )
+          }
+          if [[ ! -d "$EMACS_DIR" ]]; then
+            $DRY_RUN_CMD git clone https://github.com/doomemacs/doomemacs $EMACS_DIR
+            $DRY_RUN_CMD $EMACS_DIR/bin/doom install --pager cat
+          fi
+          $DRY_RUN_CMD cp $(readlink ~/${cfg.doomDir}/black-hole.png) ~/$EMACS_DIR/.local
+          echo "syncing doom emacs..."
+          $DRY_RUN_CMD $DOOM sync --force --pager cat
+          if [[ -d $HOME/${cfg.doomDir}.nix ]]; then
+            rm -rf $HOME/${cfg.doomDir} || :
+            mkdir -p $HOME/${cfg.doomDir}
+            cp ${cpRecursiveFlags} $HOME/${cfg.doomDir}.nix/* $HOME/${cfg.doomDir}
+          else
+            echo "${cfg.doomDir}.nix" does not yet exist. rebuild/reactivate once more to sync doom configuration.
+          fi
+          set +x
+        ''}"
+        else "${pkgs.writeShellScript "doom-change" ''
+          #!/usr/bin/env zsh
+          if [[ -d $HOME/${cfg.doomDir}.nix ]]; then
+            rm -rf $HOME/${cfg.doomDir} || :
+            mkdir -p $HOME/${cfg.doomDir}
+            cp ${cpRecursiveFlags} $HOME/${cfg.doomDir}.nix/* $HOME/${cfg.doomDir}
+          else
+            echo "${cfg.doomDir}.nix" does not yet exist. rebuild/reactivate once more to sync doom configuration.
+          fi
+          echo "runDoomCommands is false. you need to run doom sync manually."
+        ''}";
     };
     # '';
     home.file."${cfg.doomDir}.nix/+nix-generated.el" = {
       source = nixGeneratedEl;
       force = true;
     };
-    home.packages = [
-      pkgs.emacs-lsp-booster
-    ]
-    ++ (if cfg.installEmacs then [ cfg.emacsPackage ] else [ ]);
+    home.packages =
+      [
+        pkgs.emacs-lsp-booster
+      ]
+      ++ (
+        if cfg.installEmacs
+        then [cfg.emacsPackage]
+        else []
+      );
     # make packages available to file.onChange and activation scripts
-    home.extraActivationPath =
-      with pkgs;
+    home.extraActivationPath = with pkgs;
       [
         sd
         python3
@@ -148,20 +147,19 @@ in
         cmake
         coreutils
       ]
-      ++ [ cfg.emacsPackage ];
+      ++ [cfg.emacsPackage];
     programs.zsh.shellAliases = {
       doom = "~/.config/emacs/bin/doom";
       # em = "em.zsh";
     };
     services.emacs = (
-      if cfg.launchDaemon then
-        {
-          enable = true;
-          package = cfg.emacsPackage;
-          socketActivation.enable = true;
-        }
-      else
-        { }
+      if cfg.launchDaemon
+      then {
+        enable = true;
+        package = cfg.emacsPackage;
+        socketActivation.enable = true;
+      }
+      else {}
     );
     systemd.user.sessionVariables = {
       COLORTERM = "truecolor";

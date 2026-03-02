@@ -1,6 +1,10 @@
-{ config, lib, pkgs, username, ... }:
-
-let
+{
+  config,
+  lib,
+  pkgs,
+  username,
+  ...
+}: let
   homeDirectory = "/home/${username}";
   doomDirectory = ".doom.d";
   goPathSuffix = "gocode";
@@ -8,72 +12,73 @@ let
   npmPackagePath = ".config/npm-packages";
   # to update/regenerate, run node2nix -i <(echo '["bash-language-server", "prettier"]') --nodejs-18
   # then copy the resulting files into ./modules/npm-packages
-  npmPackages = import ./modules/npm-packages { inherit pkgs; };
-  homePackages = with pkgs; [
-    (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
-    aws-iam-authenticator
-    awscli2-bin
-    azure-cli
-    bash
-    bat
-    bat-extras.batman
-    bear
-    bind
-    boost
-    btop
-    cairo
-    ccls
-    certigo
-    curlFull
-    delve
-    devenv
-    docker
-    docker-compose
-    dos2unix
-    # envsubst # conflicts with gettext
-    etcd
-    eternal-terminal
-    file
-    flamegraph
-    gcc
-    gdb
-    gdbm
-    ghostscript
-    glib
-    gmp6
-    gnumake
-    gnupg
-    golangci-lint
-    grpcurl
-    helix
-    htop
-    jansson
-    just
-    k3s
-    kluctl
-    libsndfile
-    mosh
-    msgpack
-    ncurses
-    netperf
-    nmap
-    openfortivpn
-    # openssl # conflicts with libressl
-    pinentry
-    pkg-config
-    redis
-    scons
-    sd
-    ssm-session-manager-plugin
-    sysbench
-    valgrind
-    wezterm
-    wireshark
-    xsel
-    yaml-language-server
-  ]
-  # npm packages setup via node2nix
-  ++ (with npmPackages; [ bash-language-server prettier ]);
+  npmPackages = import ./modules/npm-packages {inherit pkgs;};
+  homePackages = with pkgs;
+    [
+      (google-cloud-sdk.withExtraComponents [google-cloud-sdk.components.gke-gcloud-auth-plugin])
+      aws-iam-authenticator
+      awscli2-bin
+      azure-cli
+      bash
+      bat
+      bat-extras.batman
+      bear
+      bind
+      boost
+      btop
+      cairo
+      ccls
+      certigo
+      curlFull
+      delve
+      devenv
+      docker
+      docker-compose
+      dos2unix
+      # envsubst # conflicts with gettext
+      etcd
+      eternal-terminal
+      file
+      flamegraph
+      gcc
+      gdb
+      gdbm
+      ghostscript
+      glib
+      gmp6
+      gnumake
+      gnupg
+      golangci-lint
+      grpcurl
+      helix
+      htop
+      jansson
+      just
+      k3s
+      kluctl
+      libsndfile
+      mosh
+      msgpack
+      ncurses
+      netperf
+      nmap
+      openfortivpn
+      # openssl # conflicts with libressl
+      pinentry
+      pkg-config
+      redis
+      scons
+      sd
+      ssm-session-manager-plugin
+      sysbench
+      valgrind
+      wezterm
+      wireshark
+      xsel
+      yaml-language-server
+    ]
+    # npm packages setup via node2nix
+    ++ (with npmPackages; [bash-language-server prettier]);
 
   envVars = {
     BAT_THEME = "1337";
@@ -81,7 +86,7 @@ let
     # DOCKER_HOST = "unix:///run/user/1001/podman/podman.sock";
     EDITOR = "hx";
     GO111MODULE = "on";
-    GOPATH = (homeDirectory + "/" + goPathSuffix);
+    GOPATH = homeDirectory + "/" + goPathSuffix;
     LANG = "en_US.UTF-8";
     LANGUAGE = "en_US.UTF-8";
     LC_ALL = "en_US.UTF-8";
@@ -98,9 +103,7 @@ let
     (homeDirectory + "/.cargo/bin")
     (homeDirectory + "/" + goPathSuffix + "/bin")
   ];
-
-in
-{
+in {
   imports = [
     ./modules/common-packages
     ./modules/common-shell
@@ -116,42 +119,42 @@ in
       value = ''
         fg="#888899",bg="#151e24"
       '';
-      flags = [ "global" ];
+      flags = ["global"];
     }
     {
       name = "window-status-last-style";
       value = ''
         fg="#888899",bg="#151e24"
       '';
-      flags = [ "global" ];
+      flags = ["global"];
     }
     {
       name = "window-status-current-style";
       value = ''
         fg="#ccccdd",bg="#4f4f58"
       '';
-      flags = [ "global" ];
+      flags = ["global"];
     }
     {
       name = "status-left";
       value = ''
         "#[bg=#439fad]#[fg=#151e24]#{?client_prefix,#[bg=green],} #S "
       '';
-      flags = [ "global" ];
+      flags = ["global"];
     }
     {
       name = "status-right";
       value = ''
         '#[bg=#202017]#[fg=#585865] %H:%M%Z #(TZ=UTC date +"(%%H:%%MUTC)") '
       '';
-      flags = [ "global" ];
+      flags = ["global"];
     }
     {
       name = "update-environment";
       value = ''
         "SSH_TTY"
       '';
-      flags = [ "global" "append" ];
+      flags = ["global" "append"];
     }
   ];
   custom.doom = {
@@ -183,16 +186,16 @@ in
     extraActivationPath = homePackages;
     sessionVariables = envVars;
     # for git, $EDITOR/$VISUAL can't be set to reference a shell function, so deploy the script as follows
-#     file."em.zsh" = {
-#       executable = true;
-#       source = ./modules/scripts/em.zsh;
-#       target = homeDirectory + "/" + localBinPath + "/em";
-#     };
-#    file."terminfo-24bit.src" = {
-#      executable = false;
-#      source = ./modules/terminal/terminfo-24bit.src;
-#      target = homeDirectory + "/.config/terminfo-24bit.src";
-#    };
+    #     file."em.zsh" = {
+    #       executable = true;
+    #       source = ./modules/scripts/em.zsh;
+    #       target = homeDirectory + "/" + localBinPath + "/em";
+    #     };
+    #    file."terminfo-24bit.src" = {
+    #      executable = false;
+    #      source = ./modules/terminal/terminfo-24bit.src;
+    #      target = homeDirectory + "/.config/terminfo-24bit.src";
+    #    };
     file."registries.config" = {
       target = homeDirectory + "/.config/containers/registries.config";
       text = ''
@@ -238,10 +241,10 @@ in
   programs.skim = {
     enable = true;
     enableZshIntegration = true;
-    defaultOptions = [ "--height 40%" ];
+    defaultOptions = ["--height 40%"];
   };
-  programs.starship = { enable = true; };
-  programs.zoxide = { enable = true; };
+  programs.starship = {enable = true;};
+  programs.zoxide = {enable = true;};
   programs.zsh = {
     envExtra = builtins.readFile ./.zshenv-haystack;
     initContent = ''

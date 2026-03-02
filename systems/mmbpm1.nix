@@ -1,5 +1,9 @@
-{ config, pkgs, lib, ... }:
 {
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
   system.stateVersion = 5;
   users.users."matt" = {
     name = "matt";

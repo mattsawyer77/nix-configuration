@@ -1,9 +1,10 @@
-{ config, lib, ... }:
-
-let
-  cfg = config.custom.opencode;
-in
 {
+  config,
+  lib,
+  ...
+}: let
+  cfg = config.custom.opencode;
+in {
   options.custom.opencode = {
     settings = lib.mkOption {
       type = lib.types.attrs;
@@ -15,10 +16,12 @@ in
   config = {
     programs.opencode = {
       enable = true;
-      settings = {
-        "$schema" = "https://opencode.ai/config.json";
-        share = "disabled";
-      } // cfg.settings;
+      settings =
+        {
+          "$schema" = "https://opencode.ai/config.json";
+          share = "disabled";
+        }
+        // cfg.settings;
     };
   };
 }

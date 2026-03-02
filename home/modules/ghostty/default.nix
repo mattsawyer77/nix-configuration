@@ -1,10 +1,12 @@
-{ config, lib, pkgs, ... }:
-
-let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
   cfg = config.custom.ghostty;
   configFile = "${cfg.configDir}/config";
-in
-{
+in {
   options.custom.ghostty = {
     configDir = lib.mkOption {
       type = lib.types.str;

@@ -68,114 +68,114 @@
     #   # inputs.nixpkgs.follows = "nixpkgs";
     # };
   };
-  outputs =
-    {
-      self,
-      nixpkgs,
-      darwin,
-      flake-utils,
-      mcpo,
-      mcp-server-tree-sitter,
-      duckduckgo-mcp-server,
-      emacs-vterm-src,
-      home-manager,
-      ...
-    }@inputs:
-    let
-      fontConfig = {
-        monospaceFamily = "PragmataPro Liga 1.1";
-        variableFamily = "Fira Sans";
-      };
+  outputs = {
+    self,
+    nixpkgs,
+    darwin,
+    flake-utils,
+    mcpo,
+    mcp-server-tree-sitter,
+    duckduckgo-mcp-server,
+    emacs-vterm-src,
+    home-manager,
+    ...
+  } @ inputs: let
+    fontConfig = {
+      monospaceFamily = "PragmataPro Liga 1.1";
+      variableFamily = "Fira Sans";
+    };
 
-      # ── Machine registry ─────────────────────────────────────
-      darwinSystems = {
-        JM3Y9TN61H = {
-          system = "aarch64-darwin";
-          username = "m.sawyer";
-          extraSpecialArgs = {
-            inherit
-              mcpo
-              mcp-server-tree-sitter
-              duckduckgo-mcp-server
-              emacs-vterm-src
-              ;
-            nixpkgs-stable = inputs.nixpkgs-stable;
-          };
-        };
-        mmbpm1 = {
-          system = "aarch64-darwin";
-          username = "matt";
+    # ── Machine registry ─────────────────────────────────────
+    darwinSystems = {
+      JM3Y9TN61H = {
+        system = "aarch64-darwin";
+        username = "m.sawyer";
+        extraSpecialArgs = {
+          inherit
+            mcpo
+            mcp-server-tree-sitter
+            duckduckgo-mcp-server
+            emacs-vterm-src
+            ;
+          nixpkgs-stable = inputs.nixpkgs-stable;
         };
       };
+      mmbpm1 = {
+        system = "aarch64-darwin";
+        username = "matt";
+      };
+    };
 
-      nixosSystems = {
-        haystack = {
-          system = "x86_64-linux";
-          username = "sawyer";
-          extraModules = [
-            (
-              { pkgs, ... }:
+    nixosSystems = {
+      haystack = {
+        system = "x86_64-linux";
+        username = "sawyer";
+        extraModules = [
+          (
+            {pkgs, ...}:
               import ./modules/k3s {
                 inherit pkgs;
                 listenerURL = "https://0.0.0.0:6443";
               }
-            )
-            (
-              { config, pkgs, ... }:
+          )
+          (
+            {
+              config,
+              pkgs,
+              ...
+            }:
               import ./modules/tailscale.nix {
                 inherit config pkgs;
                 needFirewall = false;
                 networkInterfaceName = "ens3";
               }
-            )
-          ];
-        };
-        sawyer-dev = {
-          system = "x86_64-linux";
-          username = "sawyer";
-        };
+          )
+        ];
       };
+      sawyer-dev = {
+        system = "x86_64-linux";
+        username = "sawyer";
+      };
+    };
 
-      # ── Builders ─────────────────────────────────────────────
-      mkDarwinSystem =
-        hostname:
-        {
-          system,
-          username,
-          extraSpecialArgs ? { },
-          ...
-        }:
-        darwin.lib.darwinSystem {
-          inherit system;
-          specialArgs = inputs;
-          modules = [
-            ./systems/${hostname}.nix
-            ./modules/mac.nix
-            home-manager.darwinModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-              home-manager.extraSpecialArgs = {
+    # ── Builders ─────────────────────────────────────────────
+    mkDarwinSystem = hostname: {
+      system,
+      username,
+      extraSpecialArgs ? {},
+      ...
+    }:
+      darwin.lib.darwinSystem {
+        inherit system;
+        specialArgs = inputs;
+        modules = [
+          ./systems/${hostname}.nix
+          ./modules/mac.nix
+          home-manager.darwinModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.extraSpecialArgs =
+              {
                 inherit username fontConfig;
               }
               // extraSpecialArgs;
-              home-manager.users.${username} = import ./home/${hostname}.nix;
-            }
-          ];
-        };
+            home-manager.users.${username} = import ./home/${hostname}.nix;
+          }
+        ];
+      };
 
-      mkNixosSystem =
-        hostname:
-        {
-          system,
-          username,
-          extraModules ? [ ],
-          ...
-        }:
-        nixpkgs.lib.nixosSystem {
-          inherit system;
-          specialArgs = inputs;
-          modules = [
+    mkNixosSystem = hostname: {
+      system,
+      username,
+      extraModules ? [],
+      ...
+    }:
+      nixpkgs.lib.nixosSystem {
+        inherit system;
+        specialArgs = inputs;
+        modules =
+          [
             ./hardware/${hostname}.nix
             ./systems/${hostname}.nix
             ./modules/nixos.nix
@@ -190,11 +190,9 @@
             }
           ]
           ++ extraModules;
-        };
-
-    in
-    {
-      darwinConfigurations = builtins.mapAttrs mkDarwinSystem darwinSystems;
-      nixosConfigurations = builtins.mapAttrs mkNixosSystem nixosSystems;
-    }; # outputs
+      };
+  in {
+    darwinConfigurations = builtins.mapAttrs mkDarwinSystem darwinSystems;
+    nixosConfigurations = builtins.mapAttrs mkNixosSystem nixosSystems;
+  }; # outputs
 }

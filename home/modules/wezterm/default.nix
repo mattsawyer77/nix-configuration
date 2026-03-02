@@ -3,10 +3,10 @@
   weztermPackage ? pkgs.wezterm,
   ...
 }: {
-  home.packages = [ weztermPackage ];
+  home.packages = [weztermPackage];
   programs.wezterm = {
     enable = true;
     enableZshIntegration = true;
-    extraConfig = (builtins.readFile ./wezterm.lua);
+    extraConfig = builtins.readFile ./wezterm.lua;
   };
 }

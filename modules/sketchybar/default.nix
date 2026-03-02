@@ -1,9 +1,5 @@
-{ pkgs
-, ...
-}:
-
-with pkgs;
-{
+{pkgs, ...}:
+with pkgs; {
   environment.systemPackages = [
     sketchybar
     sketchybar-app-font

@@ -1,19 +1,17 @@
-{ config
-, pkgs
-, nil
+{
+  config,
+  pkgs,
+  nil,
   # , emacs-overlay
   # , emacs-src
   # , emacs-vterm-src
-, ...
-}:
-let
+  ...
+}: let
   # emacsPackage = pkgs.emacs29-macport;
   # emacsPackage = pkgs.emacs29-nox;
   # emacsPackage = pkgs.emacs29;
   # emacsDaemonSocket = "/tmp/emacs-server-socket";
-in
-
-{
+in {
   environment.systemPackages = [
     pkgs.home-manager
     # emacsPackage
@@ -86,5 +84,4 @@ in
       # (import ./golangci-lint.nix)
     ]; # overlays
   }; # nixpkgs
-
 }

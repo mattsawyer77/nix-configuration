@@ -1,14 +1,17 @@
-{ pkgs, emacs-vterm-src, ... }:
-
+{
+  pkgs,
+  emacs-vterm-src,
+  ...
+}:
 pkgs.stdenv.mkDerivation {
   pname = "emacs-vterm";
   version = "master";
   src = emacs-vterm-src;
 
-  nativeBuildInputs = with pkgs; [ cmake libtool glib.dev ];
-  buildInputs = with pkgs; [ glib.out libvterm-neovim ncurses ];
+  nativeBuildInputs = with pkgs; [cmake libtool glib.dev];
+  buildInputs = with pkgs; [glib.out libvterm-neovim ncurses];
 
-  cmakeFlags = [ "-DUSE_SYSTEM_LIBVTERM=yes" ];
+  cmakeFlags = ["-DUSE_SYSTEM_LIBVTERM=yes"];
 
   preConfigure = ''
     echo "include_directories(\"${pkgs.glib.out}/lib/glib-2.0/include\")" >> CMakeLists.txt

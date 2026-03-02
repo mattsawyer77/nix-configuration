@@ -1,16 +1,16 @@
-{ config, pkgs, ... }:
-
-let
+{
+  config,
+  pkgs,
+  ...
+}: let
   username = "sawyer";
   homeDirectory = "/Users/" + username;
   goPathSuffix = "gocode";
   localBinPath = ".local/bin";
-
-in
-{
+in {
   home = {
     homeDirectory = homeDirectory;
-    packages = [ ];
+    packages = [];
     stateVersion = "22.11";
     username = username;
     # append these extra dirs to the nix-generated path
@@ -23,15 +23,14 @@ in
       COLORTERM = "truecolor";
       EDITOR = "em";
       VISUAL = "em";
-      GOPATH = (homeDirectory + "/" + goPathSuffix);
+      GOPATH = homeDirectory + "/" + goPathSuffix;
       LC_ALL = "en_US.UTF-8";
       LANG = "en_US.UTF-8";
       LANGUAGE = "en_US.UTF-8";
       GO111MODULE = "on";
       BAT_THEME = "1337";
       LESS = "-F -i -M -R -X --incsearch";
-      SAML2AWS_USER_AGENT =
-        "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.00) Gecko/20100101 Firefox/82.0";
+      SAML2AWS_USER_AGENT = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.00) Gecko/20100101 Firefox/82.0";
     };
     # for git, $EDITOR/$VISUAL can't be set to reference a shell function, so deploy the script as follows
     file."em.zsh" = {
@@ -154,12 +153,14 @@ in
         duration = 0;
         color = "0xffffff";
       };
-      selection = { save_to_clipboard = true; };
-      cursor = { unfocused_hollow = true; };
-      mouse_bindings = [{
-        mouse = "Middle";
-        action = "PasteSelection";
-      }];
+      selection = {save_to_clipboard = true;};
+      cursor = {unfocused_hollow = true;};
+      mouse_bindings = [
+        {
+          mouse = "Middle";
+          action = "PasteSelection";
+        }
+      ];
     }; # settings
   }; # alacritty
   programs.direnv.enable = true;
@@ -177,18 +178,18 @@ in
         "#" = "toggle_comments";
         "$" = "goto_line_end";
         "0" = "goto_line_start";
-        "{" = [ "goto_prev_paragraph" ];
-        "}" = [ "goto_next_paragraph" ];
-        b = [ "move_prev_word_start" "collapse_selection" ];
+        "{" = ["goto_prev_paragraph"];
+        "}" = ["goto_next_paragraph"];
+        b = ["move_prev_word_start" "collapse_selection"];
         d = {
-          a = [ "select_textobject_around" ];
-          d = [ "extend_to_line_bounds" "delete_selection" ];
-          i = [ "select_textobject_inner" ];
-          s = [ "surround_delete" ];
-          t = [ "extend_till_char" ];
+          a = ["select_textobject_around"];
+          d = ["extend_to_line_bounds" "delete_selection"];
+          i = ["select_textobject_inner"];
+          s = ["surround_delete"];
+          t = ["extend_till_char"];
         };
-        e = [ "move_next_word_end" "collapse_selection" ];
-        C = [ "collapse_selection" "extend_to_line_end" "change_selection" ];
+        e = ["move_next_word_end" "collapse_selection"];
+        C = ["collapse_selection" "extend_to_line_end" "change_selection"];
         C-e = "scroll_down";
         C-n = "select_next_sibling";
         C-p = "select_prev_sibling";
@@ -196,10 +197,10 @@ in
         C-y = "scroll_up";
         D = "kill_to_line_end";
         G = "goto_file_end";
-        space = { ":" = "command_palette"; };
+        space = {":" = "command_palette";};
         tab = "match_brackets";
-        V = [ "select_mode" "extend_to_line_bounds" ];
-        w = [ "move_next_word_start" "move_char_right" "collapse_selection" ];
+        V = ["select_mode" "extend_to_line_bounds"];
+        w = ["move_next_word_start" "move_char_right" "collapse_selection"];
         x = "delete_selection";
         y = {
           y = [
@@ -212,17 +213,17 @@ in
       };
       keys.select = {
         "0" = "goto_line_start";
-        "$" = [ "goto_line_end" ];
-        d = [ "yank_main_selection_to_clipboard" "delete_selection" ];
-        esc = [ "collapse_selection" "keep_primary_selection" "normal_mode" ];
-        j = [ "extend_line_down" "extend_to_line_bounds" ];
-        k = [ "extend_line_up" "extend_to_line_bounds" ];
+        "$" = ["goto_line_end"];
+        d = ["yank_main_selection_to_clipboard" "delete_selection"];
+        esc = ["collapse_selection" "keep_primary_selection" "normal_mode"];
+        j = ["extend_line_down" "extend_to_line_bounds"];
+        k = ["extend_line_up" "extend_to_line_bounds"];
         p = "replace_selections_with_clipboard";
         P = "paste_clipboard_before";
         tab = "match_brackets";
         v = "expand_selection";
         V = "shrink_selection";
-        x = [ "yank_main_selection_to_clipboard" "delete_selection" ];
+        x = ["yank_main_selection_to_clipboard" "delete_selection"];
         y = [
           "yank_main_selection_to_clipboard"
           "normal_mode"
@@ -238,34 +239,36 @@ in
         ];
       };
       editor = {
-        file-picker = { hidden = false; };
-        lsp = { display-messages = true; };
+        file-picker = {hidden = false;};
+        lsp = {display-messages = true;};
         cursor-shape = {
           insert = "bar";
           normal = "block";
         };
       };
     }; # settings
-    languages = [{
-      name = "go";
-      indent = {
-        tab-width = 2;
-        unit = "  ";
-      };
-    }]; # languages
+    languages = [
+      {
+        name = "go";
+        indent = {
+          tab-width = 2;
+          unit = "  ";
+        };
+      }
+    ]; # languages
     themes = {
-      edge = (builtins.fromJSON (builtins.readFile ./modules/helix/themes/edge.json));
-      everforest = (builtins.fromJSON (builtins.readFile ./modules/helix/themes/everforest.json));
-      gruvbox = (builtins.fromJSON (builtins.readFile ./modules/helix/themes/gruvbox.json));
-      mogster = (builtins.fromJSON (builtins.readFile ./modules/helix/themes/mogster.json));
-      sonokai = (builtins.fromJSON (builtins.readFile ./modules/helix/themes/sonokai.json));
+      edge = builtins.fromJSON (builtins.readFile ./modules/helix/themes/edge.json);
+      everforest = builtins.fromJSON (builtins.readFile ./modules/helix/themes/everforest.json);
+      gruvbox = builtins.fromJSON (builtins.readFile ./modules/helix/themes/gruvbox.json);
+      mogster = builtins.fromJSON (builtins.readFile ./modules/helix/themes/mogster.json);
+      sonokai = builtins.fromJSON (builtins.readFile ./modules/helix/themes/sonokai.json);
     }; # themes
   }; # helix
   programs.skim = {
     enable = true;
     enableZshIntegration = true;
   };
-  programs.starship = { enable = true; };
+  programs.starship = {enable = true;};
   programs.tmux = {
     enable = true;
     extraConfig = ''
@@ -341,72 +344,76 @@ in
       default_mode = "locked";
       pane_frames = false;
       scroll_buffer_size = 50000;
-      keybinds =
-        let
-          ctrlQToLocked = {
-            key = [{ Ctrl = "l"; }];
-            action = [{ SwitchToMode = "locked"; }];
-          };
-          ctrlQToNormal = {
-            key = [{ Ctrl = "l"; }];
-            action = [{ SwitchToMode = "normal"; }];
-          };
-        in
-        {
-          unbind = [{ Ctrl = "g"; }];
-          locked = [ ctrlQToNormal ];
-          normal = [ ctrlQToLocked ];
-          move = [ ctrlQToLocked ];
-          resize = [ ctrlQToLocked ];
-          pane = [ ctrlQToLocked ];
-          scroll = [ ctrlQToLocked ];
-          entersearch = [ ctrlQToLocked ];
-          search = [ ctrlQToLocked ];
-          renametab = [ ctrlQToLocked ];
-          renamepane = [ ctrlQToLocked ];
-          session = [ ctrlQToLocked ];
-          tab = [
-            ctrlQToLocked
-            {
-              key = [{ Char = "n"; }];
-              action = [{ NewTab = { }; } { SwitchToMode = "renametab"; }];
-            }
-          ];
-          # tab = [
-          #   { unbind = { Char = "n"; }; }
-          #   ctrlQToLocked
-          #   {
-          #     key = [{ Char = "n"; }];
-          #     action = [ { NewTab = { }; } { SwitchToMode = "renametab"; } ];
-          #   }
-          # ];
+      keybinds = let
+        ctrlQToLocked = {
+          key = [{Ctrl = "l";}];
+          action = [{SwitchToMode = "locked";}];
         };
+        ctrlQToNormal = {
+          key = [{Ctrl = "l";}];
+          action = [{SwitchToMode = "normal";}];
+        };
+      in {
+        unbind = [{Ctrl = "g";}];
+        locked = [ctrlQToNormal];
+        normal = [ctrlQToLocked];
+        move = [ctrlQToLocked];
+        resize = [ctrlQToLocked];
+        pane = [ctrlQToLocked];
+        scroll = [ctrlQToLocked];
+        entersearch = [ctrlQToLocked];
+        search = [ctrlQToLocked];
+        renametab = [ctrlQToLocked];
+        renamepane = [ctrlQToLocked];
+        session = [ctrlQToLocked];
+        tab = [
+          ctrlQToLocked
+          {
+            key = [{Char = "n";}];
+            action = [{NewTab = {};} {SwitchToMode = "renametab";}];
+          }
+        ];
+        # tab = [
+        #   { unbind = { Char = "n"; }; }
+        #   ctrlQToLocked
+        #   {
+        #     key = [{ Char = "n"; }];
+        #     action = [ { NewTab = { }; } { SwitchToMode = "renametab"; } ];
+        #   }
+        # ];
+      };
       theme = "tokyo-night";
       themes.dracula =
         builtins.fromJSON (builtins.readFile ./modules/zellij/themes/dracula.json);
       themes.gruvbox-dark =
         builtins.fromJSON (builtins.readFile ./modules/zellij/themes/gruvbox-dark.json);
-      themes.gruvbox-light = builtins.fromJSON
+      themes.gruvbox-light =
+        builtins.fromJSON
         (builtins.readFile ./modules/zellij/themes/gruvbox-light.json);
       themes.molokai-dark =
         builtins.fromJSON (builtins.readFile ./modules/zellij/themes/molokai-dark.json);
       themes.nord =
         builtins.fromJSON (builtins.readFile ./modules/zellij/themes/nord.json);
-      themes.one-half-dark = builtins.fromJSON
+      themes.one-half-dark =
+        builtins.fromJSON
         (builtins.readFile ./modules/zellij/themes/one-half-dark.json);
-      themes.solarized-dark = builtins.fromJSON
+      themes.solarized-dark =
+        builtins.fromJSON
         (builtins.readFile ./modules/zellij/themes/solarized-dark.json);
-      themes.solarized-light = builtins.fromJSON
+      themes.solarized-light =
+        builtins.fromJSON
         (builtins.readFile ./modules/zellij/themes/solarized-light.json);
-      themes.tokyo-night-light = builtins.fromJSON
+      themes.tokyo-night-light =
+        builtins.fromJSON
         (builtins.readFile ./modules/zellij/themes/tokyo-night-light.json);
-      themes.tokyo-night-storm = builtins.fromJSON
+      themes.tokyo-night-storm =
+        builtins.fromJSON
         (builtins.readFile ./modules/zellij/themes/tokyo-night-storm.json);
       themes.tokyo-night =
         builtins.fromJSON (builtins.readFile ./modules/zellij/themes/tokyo-night.json);
     };
   };
-  programs.zoxide = { enable = true; };
+  programs.zoxide = {enable = true;};
   programs.zsh = {
     enable = true;
     enableAutosuggestions = true;
@@ -424,8 +431,7 @@ in
     shellAliases = {
       ssh = "TERM=xterm-256color ssh";
       socks4proxy = "ssh -D 8888 -f -C -q -N";
-      randomizeMacAddress =
-        "openssl rand -hex 6 | sed 's/(..)/1:/g; s/.$//' | xargs sudo ifconfig $(route -n get default | grep interface: | cut -d':' -f2 | awk '{print $1}') ether";
+      randomizeMacAddress = "openssl rand -hex 6 | sed 's/(..)/1:/g; s/.$//' | xargs sudo ifconfig $(route -n get default | grep interface: | cut -d':' -f2 | awk '{print $1}') ether";
       k = "kubectl";
       l = "eza -alF";
       ts = "tmux new-session -n main -s";

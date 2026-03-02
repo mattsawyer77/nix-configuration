@@ -1,6 +1,5 @@
-{ pkgs, ... }:
-{
-  home.packages = [ pkgs.helix ];
+{pkgs, ...}: {
+  home.packages = [pkgs.helix];
   programs.helix = {
     enable = true;
     settings = {
@@ -15,18 +14,18 @@
         "#" = "toggle_comments";
         "$" = "goto_line_end";
         "0" = "goto_line_start";
-        "{" = [ "goto_prev_paragraph" ];
-        "}" = [ "goto_next_paragraph" ];
-        b = [ "move_prev_word_start" "collapse_selection" ];
+        "{" = ["goto_prev_paragraph"];
+        "}" = ["goto_next_paragraph"];
+        b = ["move_prev_word_start" "collapse_selection"];
         d = {
-          a = [ "select_textobject_around" ];
-          d = [ "extend_to_line_bounds" "delete_selection" ];
-          i = [ "select_textobject_inner" ];
-          s = [ "surround_delete" ];
-          t = [ "extend_till_char" ];
+          a = ["select_textobject_around"];
+          d = ["extend_to_line_bounds" "delete_selection"];
+          i = ["select_textobject_inner"];
+          s = ["surround_delete"];
+          t = ["extend_till_char"];
         };
-        e = [ "move_next_word_end" "collapse_selection" ];
-        C = [ "collapse_selection" "extend_to_line_end" "change_selection" ];
+        e = ["move_next_word_end" "collapse_selection"];
+        C = ["collapse_selection" "extend_to_line_end" "change_selection"];
         C-e = "scroll_down";
         C-n = "select_next_sibling";
         C-p = "select_prev_sibling";
@@ -42,10 +41,10 @@
         G = "goto_file_end";
         P = "paste_clipboard_before";
         p = "paste_clipboard_after";
-        space = { ":" = "command_palette"; };
+        space = {":" = "command_palette";};
         tab = "match_brackets";
-        V = [ "select_mode" "extend_to_line_bounds" ];
-        w = [ "move_next_word_start" "move_char_right" "collapse_selection" ];
+        V = ["select_mode" "extend_to_line_bounds"];
+        w = ["move_next_word_start" "move_char_right" "collapse_selection"];
         x = "delete_selection";
         y = {
           y = [
@@ -59,17 +58,17 @@
       keys.select = {
         "#" = "toggle_comments";
         "0" = "goto_line_start";
-        "$" = [ "goto_line_end" ];
-        d = [ "yank_main_selection_to_clipboard" "delete_selection" ];
-        esc = [ "collapse_selection" "keep_primary_selection" "normal_mode" ];
-        j = [ "extend_line_down" "extend_to_line_bounds" ];
-        k = [ "extend_line_up" "extend_to_line_bounds" ];
+        "$" = ["goto_line_end"];
+        d = ["yank_main_selection_to_clipboard" "delete_selection"];
+        esc = ["collapse_selection" "keep_primary_selection" "normal_mode"];
+        j = ["extend_line_down" "extend_to_line_bounds"];
+        k = ["extend_line_up" "extend_to_line_bounds"];
         p = "replace_selections_with_clipboard";
         P = "paste_clipboard_before";
         tab = "match_brackets";
         v = "expand_selection";
         V = "shrink_selection";
-        x = [ "yank_main_selection_to_clipboard" "delete_selection" ];
+        x = ["yank_main_selection_to_clipboard" "delete_selection"];
         y = [
           "yank_main_selection_to_clipboard"
           "normal_mode"
@@ -85,8 +84,8 @@
         ];
       };
       editor = {
-        file-picker = { hidden = false; };
-        lsp = { display-messages = true; };
+        file-picker = {hidden = false;};
+        lsp = {display-messages = true;};
         cursor-shape = {
           insert = "bar";
           normal = "block";
@@ -94,20 +93,22 @@
       };
     }; # settings
     languages = {
-      language = [{
-        name = "go";
-        indent = {
-          tab-width = 2;
-          unit = "  ";
-        };
-      }];
+      language = [
+        {
+          name = "go";
+          indent = {
+            tab-width = 2;
+            unit = "  ";
+          };
+        }
+      ];
     }; # languages
     themes = {
-      edge = (builtins.fromJSON (builtins.readFile ./themes/edge.json));
-      everforest = (builtins.fromJSON (builtins.readFile ./themes/everforest.json));
-      gruvbox = (builtins.fromJSON (builtins.readFile ./themes/gruvbox.json));
-      mogster = (builtins.fromJSON (builtins.readFile ./themes/mogster.json));
-      sonokai = (builtins.fromJSON (builtins.readFile ./themes/sonokai.json));
+      edge = builtins.fromJSON (builtins.readFile ./themes/edge.json);
+      everforest = builtins.fromJSON (builtins.readFile ./themes/everforest.json);
+      gruvbox = builtins.fromJSON (builtins.readFile ./themes/gruvbox.json);
+      mogster = builtins.fromJSON (builtins.readFile ./themes/mogster.json);
+      sonokai = builtins.fromJSON (builtins.readFile ./themes/sonokai.json);
     }; # themes
   };
 }

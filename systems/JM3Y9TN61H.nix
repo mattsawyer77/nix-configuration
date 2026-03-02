@@ -1,5 +1,9 @@
-{ config, pkgs, lib, ... }:
 {
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
   system.primaryUser = "m.sawyer";
   system.stateVersion = 5;
   ids.gids.nixbld = 1000;
@@ -12,7 +16,10 @@
     enable = true;
     gc = {
       automatic = true;
-      interval = { Hour = 13; Minute = 0; };
+      interval = {
+        Hour = 13;
+        Minute = 0;
+      };
       options = "--delete-older-than 2d";
     };
     extraOptions = ''

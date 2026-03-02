@@ -1,11 +1,13 @@
 # setup zsh and shell-related tools
-{ config, lib, pkgs, ... }:
-
-let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
   cfg = config.custom.shell;
   zshAutoSuggestStyle = "fg=#337799";
-in
-{
+in {
   options.custom.shell = {
     goPathSuffix = lib.mkOption {
       type = lib.types.str;
@@ -61,8 +63,7 @@ in
         };
         shellAliases = {
           socks4proxy = "ssh -D 8888 -f -C -q -N";
-          randomizeMacAddress =
-            "openssl rand -hex 6 | sed 's/(..)/1:/g; s/.$//' | xargs sudo ifconfig $(route -n get default | grep interface: | cut -d':' -f2 | awk '{print $1}') ether";
+          randomizeMacAddress = "openssl rand -hex 6 | sed 's/(..)/1:/g; s/.$//' | xargs sudo ifconfig $(route -n get default | grep interface: | cut -d':' -f2 | awk '{print $1}') ether";
           l = "eza";
         };
         completionInit = ''
@@ -129,7 +130,7 @@ in
     };
     home.sessionVariables = {
       COLORTERM = "truecolor";
-      GOPATH = (config.home.homeDirectory + "/" + cfg.goPathSuffix);
+      GOPATH = config.home.homeDirectory + "/" + cfg.goPathSuffix;
       USE_GKE_GCLOUD_AUTH_PLUGIN = "True";
       LC_ALL = "en_US.UTF-8";
       LANG = "en_US.UTF-8";

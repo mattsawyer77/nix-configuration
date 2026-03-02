@@ -1,11 +1,10 @@
-{ pkgs
-# , listenerURL ? "https://127.0.0.1:6443"
-, ...
-}:
-
-with pkgs;
 {
-  environment.systemPackages = [ k3d ];
+  pkgs,
+  # , listenerURL ? "https://127.0.0.1:6443"
+  ...
+}:
+with pkgs; {
+  environment.systemPackages = [k3d];
   # services.k3s = {
   #   enable = true;
   #   package = k3s;

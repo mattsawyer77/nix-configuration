@@ -52,25 +52,25 @@
         opt = [];
       };
       customRC = ''
-        ${(builtins.readFile ./neovim/init.vim)}
-        lua << EOF
-        ${(builtins.readFile ./neovim/compe.lua)}
-        ${(builtins.readFile ./neovim/lsp.lua)}
-        ${(builtins.readFile ./neovim/lualine.lua)}
-        ${(builtins.readFile ./neovim/rust-tools.lua)}
-        ${(builtins.readFile ./neovim/telescope.lua)}
-        ${(builtins.readFile ./neovim/tree-sitter.lua)}
-        require'nvim-tree'.setup()
-        vim.g.nvim_tree_respect_buf_cwd = 1
-        require("nvim-tree").setup({
-          update_cwd = true,
-          update_focused_file = {
-            enable = true,
-            update_cwd = true
-          },
-        })
-        require("project_nvim").setup()
-EOF
+                ${(builtins.readFile ./neovim/init.vim)}
+                lua << EOF
+                ${(builtins.readFile ./neovim/compe.lua)}
+                ${(builtins.readFile ./neovim/lsp.lua)}
+                ${(builtins.readFile ./neovim/lualine.lua)}
+                ${(builtins.readFile ./neovim/rust-tools.lua)}
+                ${(builtins.readFile ./neovim/telescope.lua)}
+                ${(builtins.readFile ./neovim/tree-sitter.lua)}
+                require'nvim-tree'.setup()
+                vim.g.nvim_tree_respect_buf_cwd = 1
+                require("nvim-tree").setup({
+                  update_cwd = true,
+                  update_focused_file = {
+                    enable = true,
+                    update_cwd = true
+                  },
+                })
+                require("project_nvim").setup()
+        EOF
       '';
     };
   };

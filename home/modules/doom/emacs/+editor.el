@@ -197,8 +197,8 @@
         lsp-completion-show-kind t
         lsp-enable-links t ; fix links
         lsp-ui-imenu-buffer-position 'left
-        lsp-nix-nil-formatter ["nixfmt"]
-        nix-nixfmt-bin "nixfmt")
+        lsp-nix-nil-formatter ["alejandra"]
+        nix-nixfmt-bin "alejandra")
 
   (setq lsp-file-watch-ignored-directories
         (cl-union lsp-file-watch-ignored-directories

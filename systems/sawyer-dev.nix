@@ -1,12 +1,16 @@
-{ config, pkgs, lib, ... }:
 {
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
   system.stateVersion = "22.11";
 
   users.users.sawyer = {
     isNormalUser = true;
     home = "/home/sawyer";
     description = "Matt Sawyer";
-    extraGroups = [ "wheel" "networkmanager" "docker" ];
+    extraGroups = ["wheel" "networkmanager" "docker"];
     shell = pkgs.zsh;
   };
   users.users.sawyer.openssh.authorizedKeys.keys = [
@@ -17,7 +21,7 @@
   networking.firewall = {
     enable = true;
     allowPing = true;
-    allowedTCPPorts = [ 22 2022 ];
+    allowedTCPPorts = [22 2022];
   };
 
   nix = {
@@ -27,8 +31,8 @@
       options = "--delete-older-than 7d";
     };
     settings = {
-      allowed-users = [ "sawyer" "@wheel" ];
-      trusted-users = [ "sawyer" "@wheel" ];
+      allowed-users = ["sawyer" "@wheel"];
+      trusted-users = ["sawyer" "@wheel"];
     };
   };
 
