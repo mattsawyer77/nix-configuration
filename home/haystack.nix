@@ -1,4 +1,4 @@
-{ config, lib, pkgs, username, ... }:
+{ config, lib, pkgs, nixpkgs-stable, username, ... }:
 
 let
   homeDirectory = "/home/" + username;
@@ -9,11 +9,12 @@ let
   # to update/regenerate, run node2nix -i <(echo '["bash-language-server", "prettier"]') --nodejs-18
   # then copy the resulting files into ./npm-packages
   # npmPackages = import ./npm-packages { inherit pkgs; };
-  homePackages = with pkgs; [
+  homePackages = (with pkgs; [
     (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
+    alacritty
     aws-iam-authenticator
-    awscli2-bin
-    azure-cli
+    awscli2
+    # azure-cli # broken with 2.78.0 ("claims_challenge" error)
     bash
     bat
     bat-extras.batman
@@ -21,22 +22,21 @@ let
     bind
     boost
     btop
-    cairo
+    buildkit
+    # cairo
     ccls
     certigo
-    curlFull
     delve
     devenv
-    docker
-    docker-compose
     dos2unix
+    duf
+    dust
+    emacs-nox
     # envsubst # conflicts with gettext
-    eternal-terminal
-    file
-    # firefox
-    flamegraph
+    firefox
+    # flamegraph
     gcc
-    gdb
+    # gdb
     gdbm
     ghostscript
     glib
@@ -46,37 +46,50 @@ let
     golangci-lint
     grpcurl
     helix
-    helm
-    htop
-    jansson
+    # kubernetes-helm
+    (wrapHelm kubernetes-helm {
+        plugins = with pkgs.kubernetes-helmPlugins; [
+          helm-secrets
+          helm-diff
+          helm-s3
+          helm-git
+        ];
+      })
+    # htop
+    # jansson
     just
+    jq
     kluctl
-    libcgroup
+    # libcgroup
     libsndfile
     llama-cpp
-    mcphost
-    mosh
-    msgpack
+    k9s
+    # mcphost
+    # mosh
+    # msgpack
+    natscli
     ncurses
+    nerdctl
     netperf
-    nmap
-    openfortivpn
+    # openfortivpn
     # openssl # conflicts with libressl
-    pinentry
-    pkg-config
-    redis
-    repomix
-    scons
-    sd
-    ssm-session-manager-plugin
-    sysbench
+    pinentry-curses
+    postgresql
+    python3
+    # redis
+    # repomix
+    # scons
+    # ssm-session-manager-plugin
+    # sysbench
     tailscale
-    valgrind
-    wezterm
-    wireshark
+    # valgrind
+    # wezterm
+    # wireshark
     xsel
     yaml-language-server
-  ];
+  ]) ++ (with nixpkgs-stable.outputs.legacyPackages.x86_64-linux; [
+    azure-cli
+  ]);
   # npm packages setup via node2nix
   # ++ (with npmPackages; [ bash-language-server prettier ]);
 
@@ -96,6 +109,11 @@ let
     # SKIM_TMUX_OPTS = "--color=current_bg:24 --height=40%";
     VISUAL = "hx";
     KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
+    MOZ_ENABLE_WAYLAND = "0";
+    GDK_BACKEND = "x11";
+    # Optional: avoid GL issues on headless servers
+    LIBGL_ALWAYS_SOFTWARE = "1";
+    MOZ_WEBRENDER = "0";
   };
 
   extraPaths = [
@@ -172,6 +190,28 @@ in
     })
     ./helix
     ./ollama
+    (import ./opencode {
+      settings = {
+        "$schema" = "https://opencode.ai/config.json";
+        provider = {
+          f5ai = {
+            name = "f5ai";
+            options = {
+              baseURL = "https://f5ai.pd.f5net.com/api";
+            };
+            models = {
+              "claude-opus-4-6" = {
+                name = "F5AI: Claude Opus 4.6";
+              };
+              "claude-sonnet-4-6" = {
+                name = "F5AI: Claude Sonnet 4.6";
+              };
+            };
+            npm = "@ai-sdk/openai-compatible";
+          };
+        };
+      };
+    })
   ];
   home = {
     inherit homeDirectory;
@@ -255,11 +295,8 @@ in
     envExtra = builtins.readFile ./.zshenv-haystack;
     initContent = ''
       command -v npm >/dev/null && npm config set prefix ${npmPackagePath} && export PATH=$PATH:$HOME/${npmPackagePath}/bin
-      # compinit # compinit alreayd loaded earlier
-      if command -v kubectl >/dev/null; then
-        alias k=kubectl
-        source <(kubectl completion zsh)
-        compdef k='kubectl'
+      if [ -z "$SSH_TTY" ] && [ -n "$ET_VERSION" ]; then
+        export SSH_TTY=$(tty)
       fi
       printf '\e]2;'$(hostname)'\a'
     '';

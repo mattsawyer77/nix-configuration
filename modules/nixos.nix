@@ -9,45 +9,48 @@ with lib;
 
 {
   environment.systemPackages = with pkgs; [
-    azure-cli
+    # etcd
+    # msgpack
     bash
-    bat
-    bat-extras.batman
     bind
     curlFull
     docker
     docker-compose
-    # etcd
     eternal-terminal
     eza
     fd
     file
+    ghostty # for the term info
     git
-    helix
-    htop
-    jq
-    just
-    kluctl
+    # just
+    # kluctl
     less
     libsndfile
-    msgpack
     ncurses
-    netperf
     nmap
     pkg-config
     readline
     ripgrep
+    sd
     skim
     skopeo
-    starship
+    # starship
     tmux
     wget
-    wireshark
+    # wireshark
+    xorg.xauth
+    xorg.xclock
     zsh
     zsh-autosuggestions
     zsh-syntax-highlighting
     zsh-z
     zstd
+  ];
+  fonts.packages = with pkgs; [
+    dejavu_fonts
+    noto-fonts
+    noto-fonts-cjk-sans
+    noto-fonts-color-emoji
   ];
   nix = {
     package = pkgs.nixVersions.stable;

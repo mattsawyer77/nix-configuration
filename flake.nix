@@ -250,6 +250,7 @@
             home-manager.users.sawyer = ({ config, lib, pkgs, ... }:
               import ./home/haystack.nix {
                 inherit config lib pkgs;
+                nixpkgs-stable = inputs.nixpkgs-stable;
                 username = "sawyer";
               });
           }
@@ -263,12 +264,13 @@
                 "wheel"
                 "networkmanager"
                 "docker"
+                "containerd"
                 # "podman"
               ];
               shell = pkgs.zsh;
             };
             users.users.sawyer.openssh.authorizedKeys.keys = [
-              "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDUkwAz+dBcwzjI9Hwz0ETqH2GSOd3Og4cgisF8NC7Ck m.sawyer@KD21QWDKW7"
+              "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL1YPVexihJL4Gt4D2YwMvXwYe6KY2R4rcp7/GidprAR m.sawyer@JM3Y9TN61H"
             ];
             networking = {
               networkmanager.enable = true;
@@ -281,7 +283,7 @@
                   11434 # ollama
                   22 # ssh
                   2022 # et
-                  # 6443 # k3s
+                  6443 # k3s
                 ];
               };
             };
@@ -304,7 +306,13 @@
             #programs.tmux.enable = true;
             programs.zsh.enable = true;
             services.eternal-terminal.enable = true;
-            services.openssh.enable = true;
+            services.openssh = {
+              enable = true;
+              settings = {
+                X11Forwarding = true;
+                X11UseLocalhost = true;
+              };
+            };
             time.timeZone = "America/Los_Angeles";
             virtualisation.docker.enable = true;
             virtualisation.docker.extraOptions = "--bip 192.168.10.1/24";

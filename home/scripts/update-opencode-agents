@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+reset_color="\033[0m"
+red="\033[0;31m"
+green="\033[0;32m"
+
+log_info() {
+  echo -e "${green}$@${reset_color}"
+}
+
+log_error() {
+  echo -e "${red}@${reset_color}" >&2
+}
+
+# borrowed from https://github.com/obra/superpowers/blob/main/docs/README.opencode.md#macos--linux
+# Create directories
+mkdir -p ${HOME}/.config/opencode/plugins ${HOME}/.config/opencode/skills
+
+declare -A plugins=(
+  ['superpowers']='https://github.com/obra/superpowers.git'
+  ['xc-agents']='https://gitlab.com/f5/volterra/ves.io/xc-agents.git'
+)
+
+for plugin in "${!plugins[@]}"; do
+  repoURL=${plugins[$plugin]}
+  pluginDir="${HOME}/.config/opencode/${plugin}"
+  log_info "updating $plugin ($repoURL)..."
+  # 1. Install or update existing
+  if [ -d "$pluginDir" ]; then
+    log_info "updating $plugin..."
+    git -C "$pluginDir" pull
+  else
+    log_info "installing plugin..."
+    git clone "$repoURL" "$pluginDir"
+  fi
+
+  for subDir in skills agents plugins; do
+    sourceDir="${pluginDir}/${subDir}"
+    if [[ -d "$sourceDir" ]]; then
+      targetDir="${HOME}/.config/opencode/${subDir}/${plugin}"
+      log_info "- installing ${plugin} ${subDir}..."
+      mkdir -p "${targetDir}"
+      rsync -av --delete ${sourceDir}/* "${targetDir}/"
+    fi
+  done
+done

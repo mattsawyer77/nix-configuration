@@ -795,6 +795,7 @@ acr-login() {
   if ! az acr login -n volterra >/dev/null; then
     az-login
   fi &&
+    az acr login -n volterra --expose-token | jq -r '.accessToken' | docker login volterra.azurecr.io -u 00000000-0000-0000-0000-000000000000 --password-stdin &&
     skopeo-acr-login #&& podman-acr-login
 }
 
@@ -908,4 +909,3 @@ doom-sync-files() {
   mkdir -p $doom_dir
   cp -RLvf ~/workspaces/nix-configuration/home/doom/emacs/* $doom_dir
 }
-

@@ -69,8 +69,11 @@
     (add-to-list 'ws-butler-global-exempt-modes mode t)))
 
  ;;; Major Mode Hooks
-(after! go-mode
-  (setq gofmt-command "goimports"))
+(after! (go-mode go-ts-mode)
+  (setq gofmt-command "goimports"
+        go-ts-mode-indent-offset 2
+        tab-width 2))
+
 (add-hook! go-mode     #'+word-wrap-mode #'lsp)
 ;; (add-hook! go-ts-mode  #'go-mode)
 (after! go-ts-mode
@@ -335,6 +338,9 @@
 (add-hook! after-init #'tabspaces-mode)
 
  ;;; Other Package Configurations
+(after! clipetty
+  (setq clipetty-screen-regexp "^dumb"))
+
 (after! consult
   (consult-customize
    consult-ripgrep consult-git-grep consult-grep
