@@ -1,9 +1,10 @@
-{ config
-, pkgs
-, networkInterfaceName
-, needFirewall
-, ... }:
-
+{
+  config,
+  pkgs,
+  networkInterfaceName,
+  needFirewall,
+  ...
+}:
 {
   # enable the tailscale daemon; this will do a variety of tasks:
   # 1. create the TUN network device
@@ -26,9 +27,14 @@
       User = "root";
       ExecStart = "${pkgs.ethtool}/bin/ethtool -K ${networkInterfaceName} rx-udp-gro-forwarding on rx-gro-list off";
     };
-    wantedBy = [ "network-pre.target" ];
+    wantedBy = ["network-pre.target"];
   };
-} // (if needFirewall then {
-  # Let's open the UDP port with which the network is tunneled through
-  networking.firewall.allowedUDPPorts = [ 41641 ];
-} else { })
+}
+// (
+  if needFirewall
+  then {
+    # Let's open the UDP port with which the network is tunneled through
+    networking.firewall.allowedUDPPorts = [41641];
+  }
+  else {}
+)

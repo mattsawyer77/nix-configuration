@@ -1,23 +1,22 @@
-{ config
-, pkgs
-, nil
+{
+  config,
+  pkgs,
+  nil,
   # , emacs-overlay
   # , emacs-src
   # , emacs-vterm-src
-, ...
-}:
-let
+  ...
+}: let
   # emacsPackage = pkgs.emacs29-macport;
   # emacsPackage = pkgs.emacs29-nox;
   # emacsPackage = pkgs.emacs29;
   # emacsDaemonSocket = "/tmp/emacs-server-socket";
-in
-
-{
-  # environment.systemPackages = [
-  #   emacsPackage
-  #   pkgs.fetchpatch
-  # ];
+in {
+  environment.systemPackages = [
+    pkgs.home-manager
+    # emacsPackage
+    # pkgs.fetchpatch
+  ];
   # the following won't work with 24-bit color
   # services.emacs = {
   #   enable = true;
@@ -85,5 +84,4 @@ in
       # (import ./golangci-lint.nix)
     ]; # overlays
   }; # nixpkgs
-
 }

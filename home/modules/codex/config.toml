@@ -1,0 +1,30 @@
+# installed via nix flake
+model = "gpt-5.3-codex"
+model_reasoning_effort = "high"
+personality = "pragmatic"
+
+model_provider = "f5ai"
+[model_providers.f5ai]
+name = "f5ai"
+base_url = "https://f5ai.pd.f5net.com/openai"  
+
+[projects."/Users/m.sawyer/workspaces/f5/volterra/ves.io/ares"]
+trust_level = "trusted"
+
+[projects."/Users/m.sawyer/workspaces/f5/volterra/ves.io/stdlib"]
+trust_level = "trusted"
+
+[projects."/Users/m.sawyer/workspaces/echolab"]
+trust_level = "trusted"
+
+[projects."/Users/m.sawyer/workspaces/f5/volterra/ves.io/specifications"]
+trust_level = "trusted"
+
+[notice.model_migrations]
+"gpt-5.2-codex" = "gpt-5.3-codex"
+
+[tui]
+theme = "1337"
+
+[features]
+prevent_idle_sleep = true

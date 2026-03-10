@@ -1,0 +1,22 @@
+Make the titlebar transparent in the emacs-mac (macport) build so
+the Emacs background color shows through the titlebar area instead
+of the system's default dark/light titlebar material.
+
+Also hides the window title text since it overlaps with the Emacs
+content area when the titlebar is transparent.
+
+diff --git a/src/macappkit.m b/src/macappkit.m
+--- a/src/macappkit.m
++++ b/src/macappkit.m
+@@ -2631,6 +2631,11 @@
+   if (!FRAME_TOOLTIP_P (f))
+     {
+       window.hasShadow = self.shouldHaveShadow;
++      if (window.hasTitleBar)
++	{
++	  window.titlebarAppearsTransparent = YES;
++	  window.titleVisibility = NSWindowTitleHidden;
++	}
+       [window setAcceptsMouseMovedEvents:YES];
+       if (window.hasTitleBar)
+ 	[self setupToolBarWithVisibility:(FRAME_EXTERNAL_TOOL_BAR (f))];

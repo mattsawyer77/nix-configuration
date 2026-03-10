@@ -23,7 +23,7 @@ Guidance for agents working in this repository. These instructions apply to the 
 ## Conventions & Style
 
 - Nix style
-  - Two-space indentation, follow the style seen in `flake.nix` and existing modules or use `nixpkgs-fmt` to auto-format.
+  - Two-space indentation, follow the style seen in `flake.nix`. Use `alejandra` to auto-format any nix files that you create or edit.
   - Use `inherit` to pass through `config`, `lib`, `pkgs`, etc. where appropriate.
   - Prefer `lib.mkEnableOption`, `lib.mkOption`, and `lib.mkIf` for module options/patterns.
   - Keep options minimal; feature flags should default to safe values.
@@ -33,6 +33,7 @@ Guidance for agents working in this repository. These instructions apply to the 
   - Add `set -euo pipefail` for robustness (when safe).
   - Avoid hardcoding user- or host-specific absolute paths; prefer env vars or Home Manager paths.
 - Do not add license headers to files unless asked.
+- When making updates, ensure any documentation files are also updated so the code and documentation remain in sync.
 
 ## Inputs & Caches
 

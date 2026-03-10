@@ -1,11 +1,13 @@
-{ config, lib, pkgs, ... }:
-
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}: {
   environment.shellAliases = {
     # ssh = "TERM=xterm-256color ssh";
     socks4proxy = "ssh -D 8888 -f -C -q -N";
-    randomizeMacAddress =
-      "openssl rand -hex 6 | sed 's/(..)/1:/g; s/.$//' | xargs sudo ifconfig $(route -n get default | grep interface: | cut -d':' -f2 | awk '{print $1}') ether";
+    randomizeMacAddress = "openssl rand -hex 6 | sed 's/(..)/1:/g; s/.$//' | xargs sudo ifconfig $(route -n get default | grep interface: | cut -d':' -f2 | awk '{print $1}') ether";
     k = "kubectl";
     l = "eza -alF";
     ts = "tmux new-session -n main -s";

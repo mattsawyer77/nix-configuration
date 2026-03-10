@@ -1,13 +1,11 @@
-{ config
-, pkgs
-, lib
-, nil
-, ...
-}:
-
-with lib;
-
 {
+  config,
+  pkgs,
+  lib,
+  nil,
+  ...
+}:
+with lib; {
   environment.systemPackages = with pkgs; [
     # etcd
     # msgpack
@@ -72,10 +70,12 @@ with lib;
     ]; # overlays
   }; # nixpkgs
   programs.zsh.enable = true;
-  security.pam.loginLimits = [{
-    domain = "*";
-    type = "soft";
-    item = "nofile";
-    value = "8192";
-  }];
+  security.pam.loginLimits = [
+    {
+      domain = "*";
+      type = "soft";
+      item = "nofile";
+      value = "8192";
+    }
+  ];
 }
