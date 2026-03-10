@@ -84,6 +84,7 @@
 (package! gptel :recipe (:nonrecursive t))
 (package! gptel-quick :recipe (:host github :repo "karthink/gptel-quick"))
 (package! gptel-magit)
+(package! gptel-agent)
 
 (package! mcp)
 
@@ -113,6 +114,11 @@
 (package! mermaid-view
   :recipe (:type git
            :repo "git@github.com:mattsawyer77/mermaid-view.el"
+           :branch "main"
+           ))
+(package! gptel-session
+  :recipe (:type git
+           :repo "git@github.com:mattsawyer77/gptel-session"
            :branch "main"
            ))
 

@@ -160,7 +160,7 @@
 (map! :after cov
       :leader (:map global-map :nv "c v" #'cov-mode))
 (map! :after general
-      (:nv "<f5>" #'gptel
+      (:nv "<f5>" #'gptel-agent
        :nv "C-<f5>" #'gptel-menu))
 (map! :map general-override-mode-map
       :mode markdown-mode

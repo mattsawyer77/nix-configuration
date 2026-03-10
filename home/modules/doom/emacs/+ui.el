@@ -85,7 +85,7 @@
            (face-remap-add-relative 'org-code 'org-code-face)
            (setq-local display-line-numbers-type nil)
            (display-line-numbers-mode -1)
-           (auto-save-mode t)
+           ;; (auto-save-mode t)
            (mixed-pitch-mode t))
 
 (after! org

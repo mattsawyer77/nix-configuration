@@ -20,7 +20,9 @@
 
 ;; Frame, UI Enhancements
 (when (and (display-graphic-p) (featurep :system 'macos))
-  (add-hook! after-init #'ultra-scroll-mode))
+  (progn
+    (setq scroll-margin 0)
+    (add-hook! after-init #'ultra-scroll-mode)))
 
  ;;; File Mode Associations
 (dolist (spec
@@ -124,15 +126,16 @@
 (after! persp
   (setq uniquify-buffer-name-style 'forward))
 
- ;;; Treemacs
+;;; Treemacs
 (after! treemacs
   (require 'treemacs-projectile)
-  (treemacs-follow-mode 1)
+  ;; (treemacs-follow-mode 1)
   (treemacs-project-follow-mode 1)
   (treemacs-git-mode 'deferred)
   (setq-default treemacs--width-is-locked nil)
-  (setq treemacs-position 'left
-        treemacs-project-follow-cleanup t))
+  ;; (setq treemacs-position 'left
+  ;;       treemacs-project-follow-cleanup t)
+  )
 
 (defun sawyer/handle-frame-resize ()
   "Function to execute whenever the frame resizes."
@@ -393,14 +396,13 @@ Uses `org-hide-block-toggle' only when the block is currently visible."
   ;; (add-hook! org-mode #'sawyer/org-render-and-hide-mermaid)
   )
 
- ;;; Popup Rules
-(dolist (rule
-         '(("^\\*eww\\*"      :side right :slot 5 :vslot 5 :size 0.5)
-           ("^\\*jq-json\\*"  :side right :slot 5 :vslot 5 :size 0.5)
-           ("^\\*eat\\*"  :side right :slot 5 :vslot 5 :size 0.5)
-           ("^\\*gpt:\\*"  :side right :slot 5 :vslot 5 :size 0.5)
-           ("^\\*go-guru-output.*" :side bottom :size 5)))
-  (set-popup-rule! rule))
+;;; Popup Rules
+(set-popup-rules!
+  '(("^\\*eww\\*"         :side right  :slot 5 :vslot 5 :size 0.5)
+    ("^\\*jq-json\\*"     :side right  :slot 5 :vslot 5 :size 0.5)
+    ("^\\*eat"            :side right  :slot 5 :vslot 5 :size 0.5)
+    ("^\\*gpt"           :side right  :slot 5 :vslot 5 :size 0.5 :select t)
+    ("^\\*go-guru-output" :side bottom :size 5)))
 
  ;;; Terminal, VTerm, EAT
 (after! vterm  (setq vterm-shell "/bin/zsh" vterm-tramp-shells nil)
@@ -512,53 +514,53 @@ Uses `org-hide-block-toggle' only when the block is currently visible."
       (ns-keychain-get-generic-password hostname account)
     (error "TODO: implement sawyer/get-creds for non-macOS")))
 
-(defun sawyer/add-repomix-to-gptel-context ()
-  "If repomix-output.xml exists in the project root, add it to GPTel context using `gptel-context-add-file`."
-  (interactive)
-  (let* ((project-root
-          (cond
-           ((and (featurep 'projectile) (fboundp 'projectile-project-root))
-            (projectile-project-root))
-           ((fboundp 'project-root)
-            (when-let ((pr (project-current)))
-              (project-root pr)))
-           (t
-            (locate-dominating-file default-directory ".git"))))
-         (repomix-path (and project-root
-                            (expand-file-name "repomix-output.xml" project-root))))
-    (when (and repomix-path (file-exists-p repomix-path))
-      (gptel-context-add-file repomix-path)
-      (message "Added %s to GPTel context." repomix-path))))
+;; (defun sawyer/add-repomix-to-gptel-context ()
+;;   "If repomix-output.xml exists in the project root, add it to GPTel context using `gptel-context-add-file`."
+;;   (interactive)
+;;   (let* ((project-root
+;;           (cond
+;;            ((and (featurep 'projectile) (fboundp 'projectile-project-root))
+;;             (projectile-project-root))
+;;            ((fboundp 'project-root)
+;;             (when-let ((pr (project-current)))
+;;               (project-root pr)))
+;;            (t
+;;             (locate-dominating-file default-directory ".git"))))
+;;          (repomix-path (and project-root
+;;                             (expand-file-name "repomix-output.xml" project-root))))
+;;     (when (and repomix-path (file-exists-p repomix-path))
+;;       (gptel-context-add-file repomix-path)
+;;       (message "Added %s to GPTel context." repomix-path))))
 
-(defun sawyer/gptel-mode-buffer-local-variables ()
-  "Set buffer-local variables for `gptel-mode'."
-  (setq-local default-directory
-              (expand-file-name "chat" org-directory))
-  (set-visited-file-name (concat (file-name-sans-extension
-                                  (expand-file-name (buffer-name)))
-                                 ".org"))
-  (visual-line-mode 1))
+;; (defun sawyer/gptel-mode-buffer-local-variables ()
+;;   "Set buffer-local variables for `gptel-mode'."
+;;   (setq-local default-directory
+;;               (expand-file-name "gptel" org-directory))
+;;   (set-visited-file-name (concat (file-name-sans-extension
+;;                                   (expand-file-name (buffer-name)))
+;;                                  ".org"))
+;;   (visual-line-mode 1))
 
-(defun sawyer/gptel-mode-in-chat-directory-p ()
-  "Return non-nil if buffer is visiting a file in the chat directory."
-  (when-let* ((buffer-file-name)
-              (chat-dir (expand-file-name "llm-sessions" org-directory)))
-    (file-in-directory-p buffer-file-name chat-dir)))
+;; (defun sawyer/gptel-mode-in-chat-directory-p ()
+;;   "Return non-nil if buffer is visiting a file in the chat directory."
+;;   (when-let* ((buffer-file-name)
+;;               (chat-dir (expand-file-name "llm-sessions" org-directory)))
+;;     (file-in-directory-p buffer-file-name chat-dir)))
 
-(defun sawyer/gptel-mode ()
-  "Enable `gptel-mode' automatically if file is stored in chat directory."
-  (when (sawyer/gptel-mode-in-chat-directory-p)
-    (gptel-mode 1)
-    ;; gptel-mode marks buffer as modified, but doesn't actually modify anything
-    (set-buffer-modified-p nil)))
+;; (defun sawyer/gptel-mode ()
+;;   "Enable `gptel-mode' automatically if file is stored in chat directory."
+;;   (when (sawyer/gptel-mode-in-chat-directory-p)
+;;     (gptel-mode 1)
+;;     ;; gptel-mode marks buffer as modified, but doesn't actually modify anything
+;;     (set-buffer-modified-p nil)))
 
-(defun sawyer/gptel-mode-after-response (start end)
-  "Save chat buffer and move to next org heading.
+;; ;; (defun sawyer/gptel-mode-after-response (start end)
+;; ;;   "Save chat buffer and move to next org heading.
 
-                                        START and END indicates the starting and ending position of the LLM response."
-  (when (sawyer/gptel-mode-in-chat-directory-p)
-    (save-buffer))
-  (call-interactively 'gptel-end-of-response))
+;;                                         START and END indicates the starting and ending position of the LLM response."
+;;   (when (sawyer/gptel-mode-in-chat-directory-p)
+;;     (save-buffer))
+;;   (call-interactively 'gptel-end-of-response))
 
 (after! gptel
   (require 'gptel-integrations)
@@ -585,19 +587,20 @@ Uses `org-hide-block-toggle' only when the block is currently visible."
   ;;             ;; devstral-small-2507-gguf:q3_k_xl ;; llama.cpp
   ;;             ;; deepseek-r1-distill-qwen-1.5b-gguf:q8_0 ;; llama.cpp -- useless though?
   ;;             ))
-  (gptel-make-openai "gpt: haystack openwebui"
-    :host "haystack:5000"
-    :protocol "http"
-    :endpoint "/api/chat/completions"
-    :key (sawyer/get-creds "local-open-webui" "default")
-    :stream t
-    :models '(gpt-4.1       ;; f5gpt
-              gpt-5         ;; f5gpt
-              gpt-5-codex   ;; f5gpt
-              o4-mini       ;; f5gpt
-              ))
+  ;; (gptel-make-openai "gpt: haystack openwebui"
+  ;;   :host "haystack:5000"
+  ;;   :protocol "http"
+  ;;   :endpoint "/api/chat/completions"
+  ;;   :key (sawyer/get-creds "local-open-webui" "default")
+  ;;   :stream t
+  ;;   :models '(gpt-4.1       ;; f5gpt
+  ;;             gpt-5         ;; f5gpt
+  ;;             gpt-5-codex   ;; f5gpt
+  ;;             o4-mini       ;; f5gpt
+  ;;             ))
   ;; (gptel-make-gh-copilot "Copilot")
-  (setq gptel-model "gpt: haystack openwebui"
+  
+  (setq gptel-model "claude-opus-4-6"
         gptel-use-tools t
         gptel-confirm-tool-calls 'auto
         gptel-include-tool-results 'auto
@@ -610,25 +613,15 @@ Uses `org-hide-block-toggle' only when the block is currently visible."
         gptel-response-prefix-alist '((markdown-mode . "")
                                       (org-mode . "")
                                       (text-mode . ""))
-        gptel--system-message "You are a large language model living in Emacs and a helpful assistant. Respond concisely in markdown (github-flavored markdown if including code)."
-        gptel-directives '((default
-                            . "You are a large language model living in Emacs and a helpful assistant. Respond concisely in markdown (github-flavored markdown if including code).")
-                           (programming
-                            . "You are a large language model and a careful programmer. Provide code and only code as output without any additional text, prompt or note.")
-                           (writing
-                            . "You are a large language model and a writing assistant. Respond concisely in markdown format.")
-                           (architecture
-                            . "You are a large language model and a distributed systems architect. When feasible, respond to questions with discussions of tradeoffs or pros/cons of any architectural points to be debated. Respondi in markdown format (github-flavored markdown if including code."))
         ;; gptel-response-separator "\n\n* "
-        ;; gptel-backend (gptel-make-openai "gpt: F5 openwebui"
-        ;;                 :host "f5ai.pd.f5net.com"
-        ;;                 :protocol "https"
-        ;;                 :endpoint "/api/chat/completions"
-        ;;                 :key (sawyer/get-creds "f5gpt-open-webui" "default")
-        ;;                 :stream t
-        ;;                 :models '(o4-mini
-        ;;                           gpt-4.1
-        ;;                           gpt-5))
+        gptel-backend (gptel-make-openai "f5ai"
+                        :host "f5ai.pd.f5net.com/openai"
+                        :protocol "https"
+                        :key (sawyer/get-creds "f5ai" "default")
+                        :stream t
+                        :models '(claude-opus-4-6
+                                  ;; claude-sonnet-4-6
+                                  ))
         ;; gptel-backend (gptel-make-gh-copilot "Copilot")
         ;; gptel-backend (gptel-make-openai "gpt: local openwebui"
         ;;                 :host "127.0.0.1:3000"
@@ -647,9 +640,38 @@ Uses `org-hide-block-toggle' only when the block is currently visible."
   ) ;; gptel
 
 ;; (add-hook! gptel-mode-hook #'sawyer/add-repomix-to-gptel-context)
-(add-hook! gptel-mode-hook #'sawyer/gptel-mode-buffer-local-variables)
-(add-hook! gptel-post-response #'sawyer/gptel-mode-after-response)
-(add-hook! org-mode #'sawyer/gptel-mode)
+;; (add-hook! gptel-mode-hook #'sawyer/gptel-mode-buffer-local-variables)
+;; (add-hook! gptel-post-response #'sawyer/gptel-mode-after-response)
+;; (add-hook! org-mode #'sawyer/gptel-mode)
+
+(after! gptel-agent
+  (setq
+   ;; gptel-agent-dirs '("~/.config/opencode/superpowers/agents" "~/.config/opencode/superpowers/skills")
+   gptel-agent-skill-dirs'(
+                           "~/.config/opencode/skills"
+                           ;; "~/.claude/skills/"
+                           ;; ".claude/skills/"
+                           ;; "~/.agents/skills"
+                           ;; ".agents/skills"
+                           ;; "~/.opencode/skill/"
+                           ;; ".opencode/skill/"
+                           ;; "~/.gemini/skills/"
+                           ;; ".gemini/skills/"
+                           )
+
+   )
+  (gptel-agent-update))
+(require 'gptel-agent)
+
+(after! gptel-session
+  ;; Directory for session files (default: ~/.emacs.d/gptel-sessions/)
+  (setq gptel-session-dir (expand-file-name "gptel" org-directory))
+
+  ;; Disable auto-save (manual save only with M-x gptel-session--save-buffer)
+  (setq gptel-session-auto-save 't)
+  (add-hook! gptel-mode #'gptel-session-mode)
+  )
+(require 'gptel-session)
 
 (after! mcp
   (require 'mcp-hub)
@@ -666,18 +688,18 @@ Uses `org-hide-block-toggle' only when the block is currently visible."
                           ))
   )
 
-;; xenodium/agent-shell
-(after! (acp agent-shell)
-  (require 'acp)
-  (require 'agent-shell)
-  (setq agent-shell-openai-codex-environment (agent-shell-make-environment-variables
-                                              "OPENAI_API_BASE" "https://f5ai.pd.f5net.com/api"
-                                              "OPENAI_API_KEY" (sawyer/get-creds "f5gpt-open-webui" "default"))
-        agent-shell-openai-authentication (agent-shell-openai-make-authentication
-                                           :login nil
-                                           :api-key (sawyer/get-creds "f5gpt-open-webui" "default")))
-  )
 
+;; xenodium/agent-shell
+;; (after! (acp agent-shell)
+;;   (require 'acp)
+;;   (require 'agent-shell)
+;;   (setq agent-shell-openai-codex-environment (agent-shell-make-environment-variables
+;;                                               "OPENAI_API_BASE" "https://f5ai.pd.f5net.com/api"
+;;                                               "OPENAI_API_KEY" (sawyer/get-creds "f5gpt-open-webui" "default"))
+;;         agent-shell-openai-authentication (agent-shell-openai-make-authentication
+;;                                            :login nil
+;;                                            :api-key (sawyer/get-creds "f5gpt-open-webui" "default")))
+;;   )
 (after! magit
   (setq
    auto-revert-check-vc-info t
