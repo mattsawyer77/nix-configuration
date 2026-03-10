@@ -74,3 +74,6 @@
 [user]
 	email = "m.sawyer@f5.com"
 	name = "Matt Sawyer"
+
+[branch]
+	autosetupmerge = true
