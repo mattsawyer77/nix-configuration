@@ -120,7 +120,7 @@ in
     ./modules/doom
     ./modules/git
     ./modules/helix
-    ./modules/litellm
+    ./modules/codex-proxy
   ];
   custom.shell.goPathSuffix = goPathSuffix;
   custom.tmux.optionOverrides = [
@@ -177,19 +177,18 @@ in
     launchDaemon = true;
     installEmacs = true;
   };
-  custom.git = {
-    defaultEmail = "m.sawyer@f5.com";
-    defaultUser = "Matt Sawyer";
-  };
-  custom.litellm = {
+  custom.codex-proxy = {
     enable = true;
-    backend = "docker";
     host = "0.0.0.0";
-    environmentFile = "${homeDirectory}/.config/litellm/env";
+    environmentFile = "${homeDirectory}/.config/codex-proxy/env";
     daemon = {
       enable = true;
       autoStart = true;
     };
+  };
+  custom.git = {
+    defaultEmail = "m.sawyer@f5.com";
+    defaultUser = "Matt Sawyer";
   };
   home = {
     inherit homeDirectory;
