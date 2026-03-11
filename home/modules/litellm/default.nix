@@ -4,6 +4,7 @@
 # Usage:
 #   custom.litellm = {
 #     enable = true;
+#     backend = "docker";  # or "nixpkgs"
 #     environmentFile = "/home/user/.config/litellm/env";
 #     daemon.enable = true;
 #   };
@@ -25,6 +26,7 @@ let
   cfg = config.custom.litellm;
   isDarwin = pkgs.stdenv.isDarwin;
   isLinux = pkgs.stdenv.isLinux;
+  useDocker = cfg.backend == "docker";
 
   yamlFormat = pkgs.formats.yaml { };
 
@@ -43,10 +45,12 @@ let
 
   configFile = yamlFormat.generate "litellm_config.yaml" litellmConfig;
 
-  # Wrapper script that sources the environment file before exec-ing litellm.
-  # Needed because launchd has no EnvironmentFile equivalent, and it keeps
-  # the systemd and launchd code paths consistent.
-  startScript = pkgs.writeShellScript "litellm-start" ''
+  # Where the config lands in the user's home directory.
+  configTarget = ".config/litellm/config.yaml";
+  configAbsPath = "${config.home.homeDirectory}/${configTarget}";
+
+  # ── nixpkgs start script ───────────────────────────────────────
+  nixpkgsStartScript = pkgs.writeShellScript "litellm-start" ''
     set -euo pipefail
     ${lib.optionalString (cfg.environmentFile != null) ''
       set -a
@@ -58,10 +62,53 @@ let
       --port ${toString cfg.port} \
       --config ${configFile}
   '';
+
+  # ── docker start script ────────────────────────────────────────
+  # Mounts the Nix-generated config into the container and passes
+  # secrets via --env-file. The container is removed on stop so
+  # restarts always get a fresh instance.
+  dockerStartScript = pkgs.writeShellScript "litellm-docker-start" ''
+    set -euo pipefail
+    ${pkgs.docker}/bin/docker rm -f litellm 2>/dev/null || true
+    exec ${pkgs.docker}/bin/docker run \
+      --name litellm \
+      --rm \
+      --network host \
+      ${lib.optionalString (cfg.environmentFile != null) ''--env-file "${cfg.environmentFile}"''} \
+      -v "${configAbsPath}:/app/config.yaml:ro" \
+      ${cfg.docker.image} \
+      --host ${cfg.host} \
+      --port ${toString cfg.port} \
+      --config /app/config.yaml
+  '';
+
+  startScript = if useDocker then dockerStartScript else nixpkgsStartScript;
 in
 {
   options.custom.litellm = {
     enable = lib.mkEnableOption "LiteLLM local proxy";
+
+    backend = lib.mkOption {
+      type = lib.types.enum [
+        "nixpkgs"
+        "docker"
+      ];
+      default = "nixpkgs";
+      description = ''
+        How to run LiteLLM.
+        - "nixpkgs": use the litellm package from nixpkgs.
+        - "docker": run the official LiteLLM Docker image (useful for
+          getting a newer version than nixpkgs provides).
+      '';
+    };
+
+    docker = {
+      image = lib.mkOption {
+        type = lib.types.str;
+        default = "ghcr.io/berriai/litellm:main-stable";
+        description = "Docker image to use when backend is 'docker'.";
+      };
+    };
 
     port = lib.mkOption {
       type = lib.types.port;
@@ -177,23 +224,27 @@ in
       }
     ];
 
+    # Install the nixpkgs litellm binary (useful for manual testing even
+    # when daemon runs via docker).
     home.packages = [ pkgs.litellm ];
 
-    # Deploy the generated config for manual use / inspection.
+    # Deploy the generated config for both backends and manual inspection.
     home.file."litellm-config" = {
       source = configFile;
-      target = ".config/litellm/config.yaml";
+      target = configTarget;
     };
 
     # ── systemd user service (NixOS / Linux) ─────────────────────
     systemd.user.services.litellm = lib.mkIf (cfg.daemon.enable && isLinux) {
       Unit = {
         Description = "LiteLLM Proxy (Responses API bridge)";
-        After = [ "network.target" ];
+        After = [ "network.target" ] ++ lib.optionals useDocker [ "docker.service" ];
+        Requires = lib.optionals useDocker [ "docker.service" ];
       };
       Service = {
         Type = "simple";
         ExecStart = "${startScript}";
+        ExecStopPost = lib.mkIf useDocker "${pkgs.docker}/bin/docker rm -f litellm";
         Restart = "on-failure";
         RestartSec = 5;
       };

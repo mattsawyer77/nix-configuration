@@ -120,6 +120,7 @@ in
     ./modules/doom
     ./modules/git
     ./modules/helix
+    ./modules/litellm
   ];
   custom.shell.goPathSuffix = goPathSuffix;
   custom.tmux.optionOverrides = [
@@ -182,6 +183,8 @@ in
   };
   custom.litellm = {
     enable = true;
+    backend = "docker";
+    host = "0.0.0.0";
     environmentFile = "${homeDirectory}/.config/litellm/env";
     daemon = {
       enable = true;
