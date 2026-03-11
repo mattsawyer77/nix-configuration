@@ -7,6 +7,14 @@
 #     environmentFile = "/home/user/.config/litellm/env";
 #     daemon.enable = true;
 #   };
+#
+# The environment file must contain (at minimum):
+#   UPSTREAM_API_KEY=sk-your-upstream-key
+#   LITELLM_MASTER_KEY=sk-your-local-proxy-key
+#
+# Codex CLI (or any client) authenticates to the local proxy with
+# LITELLM_MASTER_KEY. LiteLLM then uses UPSTREAM_API_KEY when
+# forwarding requests to the upstream endpoint.
 {
   config,
   lib,
@@ -28,6 +36,9 @@ let
       request_timeout = cfg.requestTimeout;
     }
     // cfg.extraSettings;
+    general_settings = {
+      master_key = "os.environ/${cfg.masterKeyEnvVar}";
+    };
   };
 
   configFile = yamlFormat.generate "litellm_config.yaml" litellmConfig;
@@ -79,13 +90,24 @@ in
       '';
     };
 
+    masterKeyEnvVar = lib.mkOption {
+      type = lib.types.str;
+      default = "LITELLM_MASTER_KEY";
+      description = ''
+        Name of the environment variable holding the master key that clients
+        (e.g. Codex CLI) use to authenticate to this proxy. This prevents
+        the client-provided key from being forwarded to the upstream.
+      '';
+    };
+
     environmentFile = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
       default = null;
       description = ''
         Path to a file containing environment variables (KEY=value, one per line).
-        Must define at least the variable named by upstreamApiKeyEnvVar.
-        This file is NOT managed by Nix and must be created manually.
+        Must define at least the variables named by upstreamApiKeyEnvVar and
+        masterKeyEnvVar. This file is NOT managed by Nix and must be created
+        manually.
       '';
     };
 

@@ -1,12 +1,19 @@
 # installed via nix flake
-model = "gpt-5.3-codex"
 model_reasoning_effort = "high"
 personality = "pragmatic"
 
-model_provider = "f5ai"
+# model_provider = "f5ai"
+# model = "gpt-5.3-codex"
 [model_providers.f5ai]
 name = "f5ai"
 base_url = "https://f5ai.pd.f5net.com/openai"  
+
+model_provider = "haystack"
+model = "claude-opus-4-6"
+[model_providers.haystack]
+name = "haystack"
+base_url = "http://haystack:4000"  
+env_key = "LITELLM_MASTER_KEY"
 
 [projects."/Users/m.sawyer/workspaces/f5/volterra/ves.io/ares"]
 trust_level = "trusted"
