@@ -61,8 +61,9 @@ Guidance for agents working in this repository. These instructions apply to the 
 - Prefer evaluation before switching:
   - `nix flake show` to list outputs and verify attributes exist.
   - `nix eval .#darwinConfigurations.<host>.config.system.build.toplevel.drvPath` (or NixOS equivalent) to catch eval errors.
-- On macOS, run `darwin-rebuild check --flake .` before `switch`.
+- On macOS, run `darwin-rebuild check --flake .`. 
 - On NixOS, use `nixos-rebuild dry-activate --flake .` when possible.
+- Running `darwin-rebuild switch` or `nixos-rebuild switch` requires root, so don't run this yourself, but ask the user to do so.
 - Do not remove or rename files referenced by existing hosts without coordinating changes in `flake.nix`.
 
 ## Fonts & UI
