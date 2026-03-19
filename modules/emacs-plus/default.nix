@@ -1,9 +1,14 @@
 # Patched emacs-macport with community patches from emacs-plus.
 # Returns a derivation; any darwin host can import this with:
 #   emacs-plus = import ../modules/emacs-plus { inherit pkgs; };
+#
+# Pass emacs-vterm to bake the pre-built vterm native module into
+# site-lisp so Doom won't try to recompile it on every restart:
+#   emacs-plus = import ../modules/emacs-plus { inherit pkgs emacs-vterm; };
 {
   pkgs,
   basePackage ? pkgs.emacs-macport,
+  emacs-vterm ? null,
   extraPatches ? [],
   ...
 }:
@@ -36,4 +41,11 @@ basePackage.overrideAttrs (old: {
     ++ [
       "--with-poll"
     ];
+
+  postInstall =
+    (old.postInstall or "")
+    + pkgs.lib.optionalString (emacs-vterm != null) ''
+      cp ${emacs-vterm}/vterm.el $out/share/emacs/site-lisp/vterm.el
+      cp ${emacs-vterm}/vterm-module.so $out/share/emacs/site-lisp/vterm-module.so
+    '';
 })
