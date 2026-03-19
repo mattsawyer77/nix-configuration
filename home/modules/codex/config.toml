@@ -1,19 +1,21 @@
 # installed via nix flake
 model_reasoning_effort = "high"
 personality = "pragmatic"
+# model_provider = "haystack"
+# model = "claude-opus-4-6"
 
-# model_provider = "f5ai"
-# model = "gpt-5.3-codex"
+model_provider = "f5ai"
+model = "gpt-5.4"
 [model_providers.f5ai]
 name = "f5ai"
 base_url = "https://f5ai.pd.f5net.com/openai"  
 
-model_provider = "haystack"
-model = "claude-opus-4-6"
 [model_providers.haystack]
 name = "haystack"
-base_url = "http://haystack:4000"  
-env_key = "LITELLM_MASTER_KEY"
+base_url = "http://haystack:4000/v1"  
+env_key = "CODEX_PROXY_MASTER_KEY"
+model_context_window = 200000
+model_supports_reasoning_summaries = false
 
 [projects."/Users/m.sawyer/workspaces/f5/volterra/ves.io/ares"]
 trust_level = "trusted"
