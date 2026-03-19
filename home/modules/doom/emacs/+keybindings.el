@@ -7,7 +7,8 @@
 (map!
  :map general-override-mode-map
  :g "C-s" #'basic-save-buffer
- :g "s-t" #'eat-project
+ ;; :g "s-t" #'eat-project
+ :g "s-t" #'projectile-run-vterm-other-window
  :g "<f3>" #'rotate-layout
  :n "C-," (lambda ()
             (interactive)
@@ -37,6 +38,12 @@
   (:leader
    (:prefix ("o" . "+open")
     :desc "Open EAT" "e" #'eat-project
+    )))
+ (:after vterm
+  :nv "<f8>" #'projectile-run-vterm-other-window
+  (:leader
+   (:prefix ("o" . "+open")
+    :desc "Open term" "e" #'projectile-run-vterm-other-window
     )))
  ;; (:after flycheck
  ;; :leader

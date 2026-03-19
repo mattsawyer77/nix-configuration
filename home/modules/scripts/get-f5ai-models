@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+curl -sf \
+  -H "Authorization: Bearer $(security find-generic-password -s f5ai -a default -w)" \
+  "https://f5ai.pd.f5net.com/api/v1/models" |
+  jq -r '.data|map(.id)[]'
