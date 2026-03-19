@@ -1,5 +1,25 @@
 {
   "nodes": {
+    "codex-proxy": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1773266072,
+        "narHash": "sha256-V/zDm19ScVlkIocUkZZapU4p4pVuGiAmxumhJyOjJx4=",
+        "ref": "refs/heads/main",
+        "rev": "88730149dfa62e4faa48ce8237fafd61f5252461",
+        "revCount": 4,
+        "type": "git",
+        "url": "file:///Users/m.sawyer/workspaces/codex-proxy"
+      },
+      "original": {
+        "type": "git",
+        "url": "file:///Users/m.sawyer/workspaces/codex-proxy"
+      }
+    },
     "darwin": {
       "inputs": {
         "nixpkgs": [
@@ -349,6 +369,7 @@
     },
     "root": {
       "inputs": {
+        "codex-proxy": "codex-proxy",
         "darwin": "darwin",
         "duckduckgo-mcp-server": "duckduckgo-mcp-server",
         "emacs-vterm-src": "emacs-vterm-src",
