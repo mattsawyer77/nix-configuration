@@ -7,11 +7,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1773266072,
-        "narHash": "sha256-V/zDm19ScVlkIocUkZZapU4p4pVuGiAmxumhJyOjJx4=",
+        "lastModified": 1773335957,
+        "narHash": "sha256-/2XytOc1GzWEnpbEAb5v0yfHZoTG5XFkDZogRpBO+DU=",
         "ref": "refs/heads/main",
-        "rev": "88730149dfa62e4faa48ce8237fafd61f5252461",
-        "revCount": 4,
+        "rev": "9689f1c6528258b0e3bfc018c618baf02ef28c26",
+        "revCount": 5,
         "type": "git",
         "url": "file:///Users/m.sawyer/workspaces/codex-proxy"
       },
@@ -156,11 +156,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1772985285,
-        "narHash": "sha256-wEEmvfqJcl9J0wyMgMrj1TixOgInBW/6tLPhWGoZE3s=",
+        "lastModified": 1773952365,
+        "narHash": "sha256-temgIjfdoniHw2vvUGM/BgVgIUig0quH2ClRfSnNk94=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "5be5d8245cbc7bc0c09fbb5f38f23f223c543f85",
+        "rev": "9bc3ca1230d96119bdf61b9c3ec0c66a2b6eafdc",
         "type": "github"
       },
       "original": {
@@ -178,11 +178,11 @@
         "nixpkgs-unstable": "nixpkgs-unstable"
       },
       "locked": {
-        "lastModified": 1773077577,
-        "narHash": "sha256-agbQ1NM6pLEuJ/lzlhq09r7Anr1TfyIH+DFAfLtGtgo=",
+        "lastModified": 1773944504,
+        "narHash": "sha256-ByjnZYZHe7Cx9D8xNHrOq/0WPZDjpN9GL3ylkAnx77o=",
         "owner": "grafana",
         "repo": "loki",
-        "rev": "e569e10eecda48d303d37bca4c8187a50e6b450c",
+        "rev": "20ea556e7d2c8c2aee3a7ccfa98c5ac3480f58e7",
         "type": "github"
       },
       "original": {
@@ -256,10 +256,10 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1772956932,
-        "narHash": "sha256-M0yS4AafhKxPPmOHGqIV0iKxgNO8bHDWdl1kOwGBwRY=",
+        "lastModified": 1773628058,
+        "narHash": "sha256-hpXH0z3K9xv0fHaje136KY872VT2T5uwxtezlAskQgY=",
         "ref": "nixpkgs-unstable",
-        "rev": "608d0cadfed240589a7eea422407a547ad626a14",
+        "rev": "f8573b9c935cfaa162dd62cc9e75ae2db86f85df",
         "shallow": true,
         "type": "git",
         "url": "https://github.com/NixOS/nixpkgs"
