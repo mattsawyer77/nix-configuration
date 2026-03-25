@@ -404,7 +404,6 @@ Uses `org-hide-block-toggle' only when the block is currently visible."
   '(("^\\*eww\\*"         :side right  :slot 5 :vslot 5 :size 0.5)
     ("^\\*jq-json\\*"     :side right  :slot 5 :vslot 5 :size 0.5)
     ("^\\*eat"            :side right  :slot 5 :vslot 5 :size 0.5)
-    ("^\\*vterm"          :side right  :slot 5 :vslot 5 :size 0.5)
     ("^\\*gpt"            :side right  :slot 5 :vslot 5 :size 0.5 :select t)
     ("^\\*go-guru-output" :side bottom :size 5)))
 
@@ -413,8 +412,11 @@ Uses `org-hide-block-toggle' only when the block is currently visible."
   (setq vterm-shell "/bin/zsh"
         vterm-tramp-shells nil
         vterm-term-environment-variable "xterm-256color")
-  ;; (set-popup-rule! "^\\*doom:vterm.*" :ignore t)
-  )
+  ;; Exclude vterm from Doom's popup system so each tab's window
+  ;; configuration (managed by tab-bar-mode) keeps its own vterm
+  ;; independently.
+  (set-popup-rule! "^\\*vterm" :ignore t)
+  (set-popup-rule! "^\\*doom:vterm" :ignore t))
 (require 'vterm)
 
 (after! emacs-eat
