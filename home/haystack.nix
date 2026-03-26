@@ -5,8 +5,7 @@
   pkgs,
   username,
   ...
-}:
-let
+}: let
   homeDirectory = "/home/${username}";
   doomDirectory = ".doom.d";
   goPathSuffix = "gocode";
@@ -15,10 +14,9 @@ let
   # to update/regenerate, run node2nix -i <(echo '["bash-language-server", "prettier"]') --nodejs-18
   # then copy the resulting files into ./modules/npm-packages
   # npmPackages = import ./modules/npm-packages {inherit pkgs;};
-  homePackages =
-    with pkgs;
+  homePackages = with pkgs;
     [
-      (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
+      (google-cloud-sdk.withExtraComponents [google-cloud-sdk.components.gke-gcloud-auth-plugin])
       aws-iam-authenticator
       # azure-cli # broken with 2.78.0 ("claims_challenge" error)
       bash
@@ -111,8 +109,7 @@ let
     (homeDirectory + "/.cargo/bin")
     (homeDirectory + "/" + goPathSuffix + "/bin")
   ];
-in
-{
+in {
   imports = [
     ./modules/common-packages
     ./modules/common-shell
@@ -121,6 +118,7 @@ in
     ./modules/git
     ./modules/helix
     ./modules/codex-proxy
+    ./modules/opencode
   ];
   custom.shell.goPathSuffix = goPathSuffix;
   custom.tmux.optionOverrides = [
@@ -129,35 +127,35 @@ in
       value = ''
         fg="#888899",bg="#151e24"
       '';
-      flags = [ "global" ];
+      flags = ["global"];
     }
     {
       name = "window-status-last-style";
       value = ''
         fg="#888899",bg="#151e24"
       '';
-      flags = [ "global" ];
+      flags = ["global"];
     }
     {
       name = "window-status-current-style";
       value = ''
         fg="#ccccdd",bg="#4f4f58"
       '';
-      flags = [ "global" ];
+      flags = ["global"];
     }
     {
       name = "status-left";
       value = ''
         "#[bg=#439fad]#[fg=#151e24]#{?client_prefix,#[bg=green],} #S "
       '';
-      flags = [ "global" ];
+      flags = ["global"];
     }
     {
       name = "status-right";
       value = ''
         '#[bg=#202017]#[fg=#585865] %H:%M%Z #(TZ=UTC date +"(%%H:%%MUTC)") '
       '';
-      flags = [ "global" ];
+      flags = ["global"];
     }
     {
       name = "update-environment";
@@ -184,6 +182,42 @@ in
     daemon = {
       enable = true;
       autoStart = true;
+    };
+  };
+  custom.opencode = {
+    settings = {
+      "$schema" = "https://opencode.ai/config.json";
+      provider = {
+        f5ai = {
+          name = "f5ai";
+          options = {
+            baseURL = "https://f5ai.pd.f5net.com/openai";
+          };
+          models = {
+            "claude-opus-4-6" = {
+              name = "F5AI: Claude Opus 4.6";
+            };
+            "claude-sonnet-4-6" = {
+              name = "F5AI: Claude Sonnet 4.6";
+            };
+            "gpt-5.4" = {
+              name = "F5AI: GPT 5.4";
+            };
+          };
+          npm = "@ai-sdk/openai-compatible";
+        };
+      };
+      instructions = [
+        "*/AGENTS.md"
+        "AGENTS.md"
+        "README.md"
+        "*/README.md"
+        "pbdoc/docs.md"
+      ];
+      compaction = {
+        auto = true;
+        prune = true;
+      };
     };
   };
   custom.git = {
@@ -264,7 +298,7 @@ in
   programs.skim = {
     enable = true;
     enableZshIntegration = true;
-    defaultOptions = [ "--height 40%" ];
+    defaultOptions = ["--height 40%"];
   };
   programs.starship = {
     enable = true;

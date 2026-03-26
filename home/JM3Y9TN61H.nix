@@ -10,7 +10,8 @@
   duckduckgo-mcp-server,
   emacs-vterm-src,
   ...
-}: let
+}:
+let
   homeDirectory = "/Users/${username}";
   doomDirectory = ".doom.d";
   homeAppDirectory = "${homeDirectory}/Applications";
@@ -20,103 +21,105 @@
   mcp-server-tree-sitter-package = mcp-server-tree-sitter.packages.aarch64-darwin.default;
   mcpo-package = mcpo.packages.aarch64-darwin.default;
   duckduckgo-mcp-server-package = duckduckgo-mcp-server.packages.aarch64-darwin.default;
-  emacs-vterm = import ../modules/emacs-vterm {inherit pkgs emacs-vterm-src;};
-  emacs-plus = import ../modules/emacs-plus {inherit pkgs emacs-vterm;};
-  localScripts = with builtins;
+  emacs-vterm = import ../modules/emacs-vterm { inherit pkgs emacs-vterm-src; };
+  emacs-plus = import ../modules/emacs-plus { inherit pkgs emacs-vterm; };
+  localScripts =
+    with builtins;
     map
-    (
-      script: let
-        scriptName = baseNameOf script;
-        scriptContent = readFile script;
-      in
+      (
+        script:
+        let
+          scriptName = baseNameOf script;
+          scriptContent = readFile script;
+        in
         pkgs.writeShellScriptBin scriptName scriptContent
-    )
+      )
+      [
+        ./modules/scripts/acr-find-commit
+        ./modules/scripts/acr-find-digest
+        ./modules/scripts/acr-find-tag
+        ./modules/scripts/acr-login
+        ./modules/scripts/akarctl
+        ./modules/scripts/akardnsctl
+        ./modules/scripts/argo2mermaid
+        ./modules/scripts/aws-login
+        ./modules/scripts/az-login
+        ./modules/scripts/check-color
+        ./modules/scripts/check-required-tools
+        ./modules/scripts/disable-docker-write-through
+        ./modules/scripts/docker-shell
+        ./modules/scripts/doom-sync-files
+        ./modules/scripts/enable-docker-write-through
+        ./modules/scripts/env-compass-hostname
+        ./modules/scripts/env-gc-site
+        ./modules/scripts/env-site-fqdn
+        ./modules/scripts/etcd-get-raw
+        ./modules/scripts/find-image-data
+        ./modules/scripts/find-proto-import-path
+        ./modules/scripts/gc-crt-login
+        ./modules/scripts/gc-login
+        ./modules/scripts/gcr-digest
+        ./modules/scripts/gcr-info
+        ./modules/scripts/generate-lcov
+        ./modules/scripts/generate-protoc-import-dir-locals
+        ./modules/scripts/generate-tls-cert
+        ./modules/scripts/get-latest-ce-version
+        ./modules/scripts/get-f5ai-models
+        ./modules/scripts/git-cleanup-branches
+        ./modules/scripts/highlight
+        ./modules/scripts/hydra-emacs-overlay-revision
+        ./modules/scripts/introspect
+        ./modules/scripts/kcontainers
+        ./modules/scripts/klb
+        ./modules/scripts/ksvc
+        ./modules/scripts/launchctl-restart
+        ./modules/scripts/loki
+        ./modules/scripts/matrix-renew-cert
+        ./modules/scripts/matrix-renew-certs
+        ./modules/scripts/update-opencode-agents
+        ./modules/scripts/parse-schema-version
+        ./modules/scripts/png2icns
+        ./modules/scripts/run-docker
+        ./modules/scripts/set-image
+        ./modules/scripts/set-input-volume-percent
+        ./modules/scripts/setup-ce
+        ./modules/scripts/show-docker-cache-mode
+        ./modules/scripts/sic-multitrace
+        ./modules/scripts/site-public-ips
+        ./modules/scripts/site-terraform-output
+        ./modules/scripts/skopeo-acr-login
+        ./modules/scripts/skopeo-inspect
+        ./modules/scripts/skopeo-inspect-commit-log
+        ./modules/scripts/skopeo-inspect-digest
+        ./modules/scripts/skopeo-inspect-labels
+        ./modules/scripts/sre-model-find-commit
+        ./modules/scripts/sre-model-update-version
+        ./modules/scripts/streak-get-status-objects
+        ./modules/scripts/toggle-audio-input-mute
+        ./modules/scripts/tz
+        ./modules/scripts/wezterm-tab-switcher
+        ./modules/scripts/wz
+        ./modules/scripts/zoom-autofocus
+      ];
+  shellScriptWrappers = [
+    # enable `gsed` alias which calls gnused for compatibility with homebrew
+    (pkgs.writeShellScriptBin "gsed" ''exec ${pkgs.gnused}/bin/sed "$@"'')
+    # enable `gsort` alias which calls sort for compatibility with homebrew
+    (pkgs.writeShellScriptBin "gsort" ''exec ${pkgs.coreutils}/bin/sort "$@"'')
+    # enable `glibtool` alias which calls libtool for compatibility with homebrew
+    (pkgs.writeShellScriptBin "glibtool" ''exec ${pkgs.libtool}/bin/libtool "$@"'')
+    # enable `gxargs` alias which calls xargs for compatibility with homebrew
+    (pkgs.writeShellScriptBin "gxargs" ''exec ${pkgs.findutils}/bin/xargs "$@"'')
+    # enable `gtar` alias which calls gnu tar for compatibility with homebrew
+    (pkgs.writeShellScriptBin "gtar" ''exec ${pkgs.gnutar}/bin/tar "$@"'')
+    (pkgs.writeShellScriptBin "ghostty" ''exec ${ghosttyAppDirectory}/Contents/MacOS/ghostty "$@"'')
+    (pkgs.writeShellScriptBin "aws" ''exec /usr/local/bin/aws "$@"'') # remove if awscli becomes fast enough
+  ]
+  ++ localScripts;
+  homePackages =
+    with pkgs;
     [
-      ./modules/scripts/acr-find-commit
-      ./modules/scripts/acr-find-digest
-      ./modules/scripts/acr-find-tag
-      ./modules/scripts/acr-login
-      ./modules/scripts/akarctl
-      ./modules/scripts/akardnsctl
-      ./modules/scripts/argo2mermaid
-      ./modules/scripts/aws-login
-      ./modules/scripts/az-login
-      ./modules/scripts/check-color
-      ./modules/scripts/check-required-tools
-      ./modules/scripts/disable-docker-write-through
-      ./modules/scripts/docker-shell
-      ./modules/scripts/doom-sync-files
-      ./modules/scripts/enable-docker-write-through
-      ./modules/scripts/env-compass-hostname
-      ./modules/scripts/env-gc-site
-      ./modules/scripts/env-site-fqdn
-      ./modules/scripts/etcd-get-raw
-      ./modules/scripts/find-image-data
-      ./modules/scripts/find-proto-import-path
-      ./modules/scripts/gc-crt-login
-      ./modules/scripts/gc-login
-      ./modules/scripts/gcr-digest
-      ./modules/scripts/gcr-info
-      ./modules/scripts/generate-lcov
-      ./modules/scripts/generate-protoc-import-dir-locals
-      ./modules/scripts/generate-tls-cert
-      ./modules/scripts/get-latest-ce-version
-      ./modules/scripts/get-f5ai-models
-      ./modules/scripts/git-cleanup-branches
-      ./modules/scripts/highlight
-      ./modules/scripts/hydra-emacs-overlay-revision
-      ./modules/scripts/introspect
-      ./modules/scripts/kcontainers
-      ./modules/scripts/klb
-      ./modules/scripts/ksvc
-      ./modules/scripts/launchctl-restart
-      ./modules/scripts/loki
-      ./modules/scripts/matrix-renew-cert
-      ./modules/scripts/matrix-renew-certs
-      ./modules/scripts/update-opencode-agents
-      ./modules/scripts/parse-schema-version
-      ./modules/scripts/png2icns
-      ./modules/scripts/run-docker
-      ./modules/scripts/set-image
-      ./modules/scripts/set-input-volume-percent
-      ./modules/scripts/setup-ce
-      ./modules/scripts/show-docker-cache-mode
-      ./modules/scripts/sic-multitrace
-      ./modules/scripts/site-public-ips
-      ./modules/scripts/site-terraform-output
-      ./modules/scripts/skopeo-acr-login
-      ./modules/scripts/skopeo-inspect
-      ./modules/scripts/skopeo-inspect-commit-log
-      ./modules/scripts/skopeo-inspect-digest
-      ./modules/scripts/skopeo-inspect-labels
-      ./modules/scripts/sre-model-find-commit
-      ./modules/scripts/sre-model-update-version
-      ./modules/scripts/streak-get-status-objects
-      ./modules/scripts/toggle-audio-input-mute
-      ./modules/scripts/tz
-      ./modules/scripts/wezterm-tab-switcher
-      ./modules/scripts/wz
-      ./modules/scripts/zoom-autofocus
-    ];
-  shellScriptWrappers =
-    [
-      # enable `gsed` alias which calls gnused for compatibility with homebrew
-      (pkgs.writeShellScriptBin "gsed" ''exec ${pkgs.gnused}/bin/sed "$@"'')
-      # enable `gsort` alias which calls sort for compatibility with homebrew
-      (pkgs.writeShellScriptBin "gsort" ''exec ${pkgs.coreutils}/bin/sort "$@"'')
-      # enable `glibtool` alias which calls libtool for compatibility with homebrew
-      (pkgs.writeShellScriptBin "glibtool" ''exec ${pkgs.libtool}/bin/libtool "$@"'')
-      # enable `gxargs` alias which calls xargs for compatibility with homebrew
-      (pkgs.writeShellScriptBin "gxargs" ''exec ${pkgs.findutils}/bin/xargs "$@"'')
-      # enable `gtar` alias which calls gnu tar for compatibility with homebrew
-      (pkgs.writeShellScriptBin "gtar" ''exec ${pkgs.gnutar}/bin/tar "$@"'')
-      (pkgs.writeShellScriptBin "ghostty" ''exec ${ghosttyAppDirectory}/Contents/MacOS/ghostty "$@"'')
-      (pkgs.writeShellScriptBin "aws" ''exec /usr/local/bin/aws "$@"'') # remove if awscli becomes fast enough
-    ]
-    ++ localScripts;
-  homePackages = with pkgs;
-    [
-      (google-cloud-sdk.withExtraComponents [google-cloud-sdk.components.gke-gcloud-auth-plugin])
+      (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
       # aws-iam-authenticator
       # awscli2 # too slow, installing from AWS directly for now
       # azure-cli # broken as of 2025-08-29
@@ -221,7 +224,8 @@
     # rancher desktop
     (homeDirectory + "/" + ".rd/bin")
   ];
-in {
+in
+{
   imports = [
     ./modules/common-packages
     ./modules/common-shell
@@ -250,7 +254,7 @@ in {
       {
         name = "default-command";
         value = ''"reattach-to-user-namespace -l zsh"'';
-        flags = ["global"];
+        flags = [ "global" ];
       }
     ];
   };
@@ -270,25 +274,147 @@ in {
   custom.opencode = {
     settings = {
       "$schema" = "https://opencode.ai/config.json";
+      # plugin = [ "@tarquinen/opencode-dcp@latest" ];
       provider = {
-        f5ai = {
-          name = "f5ai";
+        f5ai-anthropic = {
+          models = {
+            claude-opus-4-6 = {
+              limit = {
+                context = 1000000;
+                output = 128000;
+              };
+              modalities = {
+                input = [
+                  "text"
+                  "image"
+                ];
+                output = [ "text" ];
+              };
+              name = "F5AI: Claude Opus 4.6";
+              options = {
+                thinking = {
+                  type = "adaptive";
+                };
+              };
+              reasoning = true;
+              variants = {
+                off = {
+                  thinking = {
+                    type = "disabled";
+                  };
+                };
+              };
+            };
+            claude-sonnet-4-6 = {
+              limit = {
+                context = 1000000;
+                output = 128000;
+              };
+              modalities = {
+                input = [
+                  "text"
+                  "image"
+                ];
+                output = [ "text" ];
+              };
+              name = "F5AI: Claude Sonnet 4.6";
+              options = {
+                thinking = {
+                  type = "adaptive";
+                };
+              };
+              reasoning = true;
+              variants = {
+                off = {
+                  thinking = {
+                    type = "disabled";
+                  };
+                };
+              };
+            }; # sonnet 4.6
+            claude-haiku-4-5 = {
+              limit = {
+                context = 200000;
+                output = 64000;
+              };
+              modalities = {
+                input = [
+                  "text"
+                  "image"
+                ];
+                output = [ "text" ];
+              };
+              name = "F5AI: Claude Haiku 4.5";
+            }; # haiku 4.5
+          }; # anthropic models
+          name = "F5AI (Anthropic)";
+          npm = "@ai-sdk/anthropic";
+          options = {
+            baseURL = "https://f5ai.pd.f5net.com/anthropic/v1";
+            headers = {
+              anthropic-beta = "interleaved-thinking-2025-05-14";
+            };
+          };
+        }; # anthropic provider
+        f5ai-openai = {
+          models = {
+            "gpt-5.3-codex" = {
+              limit = {
+                context = 272000;
+                output = 128000;
+              };
+              modalities = {
+                input = [
+                  "text"
+                  "image"
+                ];
+                output = [ "text" ];
+              };
+              name = "F5AI: GPT 5.3 Codex";
+              reasoning = true;
+              release_date = "2026-02-01";
+            }; # codex 5.3
+            "gpt-5.4" = {
+              limit = {
+                context = 200000;
+                output = 128000;
+              };
+              modalities = {
+                input = [
+                  "text"
+                  "image"
+                ];
+                output = [ "text" ];
+              };
+              name = "F5AI: GPT 5.4";
+              reasoning = true;
+              release_date = "2026-03-01";
+            }; # gpt 5.4
+          }; # openai models
+          name = "F5AI (OpenAI)";
+          npm = "@ai-sdk/openai";
           options = {
             baseURL = "https://f5ai.pd.f5net.com/openai";
           };
-          models = {
-            "claude-opus-4-6" = {
-              name = "F5AI: Claude Opus 4.6";
-            };
-            "claude-sonnet-4-6" = {
-              name = "F5AI: Claude Sonnet 4.6";
-            };
-            "gpt-5.4" = {
-              name = "F5AI: GPT 5.4";
-            };
-          };
-          npm = "@ai-sdk/openai-compatible";
-        };
+        }; # openai provider
+        # f5ai = {
+        #   name = "f5ai";
+        #   options = {
+        #     baseURL = "https://f5ai.pd.f5net.com/openai";
+        #   };
+        #   models = {
+        #     "claude-opus-4-6" = {
+        #       name = "F5AI: Claude Opus 4.6";
+        #     };
+        #     "claude-sonnet-4-6" = {
+        #       name = "F5AI: Claude Sonnet 4.6";
+        #     };
+        #     "gpt-5.4" = {
+        #       name = "F5AI: GPT 5.4";
+        #     };
+        #   };
+        #   npm = "@ai-sdk/openai-compatible";
+        # };
       };
       instructions = [
         "*/AGENTS.md"

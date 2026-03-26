@@ -5,10 +5,20 @@ personality = "pragmatic"
 # model = "claude-opus-4-6"
 
 model_provider = "f5ai"
-model = "gpt-5.4"
+
 [model_providers.f5ai]
 name = "f5ai"
 base_url = "https://f5ai.pd.f5net.com/openai"  
+model = "gpt-5.4"
+model_context_window = 1000000
+model_auto_compact_token_limit = 800000
+
+[model_providers.f5ai-anthropic]
+name = "f5ai-anthropic"
+base_url = "https://f5ai.pd.f5net.com/anthropic/v1"  
+model = "claude-opus-4-6"
+model_context_window = 1000000
+model_auto_compact_token_limit = 800000
 
 [model_providers.haystack]
 name = "haystack"
@@ -37,3 +47,7 @@ theme = "1337"
 
 [features]
 prevent_idle_sleep = true
+rmcp_client = true
+
+[mcp_servers.GitLab]
+url = "https://gitlab.com/api/v4/mcp"

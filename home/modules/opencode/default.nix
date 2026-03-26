@@ -175,6 +175,11 @@ in {
   config = lib.mkMerge [
     # Always configure opencode
     {
+      # Deploy the notification plugin to ~/.config/opencode/plugins/
+      home.file.".config/opencode/plugins/notification.ts" = {
+        source = ./plugins/notification.ts;
+      };
+
       programs.opencode = {
         enable = true;
         settings =
