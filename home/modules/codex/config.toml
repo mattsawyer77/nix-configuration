@@ -1,10 +1,10 @@
 # installed via nix flake
 model_reasoning_effort = "high"
 personality = "pragmatic"
-# model_provider = "haystack"
-# model = "claude-opus-4-6"
-
 model_provider = "f5ai"
+model = "gpt-5.4"
+model_context_window = 1000000
+model_auto_compact_token_limit = 800000
 
 [model_providers.f5ai]
 name = "f5ai"
@@ -13,18 +13,10 @@ model = "gpt-5.4"
 model_context_window = 1000000
 model_auto_compact_token_limit = 800000
 
-[model_providers.f5ai-anthropic]
-name = "f5ai-anthropic"
-base_url = "https://f5ai.pd.f5net.com/anthropic/v1"  
-model = "claude-opus-4-6"
-model_context_window = 1000000
-model_auto_compact_token_limit = 800000
-
 [model_providers.haystack]
 name = "haystack"
 base_url = "http://haystack:4000/v1"  
 env_key = "CODEX_PROXY_MASTER_KEY"
-model_context_window = 200000
 model_supports_reasoning_summaries = false
 
 [projects."/Users/m.sawyer/workspaces/f5/volterra/ves.io/ares"]
@@ -51,3 +43,15 @@ rmcp_client = true
 
 [mcp_servers.GitLab]
 url = "https://gitlab.com/api/v4/mcp"
+
+# [mcp_servers.Atlassian]
+# command = "uvx"
+# args = ["mcp-atlassian"]
+# env_vars = [
+#   "JIRA_URL",
+#   "JIRA_PERSONAL_TOKEN",
+#   "JIRA_SSL_VERIFY",
+#   "CONFLUENCE_URL",
+#   "CONFLUENCE_PERSONAL_TOKEN",
+#   "CONFLUENCE_SSL_VERIFY",
+# ]

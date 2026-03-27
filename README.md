@@ -89,3 +89,33 @@ The following commands should be run from the local clone's dir.
     darwin-rebuild switch --flake ${REPO_ROOT}
     ```
 
+---
+
+## Codex MCP (Jira + Confluence, self-hosted)
+
+This repo now configures a local Codex MCP server named `Atlassian` using `uvx mcp-atlassian`.
+
+Credentials are not stored in this repo and should not be put in Nix configuration values (which end up in the Nix store). Use local environment variables instead.
+
+Example local secret file (outside this repo):
+
+```sh
+mkdir -p ~/.codex
+cat > ~/.codex/mcp-atlassian.env <<'EOF'
+export JIRA_URL='https://jira.example.internal'
+export JIRA_PERSONAL_TOKEN='...'
+export CONFLUENCE_URL='https://confluence.example.internal'
+export CONFLUENCE_PERSONAL_TOKEN='...'
+# Optional for private CA/self-signed certs:
+# export JIRA_SSL_VERIFY='false'
+# export CONFLUENCE_SSL_VERIFY='false'
+EOF
+chmod 600 ~/.codex/mcp-atlassian.env
+```
+
+Load it before starting Codex:
+
+```sh
+source ~/.codex/mcp-atlassian.env
+codex
+```

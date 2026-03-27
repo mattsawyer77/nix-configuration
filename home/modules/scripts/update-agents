@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+agentDir=${HOME}/.agents
+
+_cleanup() {
+  local _exitCode=$1
+  local _tempDir=$2
+  popd >/dev/null
+  if [[ -d "$tempDir" ]]; then
+    rm -rf "$tempDir"
+  fi
+  if [[ "$_exitCode" -ne 0 ]]; then
+    # restore backups
+    if [[ -d "${agentDir}/skills/xc-agents.backup" ]]; then
+      mv "${agentDir}/skills/xc-agents.backup" "${agentDir}/skills/xc-agents"
+    fi
+    if [[ -d "${agentDir}/skills/superpowers.backup" ]]; then
+      mv "${agentDir}/skills/superpowers.backup" "${agentDir}/skills/superpowers"
+    fi
+  else
+    rm -rf "${agentDir}/skills/xc-agents.backup" || :
+    rm -rf "${agentDir}/skills/superpowers.backup" || :
+  fi
+}
+
+set -eEuo pipefail
+tempDir=$(mktemp -d)
+pushd "$tempDir" >/dev/null
+trap '_cleanup $? $tempDir' EXIT
+
+# xc-agents
+if [[ -d "${agentDir}/skills/xc-agents" ]]; then
+  mv "${agentDir}/skills/xc-agents" "${agentDir}/skills/xc-agents.backup"
+fi
+mkdir -p "${agentDir}/skills/xc-agents"
+git archive --remote=git@gitlab.com:f5/volterra/ves.io/xc-agents.git main skills |
+  tar -C "${agentDir}/skills/xc-agents" --strip-components=1 -x -v -f -
+
+# superpowers
+superpowersInfo=$(curl -sf https://api.github.com/repos/obra/superpowers/releases/latest | jq -r '{tag_name, tarball_url}')
+superpowersURL=$(jq -r .tarball_url <<<"$superpowersInfo")
+curl -sfL "$superpowersURL" | tar -zxvf - --strip-components=1
+if [[ -d "${agentDir}/skills/superpowers" ]]; then
+  mv "${agentDir}/skills/superpowers" "${agentDir}/skills/superpowers.backup"
+fi
+mkdir "${agentDir}/skills/superpowers"
+cp -av skills/* "${agentDir}/skills/superpowers/"
