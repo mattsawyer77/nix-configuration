@@ -64,9 +64,10 @@
 
 ;;; XXX: not working
 ;; (after! (evil-nerd-commenter evil-commands)
-(add-hook! prog-mode
+
+(add-hook! (prog-mode conf-toml-mode conf-mode yaml-mode yaml-ts-mode toml-ts-mode)
   (map! :map general-override-mode-map
-        :mode (prog-mode yaml-mode yaml-ts-mode)
+        :mode (prog-mode conf-toml-mode conf-mode yaml-mode yaml-ts-mode toml-ts-mode)
         :nv "#" #'evilnc-comment-or-uncomment-lines
         :nv "TAB" #'evil-jump-item))
 

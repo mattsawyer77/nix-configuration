@@ -53,6 +53,7 @@ Guidance for agents working in this repository. These instructions apply to the 
 
 - Add a module: create `modules/<feature>/default.nix`, expose options guarded by `enable`. Import from target hosts.
 - Update or refactor emacs configuration in `home/doom/emacs/*.el`
+- Debug emacs issues against the installed emacs files in `~/.doom.d`
 - Extend Home Manager config: update the relevant `home/<host>.nix` and shared modules. Keep host overrides minimal.
 - Add a new host: create `home/<hostname>.nix` (and `hardware/<hostname>.nix` for NixOS), wire it in `flake.nix`, validate builds.
 
