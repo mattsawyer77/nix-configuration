@@ -20,86 +20,91 @@
   mcp-server-tree-sitter-package = mcp-server-tree-sitter.packages.aarch64-darwin.default;
   mcpo-package = mcpo.packages.aarch64-darwin.default;
   duckduckgo-mcp-server-package = duckduckgo-mcp-server.packages.aarch64-darwin.default;
-  emacs-vterm = import ../modules/emacs-vterm { inherit pkgs emacs-vterm-src; };
-  emacs-plus = import ../modules/emacs-plus { inherit pkgs emacs-vterm; };
-  localScripts =
-    with builtins;
+  emacs-vterm = import ../modules/emacs-vterm {inherit pkgs emacs-vterm-src;};
+  emacs-plus = import ../modules/emacs-plus {inherit pkgs emacs-vterm;};
+  localScriptPaths = [
+    ./modules/scripts/acr-find-commit
+    ./modules/scripts/acr-find-digest
+    ./modules/scripts/acr-find-tag
+    ./modules/scripts/acr-login
+    ./modules/scripts/akarctl
+    ./modules/scripts/akardnsctl
+    ./modules/scripts/argo2mermaid
+    ./modules/scripts/aws-login
+    ./modules/scripts/az-login
+    ./modules/scripts/check-color
+    ./modules/scripts/check-required-tools
+    ./modules/scripts/disable-docker-write-through
+    ./modules/scripts/docker-shell
+    ./modules/scripts/doom-sync-files
+    ./modules/scripts/enable-docker-write-through
+    ./modules/scripts/env-compass-hostname
+    ./modules/scripts/env-gc-site
+    ./modules/scripts/env-site-fqdn
+    ./modules/scripts/etcd-get-raw
+    ./modules/scripts/find-image-data
+    ./modules/scripts/find-proto-import-path
+    ./modules/scripts/gc-crt-login
+    ./modules/scripts/gc-login
+    ./modules/scripts/gcr-digest
+    ./modules/scripts/gcr-info
+    ./modules/scripts/generate-lcov
+    ./modules/scripts/generate-protoc-import-dir-locals
+    ./modules/scripts/generate-tls-cert
+    ./modules/scripts/get-latest-ce-version
+    ./modules/scripts/get-f5ai-models
+    ./modules/scripts/git-cleanup-branches
+    ./modules/scripts/highlight
+    ./modules/scripts/hydra-emacs-overlay-revision
+    ./modules/scripts/introspect
+    ./modules/scripts/kcontainers
+    ./modules/scripts/klb
+    ./modules/scripts/ksvc
+    ./modules/scripts/launchctl-restart
+    ./modules/scripts/loki
+    ./modules/scripts/matrix-renew-cert
+    ./modules/scripts/matrix-renew-certs
+    ./modules/scripts/update-opencode-agents
+    ./modules/scripts/parse-schema-version
+    ./modules/scripts/png2icns
+    ./modules/scripts/run-docker
+    ./modules/scripts/set-image
+    ./modules/scripts/set-input-volume-percent
+    ./modules/scripts/setup-ce
+    ./modules/scripts/show-docker-cache-mode
+    ./modules/scripts/sic-multitrace
+    ./modules/scripts/site-public-ips
+    ./modules/scripts/site-terraform-output
+    ./modules/scripts/skopeo-acr-login
+    ./modules/scripts/skopeo-inspect
+    ./modules/scripts/skopeo-inspect-commit-log
+    ./modules/scripts/skopeo-inspect-digest
+    ./modules/scripts/skopeo-inspect-labels
+    ./modules/scripts/sre-model-find-commit
+    ./modules/scripts/sre-model-update-version
+    ./modules/scripts/streak-get-status-objects
+    ./modules/scripts/toggle-audio-input-mute
+    ./modules/scripts/tz
+    ./modules/scripts/wezterm-tab-switcher
+    ./modules/scripts/wz
+    ./modules/scripts/zoom-autofocus
+  ];
+  localScripts = builtins.listToAttrs (
     map
-      (
-        script:
-        let
-          scriptName = baseNameOf script;
-          scriptContent = readFile script;
-        in
-        pkgs.writeShellScriptBin scriptName scriptContent
-      )
-      [
-        ./modules/scripts/acr-find-commit
-        ./modules/scripts/acr-find-digest
-        ./modules/scripts/acr-find-tag
-        ./modules/scripts/acr-login
-        ./modules/scripts/akarctl
-        ./modules/scripts/akardnsctl
-        ./modules/scripts/argo2mermaid
-        ./modules/scripts/aws-login
-        ./modules/scripts/az-login
-        ./modules/scripts/check-color
-        ./modules/scripts/check-required-tools
-        ./modules/scripts/disable-docker-write-through
-        ./modules/scripts/docker-shell
-        ./modules/scripts/doom-sync-files
-        ./modules/scripts/enable-docker-write-through
-        ./modules/scripts/env-compass-hostname
-        ./modules/scripts/env-gc-site
-        ./modules/scripts/env-site-fqdn
-        ./modules/scripts/etcd-get-raw
-        ./modules/scripts/find-image-data
-        ./modules/scripts/find-proto-import-path
-        ./modules/scripts/gc-crt-login
-        ./modules/scripts/gc-login
-        ./modules/scripts/gcr-digest
-        ./modules/scripts/gcr-info
-        ./modules/scripts/generate-lcov
-        ./modules/scripts/generate-protoc-import-dir-locals
-        ./modules/scripts/generate-tls-cert
-        ./modules/scripts/get-latest-ce-version
-        ./modules/scripts/get-f5ai-models
-        ./modules/scripts/git-cleanup-branches
-        ./modules/scripts/highlight
-        ./modules/scripts/hydra-emacs-overlay-revision
-        ./modules/scripts/introspect
-        ./modules/scripts/kcontainers
-        ./modules/scripts/klb
-        ./modules/scripts/ksvc
-        ./modules/scripts/launchctl-restart
-        ./modules/scripts/loki
-        ./modules/scripts/matrix-renew-cert
-        ./modules/scripts/matrix-renew-certs
-        ./modules/scripts/update-opencode-agents
-        ./modules/scripts/parse-schema-version
-        ./modules/scripts/png2icns
-        ./modules/scripts/run-docker
-        ./modules/scripts/set-image
-        ./modules/scripts/set-input-volume-percent
-        ./modules/scripts/setup-ce
-        ./modules/scripts/show-docker-cache-mode
-        ./modules/scripts/sic-multitrace
-        ./modules/scripts/site-public-ips
-        ./modules/scripts/site-terraform-output
-        ./modules/scripts/skopeo-acr-login
-        ./modules/scripts/skopeo-inspect
-        ./modules/scripts/skopeo-inspect-commit-log
-        ./modules/scripts/skopeo-inspect-digest
-        ./modules/scripts/skopeo-inspect-labels
-        ./modules/scripts/sre-model-find-commit
-        ./modules/scripts/sre-model-update-version
-        ./modules/scripts/streak-get-status-objects
-        ./modules/scripts/toggle-audio-input-mute
-        ./modules/scripts/tz
-        ./modules/scripts/wezterm-tab-switcher
-        ./modules/scripts/wz
-        ./modules/scripts/zoom-autofocus
-      ];
+    (
+      script: let
+        scriptName = builtins.baseNameOf script;
+      in {
+        name = scriptName;
+        value = {
+          text = builtins.readFile script;
+          target = "${localBinPath}/${scriptName}";
+          executable = true;
+        };
+      }
+    )
+    localScriptPaths
+  );
   shellScriptWrappers = [
     # enable `gsed` alias which calls gnused for compatibility with homebrew
     (pkgs.writeShellScriptBin "gsed" ''exec ${pkgs.gnused}/bin/sed "$@"'')
@@ -113,10 +118,8 @@
     (pkgs.writeShellScriptBin "gtar" ''exec ${pkgs.gnutar}/bin/tar "$@"'')
     (pkgs.writeShellScriptBin "ghostty" ''exec ${ghosttyAppDirectory}/Contents/MacOS/ghostty "$@"'')
     (pkgs.writeShellScriptBin "aws" ''exec /usr/local/bin/aws "$@"'') # remove if awscli becomes fast enough
-  ]
-  ++ localScripts;
-  homePackages =
-    with pkgs;
+  ];
+  homePackages = with pkgs;
     [
       (google-cloud-sdk.withExtraComponents [google-cloud-sdk.components.gke-gcloud-auth-plugin])
       # aws-iam-authenticator
@@ -532,16 +535,20 @@ in {
     # append these extra dirs to the nix-generated path
     sessionPath = extraPaths;
     sessionVariables = envVars;
-    file.".gitconfig" = {
-      source = ./modules/git/config;
-      target = homeDirectory + "/.config/git/config";
-      force = true;
-    };
-    file.".gitignore" = {
-      source = ./modules/git/ignore;
-      target = homeDirectory + "/.config/git/ignore";
-      force = true;
-    };
+    file =
+      localScripts
+      // {
+        ".gitconfig" = {
+          source = ./modules/git/config;
+          target = homeDirectory + "/.config/git/config";
+          force = true;
+        };
+        ".gitignore" = {
+          source = ./modules/git/ignore;
+          target = homeDirectory + "/.config/git/ignore";
+          force = true;
+        };
+      };
   };
   programs.home-manager.enable = true;
   programs.zsh = {
