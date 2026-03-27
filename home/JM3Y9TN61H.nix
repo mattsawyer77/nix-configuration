@@ -10,8 +10,7 @@
   duckduckgo-mcp-server,
   emacs-vterm-src,
   ...
-}:
-let
+}: let
   homeDirectory = "/Users/${username}";
   doomDirectory = ".doom.d";
   homeAppDirectory = "${homeDirectory}/Applications";
@@ -119,7 +118,7 @@ let
   homePackages =
     with pkgs;
     [
-      (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
+      (google-cloud-sdk.withExtraComponents [google-cloud-sdk.components.gke-gcloud-auth-plugin])
       # aws-iam-authenticator
       # awscli2 # too slow, installing from AWS directly for now
       # azure-cli # broken as of 2025-08-29
@@ -137,7 +136,7 @@ let
       gcov2lcov
       git
       github-mcp-server
-      # glab
+      glab
       gnused
       gnutar
       go
@@ -175,6 +174,7 @@ let
       # repomix # too old at 1.3.0, install via npm
       ripgrep
       # terraform
+      uv
       vendir
       watch
       xan
@@ -224,8 +224,7 @@ let
     # rancher desktop
     (homeDirectory + "/" + ".rd/bin")
   ];
-in
-{
+in {
   imports = [
     ./modules/common-packages
     ./modules/common-shell
@@ -254,7 +253,7 @@ in
       {
         name = "default-command";
         value = ''"reattach-to-user-namespace -l zsh"'';
-        flags = [ "global" ];
+        flags = ["global"];
       }
     ];
   };
@@ -288,7 +287,7 @@ in
                   "text"
                   "image"
                 ];
-                output = [ "text" ];
+                output = ["text"];
               };
               name = "F5AI: Claude Opus 4.6";
               options = {
@@ -315,7 +314,7 @@ in
                   "text"
                   "image"
                 ];
-                output = [ "text" ];
+                output = ["text"];
               };
               name = "F5AI: Claude Sonnet 4.6";
               options = {
@@ -342,7 +341,7 @@ in
                   "text"
                   "image"
                 ];
-                output = [ "text" ];
+                output = ["text"];
               };
               name = "F5AI: Claude Haiku 4.5";
             }; # haiku 4.5
@@ -368,7 +367,7 @@ in
                   "text"
                   "image"
                 ];
-                output = [ "text" ];
+                output = ["text"];
               };
               name = "F5AI: GPT 5.3 Codex";
               reasoning = true;
@@ -384,7 +383,7 @@ in
                   "text"
                   "image"
                 ];
-                output = [ "text" ];
+                output = ["text"];
               };
               name = "F5AI: GPT 5.4";
               reasoning = true;
