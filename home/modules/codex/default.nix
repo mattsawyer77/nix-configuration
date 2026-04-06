@@ -11,6 +11,16 @@
       target = "${config.home.homeDirectory}/.codex/config.toml";
       force = true;
     };
+    home.file."codex-worker-gpt53-agent" = {
+      source = ./agents/worker-gpt53-codex.toml;
+      target = "${config.home.homeDirectory}/.codex/agents/worker-gpt53-codex.toml";
+      force = true;
+    };
+    home.file."codex-explorer-gpt54-agent" = {
+      source = ./agents/explorer-gpt54-codex.toml;
+      target = "${config.home.homeDirectory}/.codex/agents/explorer-gpt54-codex.toml";
+      force = true;
+    };
     home.activation = {
       codex = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         echo "updating codex..."

@@ -10,7 +10,8 @@
   duckduckgo-mcp-server,
   emacs-vterm-src,
   ...
-}: let
+}:
+let
   homeDirectory = "/Users/${username}";
   doomDirectory = ".doom.d";
   homeAppDirectory = "${homeDirectory}/Applications";
@@ -20,8 +21,8 @@
   mcp-server-tree-sitter-package = mcp-server-tree-sitter.packages.aarch64-darwin.default;
   mcpo-package = mcpo.packages.aarch64-darwin.default;
   duckduckgo-mcp-server-package = duckduckgo-mcp-server.packages.aarch64-darwin.default;
-  emacs-vterm = import ../modules/emacs-vterm {inherit pkgs emacs-vterm-src;};
-  emacs-plus = import ../modules/emacs-plus {inherit pkgs emacs-vterm;};
+  emacs-vterm = import ../modules/emacs-vterm { inherit pkgs emacs-vterm-src; };
+  emacs-plus = import ../modules/emacs-plus { inherit pkgs emacs-vterm; };
   localScriptPaths = [
     ./modules/scripts/acr-find-commit
     ./modules/scripts/acr-find-digest
@@ -90,11 +91,12 @@
     ./modules/scripts/zoom-autofocus
   ];
   localScripts = builtins.listToAttrs (
-    map
-    (
-      script: let
+    map (
+      script:
+      let
         scriptName = builtins.baseNameOf script;
-      in {
+      in
+      {
         name = scriptName;
         value = {
           text = builtins.readFile script;
@@ -102,8 +104,7 @@
           executable = true;
         };
       }
-    )
-    localScriptPaths
+    ) localScriptPaths
   );
   shellScriptWrappers = [
     # enable `gsed` alias which calls gnused for compatibility with homebrew
@@ -119,14 +120,16 @@
     (pkgs.writeShellScriptBin "ghostty" ''exec ${ghosttyAppDirectory}/Contents/MacOS/ghostty "$@"'')
     (pkgs.writeShellScriptBin "aws" ''exec /usr/local/bin/aws "$@"'') # remove if awscli becomes fast enough
   ];
-  homePackages = with pkgs;
+  homePackages =
+    with pkgs;
     [
-      (google-cloud-sdk.withExtraComponents [google-cloud-sdk.components.gke-gcloud-auth-plugin])
+      (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
       # aws-iam-authenticator
       # awscli2 # too slow, installing from AWS directly for now
       # azure-cli # broken as of 2025-08-29
       bazelisk
       buf
+      bun
       cachix
       # ccls
       certigo
@@ -154,7 +157,8 @@
       kluctl
       kubecolor
       kubectl
-      # llama-cpp
+      llama-cpp
+      llmfit
       libiconv
       darwin.libresolv
       # lua
@@ -163,7 +167,7 @@
       # mockgen
       ncurses
       nix-tree
-      # ollama # seems to be broken as of 2025-11-18
+      ollama # seems to be broken as of 2025-11-18
       opencode
       # openldap
       pcre
@@ -227,7 +231,8 @@
     # rancher desktop
     (homeDirectory + "/" + ".rd/bin")
   ];
-in {
+in
+{
   imports = [
     ./modules/common-packages
     ./modules/common-shell
@@ -256,7 +261,7 @@ in {
       {
         name = "default-command";
         value = ''"reattach-to-user-namespace -l zsh"'';
-        flags = ["global"];
+        flags = [ "global" ];
       }
     ];
   };
@@ -278,86 +283,86 @@ in {
       "$schema" = "https://opencode.ai/config.json";
       # plugin = [ "@tarquinen/opencode-dcp@latest" ];
       provider = {
-        f5ai-anthropic = {
-          models = {
-            claude-opus-4-6 = {
-              limit = {
-                context = 1000000;
-                output = 128000;
-              };
-              modalities = {
-                input = [
-                  "text"
-                  "image"
-                ];
-                output = ["text"];
-              };
-              name = "F5AI: Claude Opus 4.6";
-              options = {
-                thinking = {
-                  type = "adaptive";
-                };
-              };
-              reasoning = true;
-              variants = {
-                off = {
-                  thinking = {
-                    type = "disabled";
-                  };
-                };
-              };
-            };
-            claude-sonnet-4-6 = {
-              limit = {
-                context = 1000000;
-                output = 128000;
-              };
-              modalities = {
-                input = [
-                  "text"
-                  "image"
-                ];
-                output = ["text"];
-              };
-              name = "F5AI: Claude Sonnet 4.6";
-              options = {
-                thinking = {
-                  type = "adaptive";
-                };
-              };
-              reasoning = true;
-              variants = {
-                off = {
-                  thinking = {
-                    type = "disabled";
-                  };
-                };
-              };
-            }; # sonnet 4.6
-            claude-haiku-4-5 = {
-              limit = {
-                context = 200000;
-                output = 64000;
-              };
-              modalities = {
-                input = [
-                  "text"
-                  "image"
-                ];
-                output = ["text"];
-              };
-              name = "F5AI: Claude Haiku 4.5";
-            }; # haiku 4.5
-          }; # anthropic models
-          name = "F5AI (Anthropic)";
-          npm = "@ai-sdk/anthropic";
-          options = {
-            baseURL = "https://f5ai.pd.f5net.com/anthropic/v1";
-            headers = {
-              anthropic-beta = "interleaved-thinking-2025-05-14";
-            };
-          };
-        }; # anthropic provider
+        # f5ai-anthropic = {
+        #   models = {
+        #     claude-opus-4-6 = {
+        #       limit = {
+        #         context = 1000000;
+        #         output = 128000;
+        #       };
+        #       modalities = {
+        #         input = [
+        #           "text"
+        #           "image"
+        #         ];
+        #         output = [ "text" ];
+        #       };
+        #       name = "F5AI: Claude Opus 4.6";
+        #       options = {
+        #         thinking = {
+        #           type = "adaptive";
+        #         };
+        #       };
+        #       reasoning = true;
+        #       variants = {
+        #         off = {
+        #           thinking = {
+        #             type = "disabled";
+        #           };
+        #         };
+        #       };
+        #     };
+        #     claude-sonnet-4-6 = {
+        #       limit = {
+        #         context = 1000000;
+        #         output = 128000;
+        #       };
+        #       modalities = {
+        #         input = [
+        #           "text"
+        #           "image"
+        #         ];
+        #         output = [ "text" ];
+        #       };
+        #       name = "F5AI: Claude Sonnet 4.6";
+        #       options = {
+        #         thinking = {
+        #           type = "adaptive";
+        #         };
+        #       };
+        #       reasoning = true;
+        #       variants = {
+        #         off = {
+        #           thinking = {
+        #             type = "disabled";
+        #           };
+        #         };
+        #       };
+        #     }; # sonnet 4.6
+        #     claude-haiku-4-5 = {
+        #       limit = {
+        #         context = 200000;
+        #         output = 64000;
+        #       };
+        #       modalities = {
+        #         input = [
+        #           "text"
+        #           "image"
+        #         ];
+        #         output = [ "text" ];
+        #       };
+        #       name = "F5AI: Claude Haiku 4.5";
+        #     }; # haiku 4.5
+        #   }; # anthropic models
+        #   name = "F5AI (Anthropic)";
+        #   npm = "@ai-sdk/anthropic";
+        #   options = {
+        #     baseURL = "https://f5ai.pd.f5net.com/anthropic/v1";
+        #     headers = {
+        #       anthropic-beta = "interleaved-thinking-2025-05-14";
+        #     };
+        #   };
+        # }; # anthropic provider
         f5ai-openai = {
           models = {
             "gpt-5.3-codex" = {
@@ -370,7 +375,7 @@ in {
                   "text"
                   "image"
                 ];
-                output = ["text"];
+                output = [ "text" ];
               };
               name = "F5AI: GPT 5.3 Codex";
               reasoning = true;
@@ -386,7 +391,7 @@ in {
                   "text"
                   "image"
                 ];
-                output = ["text"];
+                output = [ "text" ];
               };
               name = "F5AI: GPT 5.4";
               reasoning = true;
@@ -399,25 +404,20 @@ in {
             baseURL = "https://f5ai.pd.f5net.com/openai";
           };
         }; # openai provider
-        # f5ai = {
-        #   name = "f5ai";
-        #   options = {
-        #     baseURL = "https://f5ai.pd.f5net.com/openai";
-        #   };
-        #   models = {
-        #     "claude-opus-4-6" = {
-        #       name = "F5AI: Claude Opus 4.6";
-        #     };
-        #     "claude-sonnet-4-6" = {
-        #       name = "F5AI: Claude Sonnet 4.6";
-        #     };
-        #     "gpt-5.4" = {
-        #       name = "F5AI: GPT 5.4";
-        #     };
-        #   };
-        #   npm = "@ai-sdk/openai-compatible";
-        # };
+        "local: ollama" = {
+          "name" = "local: ollama";
+          "options" = {
+            "baseURL" = "http://localhost:11434/v1";
+          };
+          "models" = {
+            "qwen3.5:35b" = {
+              "name" = "qwen3.5:35b";
+            };
+          };
+        };
       };
+      defaultModel = "gpt-5.4";
+      defaultSmallModel = "gpt-5.3-codex";
       instructions = [
         "*/AGENTS.md"
         "AGENTS.md"
@@ -535,20 +535,18 @@ in {
     # append these extra dirs to the nix-generated path
     sessionPath = extraPaths;
     sessionVariables = envVars;
-    file =
-      localScripts
-      // {
-        ".gitconfig" = {
-          source = ./modules/git/config;
-          target = homeDirectory + "/.config/git/config";
-          force = true;
-        };
-        ".gitignore" = {
-          source = ./modules/git/ignore;
-          target = homeDirectory + "/.config/git/ignore";
-          force = true;
-        };
+    file = localScripts // {
+      ".gitconfig" = {
+        source = ./modules/git/config;
+        target = homeDirectory + "/.config/git/config";
+        force = true;
       };
+      ".gitignore" = {
+        source = ./modules/git/ignore;
+        target = homeDirectory + "/.config/git/ignore";
+        force = true;
+      };
+    };
   };
   programs.home-manager.enable = true;
   programs.zsh = {

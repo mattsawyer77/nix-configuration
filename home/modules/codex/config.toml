@@ -19,6 +19,14 @@ base_url = "http://haystack:4000/v1"
 env_key = "CODEX_PROXY_MASTER_KEY"
 model_supports_reasoning_summaries = false
 
+[agents.worker]
+description = "Execution-focused worker for bounded implementation and verification tasks."
+config_file = "agents/worker-gpt53-codex.toml"
+
+[agents.explorer]
+description = "Research-focused explorer for tracing behavior, reading code, and gathering context."
+config_file = "agents/explorer-gpt54-codex.toml"
+
 [projects."/Users/m.sawyer/workspaces/f5/volterra/ves.io/ares"]
 trust_level = "trusted"
 
