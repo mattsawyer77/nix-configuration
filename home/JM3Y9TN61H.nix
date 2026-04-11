@@ -281,88 +281,7 @@ in
   custom.opencode = {
     settings = {
       "$schema" = "https://opencode.ai/config.json";
-      # plugin = [ "@tarquinen/opencode-dcp@latest" ];
       provider = {
-        # f5ai-anthropic = {
-        #   models = {
-        #     claude-opus-4-6 = {
-        #       limit = {
-        #         context = 1000000;
-        #         output = 128000;
-        #       };
-        #       modalities = {
-        #         input = [
-        #           "text"
-        #           "image"
-        #         ];
-        #         output = [ "text" ];
-        #       };
-        #       name = "F5AI: Claude Opus 4.6";
-        #       options = {
-        #         thinking = {
-        #           type = "adaptive";
-        #         };
-        #       };
-        #       reasoning = true;
-        #       variants = {
-        #         off = {
-        #           thinking = {
-        #             type = "disabled";
-        #           };
-        #         };
-        #       };
-        #     };
-        #     claude-sonnet-4-6 = {
-        #       limit = {
-        #         context = 1000000;
-        #         output = 128000;
-        #       };
-        #       modalities = {
-        #         input = [
-        #           "text"
-        #           "image"
-        #         ];
-        #         output = [ "text" ];
-        #       };
-        #       name = "F5AI: Claude Sonnet 4.6";
-        #       options = {
-        #         thinking = {
-        #           type = "adaptive";
-        #         };
-        #       };
-        #       reasoning = true;
-        #       variants = {
-        #         off = {
-        #           thinking = {
-        #             type = "disabled";
-        #           };
-        #         };
-        #       };
-        #     }; # sonnet 4.6
-        #     claude-haiku-4-5 = {
-        #       limit = {
-        #         context = 200000;
-        #         output = 64000;
-        #       };
-        #       modalities = {
-        #         input = [
-        #           "text"
-        #           "image"
-        #         ];
-        #         output = [ "text" ];
-        #       };
-        #       name = "F5AI: Claude Haiku 4.5";
-        #     }; # haiku 4.5
-        #   }; # anthropic models
-        #   name = "F5AI (Anthropic)";
-        #   npm = "@ai-sdk/anthropic";
-        #   options = {
-        #     baseURL = "https://f5ai.pd.f5net.com/anthropic/v1";
-        #     headers = {
-        #       anthropic-beta = "interleaved-thinking-2025-05-14";
-        #     };
-        #   };
-        # }; # anthropic provider
         f5ai-openai = {
           models = {
             "gpt-5.3-codex" = {
@@ -383,7 +302,7 @@ in
             }; # codex 5.3
             "gpt-5.4" = {
               limit = {
-                context = 200000;
+                context = 1000000;
                 output = 128000;
               };
               modalities = {
@@ -397,6 +316,20 @@ in
               reasoning = true;
               release_date = "2026-03-01";
             }; # gpt 5.4
+            "Kimi-K2.5" = {
+              name = "F5AI: Kimi-K2.5";
+              limit = {
+                context = 256000;
+                output = 256000;
+              };
+              # LiteLLM/Azure-backed models are stricter about OpenAI message
+              # compatibility than native OpenAI models.
+              provider = {
+                npm = "@ai-sdk/openai-compatible";
+              };
+              reasoning = true;
+              # release_date = "2026-03-01";
+            }; # Kimi-K2.5
           }; # openai models
           name = "F5AI (OpenAI)";
           npm = "@ai-sdk/openai";
@@ -404,20 +337,20 @@ in
             baseURL = "https://f5ai.pd.f5net.com/openai";
           };
         }; # openai provider
-        "local: ollama" = {
-          "name" = "local: ollama";
-          "options" = {
-            "baseURL" = "http://localhost:11434/v1";
-          };
-          "models" = {
-            "qwen3.5:35b" = {
-              "name" = "qwen3.5:35b";
-            };
-          };
-        };
+        # "local: ollama" = {
+        #   "name" = "local: ollama";
+        #   "options" = {
+        #     "baseURL" = "http://localhost:11434/v1";
+        #   };
+        #   "models" = {
+        #     "qwen3.5:35b" = {
+        #       "name" = "qwen3.5:35b";
+        #     };
+        #   };
+        # };
       };
-      defaultModel = "gpt-5.4";
-      defaultSmallModel = "gpt-5.3-codex";
+      model = "Kimi-K2.5";
+      small_model = "gpt-5.3-codex";
       instructions = [
         "*/AGENTS.md"
         "AGENTS.md"
@@ -567,7 +500,7 @@ in
         # disable vi key bindings
         bindkey -e
       fi
-      export POWERLEVEL9K_CONFIG_FILE=~/workspaces/nix-configuration/home/powerlevel10k/.p10k.zsh
+      export POWERLEVEL9K_CONFIG_FILE=~/workspaces/nix-configuration/home/modules/powerlevel10k/.p10k.zsh
       # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
       # Initialization code that may require console input (password prompts, [y/n]
       # confirmations, etc.) must go above this block; everything else may go below.

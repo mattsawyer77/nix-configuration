@@ -1,0 +1,13 @@
+#!/usr/bin/env zsh
+
+set -Eeuo pipefail
+
+# stop then nix daemon
+echo "shutting down nix daemon..."
+sudo launchctl unload /Library/LaunchDaemons/org.nixos.nix-daemon.plist
+echo "nix daemon stopped."
+
+# Loop through and delete all synthetic build users
+echo "deleting nixbld users..."
+sudo $(which zsh) -c 'for u in $(dscl . -list /Users | grep _nixbld); do echo " - deleting $u"; dscl . -delete "/Users/$u"; done && echo "deleting nixbld group..." && dscl . -delete /Groups/nixbld'
+echo "nixbld users deleted."

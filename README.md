@@ -119,3 +119,5 @@ Load it before starting Codex:
 source ~/.codex/mcp-atlassian.env
 codex
 ```
+
+Static Codex settings are managed by Nix at `/etc/codex/config.toml`. Leave `~/.codex/config.toml` writable for Codex-managed user state such as trusted projects.

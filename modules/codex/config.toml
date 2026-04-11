@@ -1,4 +1,5 @@
-# installed via nix flake
+# installed via nix flake as the system-level Codex config
+# writable user state such as trusted projects belongs in ~/.codex/config.toml
 model_reasoning_effort = "high"
 personality = "pragmatic"
 model_provider = "f5ai"
@@ -9,14 +10,9 @@ model = "gpt-5.4"
 model_context_window = 1000000
 model_auto_compact_token_limit = 800000
 
-# model_provider = "local-ollama"
-# model = "hf.co/unsloth/gemma-4-26B-A4B-it-GGUF:UD-Q8_K_XL"
-# model_context_window = 256000
-# model_auto_compact_token_limit = 200000
-
 [model_providers.f5ai]
 name = "f5ai"
-base_url = "https://f5ai.pd.f5net.com/openai"  
+base_url = "https://f5ai.pd.f5net.com/openai"
 model = "gpt-5.4"
 model_context_window = 1000000
 model_auto_compact_token_limit = 800000
@@ -26,13 +22,13 @@ model_auto_compact_token_limit = 800000
 
 [model_providers.haystack]
 name = "haystack"
-base_url = "http://haystack:4000/v1"  
+base_url = "http://haystack:4000/v1"
 env_key = "CODEX_PROXY_MASTER_KEY"
 model_supports_reasoning_summaries = false
 
 [model_providers.local-ollama]
 name = "local-ollama"
-base_url = "http://localhost:11434/v1"  
+base_url = "http://localhost:11434/v1"
 # model = "hf.co/unsloth/gemma-4-26B-A4B-it-GGUF:UD-Q8_K_XL"
 model = "hf.co/unsloth/gemma-4-26B-A4B-it-GGUF:Q8_0"
 model_context_window = 256000
@@ -49,27 +45,6 @@ model_auto_compact_token_limit = 200000
 # [agents.explorer]
 # description = "Research-focused explorer for tracing behavior, reading code, and gathering context."
 # config_file = "agents/explorer.toml"
-
-[projects."/Users/m.sawyer/workspaces/f5/volterra/ves.io/ares"]
-trust_level = "trusted"
-
-[projects."/Users/m.sawyer/workspaces/f5/volterra/ves.io/stdlib"]
-trust_level = "trusted"
-
-[projects."/Users/m.sawyer/workspaces/echolab"]
-trust_level = "trusted"
-
-[projects."/Users/m.sawyer/workspaces/sic"]
-trust_level = "trusted"
-
-[projects."/Users/m.sawyer/workspaces/f5/volterra/ves.io/specifications"]
-trust_level = "trusted"
-
-[projects."/Users/m.sawyer/workspaces/f5/volterra/ves.io/rakar"]
-trust_level = "trusted"
-
-[projects."/Users/m.sawyer/workspaces/nix-configuration"]
-trust_level = "trusted"
 
 [notice.model_migrations]
 "gpt-5.2-codex" = "gpt-5.3-codex"

@@ -30,7 +30,7 @@
   "Variable-width font family injected by Nix. See +nix-generated.el.")
 
 (defface sawyer/mono-face
-  '((t :inherit default :weight normal))
+  '((t :inherit default :weight extra-light))
   "Font spec for all monospace text.")
 (set-face-attribute 'sawyer/mono-face nil
                     :family (or sawyer/nix-mono-font-family "PragmataPro Liga"))
@@ -42,7 +42,7 @@
                     :family (or sawyer/nix-variable-font-family "Fira Sans"))
 
 (defface code-face
-  '((t :inherit sawyer/mono-face :height 1.2 :weight light))
+  '((t :inherit sawyer/mono-face :height 1.2 :weight extra-light))
   "Monospace code face.")
 
 (defface org-face
@@ -53,7 +53,7 @@
   '((t :inherit code-face :height 0.8))
   "Face for inline code in org.")
 
-(defcustom sawyer/baseline-font-size 18.0 "Baseline font pt size." :type 'number)
+(defcustom sawyer/baseline-font-size 17.0 "Baseline font pt size." :type 'number)
 (defcustom sawyer/dark-theme 'kanagawa "Theme for dark mode." :type 'symbol)
 (defcustom sawyer/light-theme 'doom-nord-light "Theme for light mode." :type 'symbol)
 
