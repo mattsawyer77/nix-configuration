@@ -21,7 +21,7 @@
   mcpo-package = mcpo.packages.aarch64-darwin.default;
   duckduckgo-mcp-server-package = duckduckgo-mcp-server.packages.aarch64-darwin.default;
   emacs-vterm = import ../modules/emacs-vterm {inherit pkgs emacs-vterm-src;};
-  emacs-plus = import ../modules/emacs-plus {inherit pkgs emacs-vterm;};
+  emacs-plus = import ./modules/emacs-plus {inherit pkgs emacs-vterm;};
   localScriptPaths = [
     ./modules/scripts/acr-find-commit
     ./modules/scripts/acr-find-digest

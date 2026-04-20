@@ -15,7 +15,7 @@
   (setq frame-title-format nil)
   ;; ns-use-proxy-icon and ns-transparent-titlebar/ns-appearance are
   ;; NS-build-only parameters.  The mac port (emacs-macport) handles
-  ;; titlebar transparency via a patch in modules/emacs-plus and
+  ;; titlebar transparency via a patch in home/modules/emacs-plus and
   ;; auto-detects appearance from the background color.
   (when (boundp 'ns-use-proxy-icon)
     (setq ns-use-proxy-icon nil)
