@@ -7,7 +7,7 @@
       automake
       bash
       bat
-      bat-extras.batman
+      # bat-extras.batman # requires nushell which is broken as of 2026-04-20
       btop
       # cachix
       # cmake
