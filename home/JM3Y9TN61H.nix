@@ -10,8 +10,7 @@
   duckduckgo-mcp-server,
   emacs-vterm-src,
   ...
-}:
-let
+}: let
   homeDirectory = "/Users/${username}";
   doomDirectory = ".doom.d";
   homeAppDirectory = "${homeDirectory}/Applications";
@@ -21,8 +20,8 @@ let
   mcp-server-tree-sitter-package = mcp-server-tree-sitter.packages.aarch64-darwin.default;
   mcpo-package = mcpo.packages.aarch64-darwin.default;
   duckduckgo-mcp-server-package = duckduckgo-mcp-server.packages.aarch64-darwin.default;
-  emacs-vterm = import ../modules/emacs-vterm { inherit pkgs emacs-vterm-src; };
-  emacs-plus = import ../modules/emacs-plus { inherit pkgs emacs-vterm; };
+  emacs-vterm = import ../modules/emacs-vterm {inherit pkgs emacs-vterm-src;};
+  emacs-plus = import ../modules/emacs-plus {inherit pkgs emacs-vterm;};
   localScriptPaths = [
     ./modules/scripts/acr-find-commit
     ./modules/scripts/acr-find-digest
@@ -92,11 +91,9 @@ let
   ];
   localScripts = builtins.listToAttrs (
     map (
-      script:
-      let
+      script: let
         scriptName = builtins.baseNameOf script;
-      in
-      {
+      in {
         name = scriptName;
         value = {
           text = builtins.readFile script;
@@ -104,7 +101,8 @@ let
           executable = true;
         };
       }
-    ) localScriptPaths
+    )
+    localScriptPaths
   );
   shellScriptWrappers = [
     # enable `gsed` alias which calls gnused for compatibility with homebrew
@@ -120,10 +118,9 @@ let
     (pkgs.writeShellScriptBin "ghostty" ''exec ${ghosttyAppDirectory}/Contents/MacOS/ghostty "$@"'')
     (pkgs.writeShellScriptBin "aws" ''exec /usr/local/bin/aws "$@"'') # remove if awscli becomes fast enough
   ];
-  homePackages =
-    with pkgs;
+  homePackages = with pkgs;
     [
-      (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
+      (google-cloud-sdk.withExtraComponents [google-cloud-sdk.components.gke-gcloud-auth-plugin])
       # aws-iam-authenticator
       # awscli2 # too slow, installing from AWS directly for now
       # azure-cli # broken as of 2025-08-29
@@ -231,8 +228,7 @@ let
     # rancher desktop
     (homeDirectory + "/" + ".rd/bin")
   ];
-in
-{
+in {
   imports = [
     ./modules/common-packages
     ./modules/common-shell
@@ -261,7 +257,7 @@ in
       {
         name = "default-command";
         value = ''"reattach-to-user-namespace -l zsh"'';
-        flags = [ "global" ];
+        flags = ["global"];
       }
     ];
   };
@@ -294,7 +290,7 @@ in
                   "text"
                   "image"
                 ];
-                output = [ "text" ];
+                output = ["text"];
               };
               name = "F5AI: GPT 5.3 Codex";
               reasoning = true;
@@ -310,7 +306,7 @@ in
                   "text"
                   "image"
                 ];
-                output = [ "text" ];
+                output = ["text"];
               };
               name = "F5AI: GPT 5.4";
               reasoning = true;
@@ -468,18 +464,20 @@ in
     # append these extra dirs to the nix-generated path
     sessionPath = extraPaths;
     sessionVariables = envVars;
-    file = localScripts // {
-      ".gitconfig" = {
-        source = ./modules/git/config;
-        target = homeDirectory + "/.config/git/config";
-        force = true;
+    file =
+      localScripts
+      // {
+        ".gitconfig" = {
+          source = ./modules/git/config;
+          target = homeDirectory + "/.config/git/config";
+          force = true;
+        };
+        ".gitignore" = {
+          source = ./modules/git/ignore;
+          target = homeDirectory + "/.config/git/ignore";
+          force = true;
+        };
       };
-      ".gitignore" = {
-        source = ./modules/git/ignore;
-        target = homeDirectory + "/.config/git/ignore";
-        force = true;
-      };
-    };
   };
   programs.home-manager.enable = true;
   programs.zsh = {

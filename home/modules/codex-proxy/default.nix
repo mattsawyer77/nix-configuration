@@ -19,13 +19,15 @@
   pkgs,
   codex-proxy ? null,
   ...
-}:
-let
+}: let
   cfg = config.custom.codex-proxy;
   isDarwin = pkgs.stdenv.isDarwin;
   isLinux = pkgs.stdenv.isLinux;
 
-  package = if codex-proxy != null then codex-proxy.packages.${pkgs.system}.default else cfg.package;
+  package =
+    if codex-proxy != null
+    then codex-proxy.packages.${pkgs.system}.default
+    else cfg.package;
 
   # Wrapper script that sources the environment file before exec-ing the proxy.
   startScript = pkgs.writeShellScript "codex-proxy-start" ''
@@ -41,8 +43,7 @@ let
       --api-key-env "${cfg.upstreamApiKeyEnvVar}" \
       --master-key-env "${cfg.masterKeyEnvVar}"
   '';
-in
-{
+in {
   options.custom.codex-proxy = {
     enable = lib.mkEnableOption "codex-proxy (Responses API translation proxy)";
 
@@ -107,13 +108,13 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = [ package ];
+    home.packages = [package];
 
     # ── systemd user service (NixOS / Linux) ─────────────────────
     systemd.user.services.codex-proxy = lib.mkIf (cfg.daemon.enable && isLinux) {
       Unit = {
         Description = "codex-proxy (Responses API -> Chat Completions)";
-        After = [ "network.target" ];
+        After = ["network.target"];
       };
       Service = {
         Type = "simple";
@@ -121,14 +122,14 @@ in
         Restart = "on-failure";
         RestartSec = 5;
       };
-      Install.WantedBy = lib.optionals cfg.daemon.autoStart [ "default.target" ];
+      Install.WantedBy = lib.optionals cfg.daemon.autoStart ["default.target"];
     };
 
     # ── launchd agent (macOS / Darwin) ───────────────────────────
     launchd.agents.codex-proxy = lib.mkIf (cfg.daemon.enable && isDarwin) {
       enable = true;
       config = {
-        ProgramArguments = [ "${startScript}" ];
+        ProgramArguments = ["${startScript}"];
         KeepAlive = {
           Crashed = true;
           SuccessfulExit = false;

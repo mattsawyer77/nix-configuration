@@ -4,12 +4,10 @@
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   cfg = config.custom.shell;
   zshAutoSuggestStyle = "fg=#337799";
-in
-{
+in {
   options.custom.shell = {
     goPathSuffix = lib.mkOption {
       type = lib.types.str;

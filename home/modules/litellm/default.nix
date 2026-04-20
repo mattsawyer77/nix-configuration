@@ -21,23 +21,23 @@
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   cfg = config.custom.litellm;
   isDarwin = pkgs.stdenv.isDarwin;
   isLinux = pkgs.stdenv.isLinux;
   useDocker = cfg.backend == "docker";
 
-  yamlFormat = pkgs.formats.yaml { };
+  yamlFormat = pkgs.formats.yaml {};
 
   litellmConfig = {
     model_list = cfg.models;
-    litellm_settings = {
-      drop_params = cfg.dropParams;
-      num_retries = cfg.numRetries;
-      request_timeout = cfg.requestTimeout;
-    }
-    // cfg.extraSettings;
+    litellm_settings =
+      {
+        drop_params = cfg.dropParams;
+        num_retries = cfg.numRetries;
+        request_timeout = cfg.requestTimeout;
+      }
+      // cfg.extraSettings;
     general_settings = {
       master_key = "os.environ/${cfg.masterKeyEnvVar}";
     };
@@ -82,9 +82,11 @@ let
       --config /app/config.yaml
   '';
 
-  startScript = if useDocker then dockerStartScript else nixpkgsStartScript;
-in
-{
+  startScript =
+    if useDocker
+    then dockerStartScript
+    else nixpkgsStartScript;
+in {
   options.custom.litellm = {
     enable = lib.mkEnableOption "LiteLLM local proxy";
 
@@ -160,7 +162,7 @@ in
 
     models = lib.mkOption {
       type = lib.types.listOf lib.types.attrs;
-      default = [ ];
+      default = [];
       description = ''
         LiteLLM model_list entries. When empty, a sensible default is generated
         from upstreamUrl and upstreamApiKeyEnvVar (a claude-opus-4-6 entry
@@ -188,7 +190,7 @@ in
 
     extraSettings = lib.mkOption {
       type = lib.types.attrs;
-      default = { };
+      default = {};
       description = "Extra settings merged into litellm_settings.";
     };
 
@@ -226,7 +228,7 @@ in
 
     # Install the nixpkgs litellm binary (useful for manual testing even
     # when daemon runs via docker).
-    home.packages = [ pkgs.litellm ];
+    home.packages = [pkgs.litellm];
 
     # Deploy the generated config for both backends and manual inspection.
     home.file."litellm-config" = {
@@ -238,8 +240,8 @@ in
     systemd.user.services.litellm = lib.mkIf (cfg.daemon.enable && isLinux) {
       Unit = {
         Description = "LiteLLM Proxy (Responses API bridge)";
-        After = [ "network.target" ] ++ lib.optionals useDocker [ "docker.service" ];
-        Requires = lib.optionals useDocker [ "docker.service" ];
+        After = ["network.target"] ++ lib.optionals useDocker ["docker.service"];
+        Requires = lib.optionals useDocker ["docker.service"];
       };
       Service = {
         Type = "simple";
@@ -248,14 +250,14 @@ in
         Restart = "on-failure";
         RestartSec = 5;
       };
-      Install.WantedBy = lib.optionals cfg.daemon.autoStart [ "default.target" ];
+      Install.WantedBy = lib.optionals cfg.daemon.autoStart ["default.target"];
     };
 
     # ── launchd agent (macOS / Darwin) ───────────────────────────
     launchd.agents.litellm = lib.mkIf (cfg.daemon.enable && isDarwin) {
       enable = true;
       config = {
-        ProgramArguments = [ "${startScript}" ];
+        ProgramArguments = ["${startScript}"];
         KeepAlive = {
           Crashed = true;
           SuccessfulExit = false;

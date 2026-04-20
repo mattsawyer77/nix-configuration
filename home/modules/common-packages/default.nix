@@ -1,7 +1,5 @@
-{ pkgs, ... }:
-{
-  home.packages =
-    with pkgs;
+{pkgs, ...}: {
+  home.packages = with pkgs;
     [
       alejandra
       automake
@@ -165,13 +163,12 @@
     #   tree-sitter-zig
     # ])
     ++ (
-      if pkgs.stdenv.isDarwin then
-        [
-          # discord
-          # dockutil
-          reattach-to-user-namespace
-        ]
-      else
-        [ ]
+      if pkgs.stdenv.isDarwin
+      then [
+        # discord
+        # dockutil
+        reattach-to-user-namespace
+      ]
+      else []
     );
 }
