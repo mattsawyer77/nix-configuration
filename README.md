@@ -23,6 +23,8 @@ A quasi-complete system-wide configuration of most of my machines and tools usin
     ```
 
 `outputs.darwinConfigurations` is an attribute set where the key is a specific machine (name should equal its hostname, AFAIK). If any new macOS machine is being configured, it needs an entry in this set.
+
+`outputs.homeConfigurations` is an attribute set for standalone Home Manager activation on macOS. It uses the same hostnames and is intended for the frequent user-level updates that do not need a full nix-darwin rebuild.
     
 3. bootstrap the flake from this repository
 
@@ -33,6 +35,12 @@ A quasi-complete system-wide configuration of most of my machines and tools usin
     nix build ${REPO_ROOT}\#darwinConfigurations.$(hostname).system
     ./result/sw/bin/darwin-rebuild switch --flake $REPO_ROOT
     ``` 
+
+4. for day-to-day Home Manager updates, use the standalone home configuration
+
+    ``` sh
+    home-manager switch --flake ${REPO_ROOT}\#$(hostname)
+    ```
     
 ### NixOS
 
@@ -69,6 +77,12 @@ The following commands should be run from the local clone's dir.
     # apply the config
     darwin-rebuild switch --flake ${REPO_ROOT}
     ```
+
+For user-level Home Manager changes that do not require system activation:
+
+``` sh
+home-manager switch --flake ${REPO_ROOT}\#$(hostname)
+```
 
 ### NixOS
 

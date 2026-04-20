@@ -11,7 +11,7 @@ Guidance for agents working in this repository. These instructions apply to the 
 
 ## Repository Layout
 
-- `flake.nix`: Main entrypoint defining `darwinConfigurations` and `nixosConfigurations`, inputs, caches.
+- `flake.nix`: Main entrypoint defining `darwinConfigurations`, standalone Darwin `homeConfigurations`, and `nixosConfigurations`, inputs, caches.
 - `flake.lock`: Pinned inputs. Do not edit directly.
 - `modules/`: Nix system-level modules and related configs (mac/nixos, container runtimes, editors, etc.).
 - `home/`: Home Manager configurations per host (hostname-based files/directories).
@@ -62,6 +62,7 @@ Guidance for agents working in this repository. These instructions apply to the 
 - Prefer evaluation before switching:
   - `nix flake show` to list outputs and verify attributes exist.
   - `nix eval .#darwinConfigurations.<host>.config.system.build.toplevel.drvPath` (or NixOS equivalent) to catch eval errors.
+  - `nix eval .#homeConfigurations.<host>.activationPackage.drvPath` to catch standalone Darwin Home Manager eval errors.
 - On macOS, run `darwin-rebuild check --flake .`. 
 - On NixOS, use `nixos-rebuild dry-activate --flake .` when possible.
 - Running `darwin-rebuild switch` or `nixos-rebuild switch` requires root, so don't run this yourself, but ask the user to do so.

@@ -1,11 +1,23 @@
 #!/usr/bin/env zsh
 
 nix-config-check() {
+  (cd ~/workspaces/nix-configuration &&
+    home-manager switch --dry-run --flake ".#$(hostname)")
+  # (cd ~/workspaces/nix-configuration \
+  #   && nix eval ".#homeConfigurations.$(hostname).activationPackage.drvPath")
+}
+
+nix-system-config-check() {
   sudo caffeinate -i darwin-rebuild check --flake ~/workspaces/nix-configuration
   notify "nix config check"
 }
 
 nix-config-switch() {
+  (cd ~/workspaces/nix-configuration &&
+    home-manager switch --flake ".#$(hostname)")
+}
+
+nix-system-config-switch() {
   sudo caffeinate -i darwin-rebuild switch --flake ~/workspaces/nix-configuration
   notify "nix config switch"
 }

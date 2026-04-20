@@ -88,6 +88,7 @@
     codex-proxy,
     emacs-vterm-src,
     home-manager,
+    nil,
     ...
   } @ inputs: let
     fontConfig = {
@@ -152,12 +153,52 @@
     };
 
     # ── Builders ─────────────────────────────────────────────
-    mkDarwinSystem = hostname: {
-      system,
+    mkDarwinPkgs = system:
+      import nixpkgs {
+        inherit system;
+        config = {
+          allowUnfree = true;
+          allowBroken = true;
+        };
+        overlays = [
+          nil.overlays.nil
+        ];
+      };
+
+    mkDarwinHomeSpecialArgs = {
       username,
       extraSpecialArgs ? {},
       ...
     }:
+      {
+        inherit username fontConfig;
+      }
+      // extraSpecialArgs;
+
+    mkDarwinHome = hostname: {
+      system,
+      username,
+      ...
+    } @ hostConfig:
+      home-manager.lib.homeManagerConfiguration {
+        pkgs = mkDarwinPkgs system;
+        extraSpecialArgs = mkDarwinHomeSpecialArgs hostConfig;
+        modules = [
+          (
+            {lib, ...}: {
+              home.username = lib.mkDefault username;
+              home.homeDirectory = lib.mkDefault "/Users/${username}";
+            }
+          )
+          ./home/${hostname}.nix
+        ];
+      };
+
+    mkDarwinSystem = hostname: {
+      system,
+      username,
+      ...
+    } @ hostConfig:
       darwin.lib.darwinSystem {
         inherit system;
         specialArgs = inputs;
@@ -168,11 +209,7 @@
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-            home-manager.extraSpecialArgs =
-              {
-                inherit username fontConfig;
-              }
-              // extraSpecialArgs;
+            home-manager.extraSpecialArgs = mkDarwinHomeSpecialArgs hostConfig;
             home-manager.users.${username} = import ./home/${hostname}.nix;
           }
         ];
@@ -207,6 +244,7 @@
       };
   in {
     darwinConfigurations = builtins.mapAttrs mkDarwinSystem darwinSystems;
+    homeConfigurations = builtins.mapAttrs mkDarwinHome darwinSystems;
     nixosConfigurations = builtins.mapAttrs mkNixosSystem nixosSystems;
   }; # outputs
 }
