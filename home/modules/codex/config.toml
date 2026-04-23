@@ -1,5 +1,4 @@
-# installed via nix flake as the system-level Codex config
-# writable user state such as trusted projects belongs in ~/.codex/config.toml
+# codex config, installed via Home Manager to ~/.codex/config.toml
 model_reasoning_effort = "high"
 personality = "pragmatic"
 model_provider = "f5ai"

@@ -4,10 +4,6 @@
   lib,
   ...
 }: {
-  imports = [
-    ../modules/codex
-  ];
-
   system.primaryUser = "m.sawyer";
   system.stateVersion = 5;
   ids.gids.nixbld = 1000;

@@ -1,3 +1,4 @@
 model = "gpt-5.4"
 model_provider = "f5ai"
-model_reasoning_effort = "high"
+model_reasoning_effort = "xhigh"
+developer_instructions = ""
