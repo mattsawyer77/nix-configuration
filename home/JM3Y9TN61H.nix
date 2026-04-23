@@ -10,7 +10,8 @@
   duckduckgo-mcp-server,
   emacs-vterm-src,
   ...
-}: let
+}:
+let
   homeDirectory = "/Users/${username}";
   doomDirectory = ".doom.d";
   homeAppDirectory = "${homeDirectory}/Applications";
@@ -20,8 +21,8 @@
   mcp-server-tree-sitter-package = mcp-server-tree-sitter.packages.aarch64-darwin.default;
   mcpo-package = mcpo.packages.aarch64-darwin.default;
   duckduckgo-mcp-server-package = duckduckgo-mcp-server.packages.aarch64-darwin.default;
-  emacs-vterm = import ../modules/emacs-vterm {inherit pkgs emacs-vterm-src;};
-  emacs-plus = import ./modules/emacs-plus {inherit pkgs emacs-vterm;};
+  emacs-vterm = import ../modules/emacs-vterm { inherit pkgs emacs-vterm-src; };
+  emacs-plus = import ./modules/emacs-plus { inherit pkgs emacs-vterm; };
   localScriptPaths = [
     ./modules/scripts/acr-find-commit
     ./modules/scripts/acr-find-digest
@@ -91,9 +92,11 @@
   ];
   localScripts = builtins.listToAttrs (
     map (
-      script: let
+      script:
+      let
         scriptName = builtins.baseNameOf script;
-      in {
+      in
+      {
         name = scriptName;
         value = {
           text = builtins.readFile script;
@@ -101,8 +104,7 @@
           executable = true;
         };
       }
-    )
-    localScriptPaths
+    ) localScriptPaths
   );
   shellScriptWrappers = [
     # enable `gsed` alias which calls gnused for compatibility with homebrew
@@ -118,9 +120,10 @@
     (pkgs.writeShellScriptBin "ghostty" ''exec ${ghosttyAppDirectory}/Contents/MacOS/ghostty "$@"'')
     (pkgs.writeShellScriptBin "aws" ''exec /usr/local/bin/aws "$@"'') # remove if awscli becomes fast enough
   ];
-  homePackages = with pkgs;
+  homePackages =
+    with pkgs;
     [
-      (google-cloud-sdk.withExtraComponents [google-cloud-sdk.components.gke-gcloud-auth-plugin])
+      (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
       # aws-iam-authenticator
       # awscli2 # too slow, installing from AWS directly for now
       # azure-cli # broken as of 2025-08-29
@@ -137,6 +140,7 @@
       duf
       dust
       gcov2lcov
+      gh # github cli
       git
       github-mcp-server
       glab
@@ -147,6 +151,7 @@
       golangci-lint
       golint
       # grafana
+      python313Packages.huggingface-hub
       # jsonnet
       # jsonnet-language-server
       just
@@ -155,25 +160,27 @@
       kubecolor
       kubectl
       llama-cpp
+      llama-swap
       llmfit
       libiconv
       darwin.libresolv
       # lua
       # lua-language-server
+      macmon
       # mcp-nixos # seems to be broken as of 2025-11-18
       # mockgen
       ncurses
       nix-tree
-      ollama # seems to be broken as of 2025-11-18
       opencode
       # openldap
+      openspec
       pcre
       pkg-config
       # postgresql
       # prometheus
       # prometheus-nats-exporter
       # protols # seems not to work with emacs as of 2025-08-06
-      python312
+      python313
       # python312Packages.chromadb
       # repomix # too old at 1.3.0, install via npm
       ripgrep
@@ -228,7 +235,8 @@
     # rancher desktop
     (homeDirectory + "/" + ".rd/bin")
   ];
-in {
+in
+{
   imports = [
     ./modules/common-packages
     ./modules/common-shell
@@ -257,7 +265,7 @@ in {
       {
         name = "default-command";
         value = ''"reattach-to-user-namespace -l zsh"'';
-        flags = ["global"];
+        flags = [ "global" ];
       }
     ];
   };
@@ -290,7 +298,7 @@ in {
                   "text"
                   "image"
                 ];
-                output = ["text"];
+                output = [ "text" ];
               };
               name = "F5AI: GPT 5.3 Codex";
               reasoning = true;
@@ -306,7 +314,7 @@ in {
                   "text"
                   "image"
                 ];
-                output = ["text"];
+                output = [ "text" ];
               };
               name = "F5AI: GPT 5.4";
               reasoning = true;
@@ -333,20 +341,77 @@ in {
             baseURL = "https://f5ai.pd.f5net.com/openai";
           };
         }; # openai provider
-        # "local: ollama" = {
-        #   "name" = "local: ollama";
-        #   "options" = {
-        #     "baseURL" = "http://localhost:11434/v1";
-        #   };
-        #   "models" = {
-        #     "qwen3.5:35b" = {
-        #       "name" = "qwen3.5:35b";
-        #     };
-        #   };
-        # };
+        "llama.cpp" = {
+          name = "llama.cpp";
+          npm = "@ai-sdk/openai-compatible";
+          options = {
+            baseURL = "http://127.0.0.1:8080/v1";
+            toolParser = [
+              { type = "raw-function-call"; }
+              { type = "json"; }
+            ];
+          };
+          models = (
+            let
+              qwen36Models = builtins.listToAttrs (
+                builtins.map
+                  (model: {
+                    name = model;
+                    value = {
+                      name = model;
+                      tool_call = true;
+                      limit = {
+                        # longer context seems to send the LLM into a doom loop
+                        context = 262144;
+                        output = 32768;
+                      };
+                    };
+                  })
+                  [
+                    # "unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL"
+                    "unsloth/Qwen3.6-35B-A3B-GGUF:UD-Q4_K_XL"
+                  ]
+              );
+              gemma4Models = builtins.listToAttrs (
+                builtins.map
+                  (model: {
+                    name = model;
+                    value = {
+                      name = model;
+                      tool_call = true;
+                      limit = {
+                        # longer context seems to send the LLM into a doom loop
+                        context = 32768;
+                        output = 32768;
+                      };
+                    };
+                  })
+                  [
+                    # "unsloth/gemma-4-26B-A4B-it-GGUF:Q6_K_XL"
+                    # "unsloth/gemma-4-26B-A4B-it-GGUF:Q4_K_XL"
+                    # "unsloth/gemma-4-26B-A4B-it-GGUF:UD-Q6_K"
+                    # "unsloth/gemma-4-31B-it-GGUF:UD-Q4_K_XL"
+                    "unsloth/gemma-4-26B-A4B-it-GGUF:UD-Q4_K_XL"
+                  ]
+              );
+            in
+            gemma4Models // qwen36Models
+            # gemma4 = {
+            #   # name = "unsloth/gemma-4-26B-A4B-it-GGUF:Q6_K_XL";
+            #   # name = "unsloth/gemma-4-26B-A4B-it-GGUF:Q4_K_XL";
+            #   name = "unsloth/gemma-4-26B-A4B-it-GGUF:UD-Q6_K";
+            #   name = "unsloth/gemma-4-31B-it-GGUF:UD-Q4_K_XL";
+            #   tool_call = true;
+            #   limit = {
+            #     context = 262144;
+            #     output = 262144;
+            #   };
+            # };
+          );
+        };
       };
-      model = "Kimi-K2.5";
-      small_model = "gpt-5.3-codex";
+      model = "gpt-5.4";
+      small_model = "Kimi-K2.5";
       instructions = [
         "*/AGENTS.md"
         "AGENTS.md"
@@ -464,20 +529,18 @@ in {
     # append these extra dirs to the nix-generated path
     sessionPath = extraPaths;
     sessionVariables = envVars;
-    file =
-      localScripts
-      // {
-        ".gitconfig" = {
-          source = ./modules/git/config;
-          target = homeDirectory + "/.config/git/config";
-          force = true;
-        };
-        ".gitignore" = {
-          source = ./modules/git/ignore;
-          target = homeDirectory + "/.config/git/ignore";
-          force = true;
-        };
+    file = localScripts // {
+      ".gitconfig" = {
+        source = ./modules/git/config;
+        target = homeDirectory + "/.config/git/config";
+        force = true;
       };
+      ".gitignore" = {
+        source = ./modules/git/ignore;
+        target = homeDirectory + "/.config/git/ignore";
+        force = true;
+      };
+    };
   };
   programs.home-manager.enable = true;
   programs.zsh = {
