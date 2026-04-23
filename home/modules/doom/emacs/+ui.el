@@ -291,8 +291,8 @@
           '(
             (286 . -2)    ;; 14" MBP
             (344 . -1)    ;; 16" MBP
-            (530 . -1)   ;; 24" 4K (full-res)
-            ;;(801 . -1)    ;; 34" superwide
+            (531 . 0)   ;; 24" 4K (full-res)
+            (801 . -1)    ;; 34" superwide
             ))))
 
 (add-hook! after-init #'textsize-mode)
